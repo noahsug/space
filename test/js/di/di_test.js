@@ -1,5 +1,5 @@
 describe('di', function() {
-  var di;
+  initTestEnvironment(this);
 
   beforeEach(function() {
     di = new Di();
@@ -67,6 +67,37 @@ describe('di', function() {
     });
 
     expect(Car.instance.friction).toBe(0.55);
+  });
+
+  it('can map an implementation to a given name', function() {
+    var Car, SmallTire, BigTire;
+    given(function() {
+      SmallTire = di.service('SmallTire');
+      SmallTire.prototype.init = function() { this.friction = 0.3 };
+
+      BigTire = di.service('BigTire');
+      BigTire.prototype.init = function() { this.friction = 0.8 };
+
+      Car = di.service('Car', ['Tire']);
+      setTestInit(Car);
+
+      di.map({Tire: 'SmallTire'});
+    });
+
+    expect(Car.instance.tire_.friction).toBe(0.3);
+  });
+
+  it('allows deps to be renamed when required', function() {
+    var Car, LongServiceName;
+    given(function() {
+      LongServiceName = di.service('LongServiceName');
+      setTestInit(LongServiceName);
+
+      Car = di.service('Car', ['LongServiceName as lsn']);
+      setTestInit(Car);
+    });
+
+    expect(Car.instance.lsn_).toBe(LongServiceName.instance);
   });
 
   describe('constant', function() {

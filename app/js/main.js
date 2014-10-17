@@ -1,20 +1,14 @@
 var Main = di.service('Main', ['window', 'Screen', 'Game', 'GameRunner']);
 
 Main.prototype.init = function() {
-  this.screen_.setDesiredSurfaceArea(800);
+  this.window_.addEventListener(
+      'resize', this.screen_.onResize.bind(this.screen_));
 
-  this.window_.addEventListener('resize', function() {
-    this.screen_.onResize();
-    this.game_.resize(this.screen_.width, this.screen_.height);
-  }.bind(this));
+  this.window_.addEventListener(
+      'blur', this.gameRunner_.stop.bind(this.gameRunner_));
 
-  this.window_.addEventListener('blur', function() {
-    this.gameRunner_.stop();
-  });
-
-  this.window_.addEventListener('focus', function() {
-    this.gameRunner_.run();
-  });
+  this.window_.addEventListener(
+      'focus', this.gameRunner_.run.bind(this.gameRunner_));
 
   this.gameRunner_.run();
 };

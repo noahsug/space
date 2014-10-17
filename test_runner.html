@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" ng-app>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>Space. tests</title>
@@ -15,10 +15,22 @@
   <script src="app/js/di/di_validator.js"></script>
   <script src="app/js/di/di.js"></script>
 
+  <script src="app/js/device_constants.js"></script>
+  <script src="app/js/game_runner.js"></script>
+  <script src="app/js/main.js"></script>
+  <script src="app/js/renderer.js"></script>
   <script src="app/js/screen.js"></script>
+  <script src="app/js/game/game.js"></script>
+  <script src="app/js/game/game_model.js"></script>
+
+  <!-- Test environment -->
+  <script src="test/test_environment.js"></script>
 
   <!-- Tests -->
   <script src="test/js/di/di_test.js"></script>
   <script src="test/js/di/di_validator_test.js"></script>
-  <script src="test/js/screen_test.js"></script>
-</link>
+</head>
+<body>
+  <canvas style="display: none"></canvas>
+</body>
+</html>

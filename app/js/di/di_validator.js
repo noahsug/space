@@ -1,23 +1,40 @@
 var DiValidator = function() {
 };
 
-DiValidator.prototype.validate = function(impls, implsToInit, deps) {
-  this.impls_ = impls;
-  this.implsToInit_ = implsToInit;
-  this.deps_ = deps;
-
-  for (var name in this.implsToInit_) {
-    var deps = this.deps_[name];
+DiValidator.prototype.validateAddImplToInit_ = function(name, deps) {
+  if (deps) {
     this.assert_(deps instanceof Array, name, 'has non-array deps:', deps);
+  }
+};
+
+DiValidator.prototype.validateInit = function(implsToInit, mapping) {
+  this.implsToInit_ = implsToInit;
+  this.mapping_ = mapping;
+
+  this.validateDeps_();
+  this.validateMapping_();
+};
+
+DiValidator.prototype.validateDeps_ = function() {
+  for (var name in this.implsToInit_) {
+    var deps = this.implsToInit_[name].deps;
     this.checkDepsExist_(name, deps);
   }
 };
 
 DiValidator.prototype.checkDepsExist_ = function(name, deps) {
   deps.forEach(function(dep) {
-    this.assert_(this.impls_[dep] || this.implsToInit_[dep],
-        name, 'has invalid dep:', dep);
+    var depExists = this.implsToInit_[dep] || this.mapping_[dep];
+    this.assert_(depExists, name, 'has invalid dep:', dep);
   }.bind(this));
+};
+
+DiValidator.prototype.validateMapping_ = function() {
+  for (var to in this.mapping_) {
+    var from = this.mapping_[to];
+    this.assert_(
+        this.implsToInit_[from], 'mapping is invalid:', from, '->', to);
+  }
 };
 
 DiValidator.prototype.assert_ = function(truth, var_msgArgs) {
