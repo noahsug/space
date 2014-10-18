@@ -1,4 +1,5 @@
-var Main = di.service('Main', ['window', 'Screen', 'Game', 'GameRunner']);
+var Main = di.service('Main', [
+  'Game', 'GameRunner', 'Mouse', 'Screen', 'window']);
 
 Main.prototype.init = function() {
   this.window_.addEventListener(
@@ -9,6 +10,15 @@ Main.prototype.init = function() {
 
   this.window_.addEventListener(
       'focus', this.gameRunner_.run.bind(this.gameRunner_));
+
+  this.window_.addEventListener(
+      'mousemove', this.mouse_.onMouseMove.bind(this.mouse_));
+
+  this.window_.addEventListener(
+      'mousedown', this.mouse_.onMouseDown.bind(this.mouse_));
+
+  this.window_.addEventListener(
+      'mouseup', this.mouse_.onMouseUp.bind(this.mouse_));
 
   this.gameRunner_.run();
 };

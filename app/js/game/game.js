@@ -1,9 +1,13 @@
-var Game = di.service('Game', ['GameModel as gm']);
+var Game = di.service('Game', ['GameModel as gm', 'Mouse']);
 
 Game.prototype.init = function() {
 };
 
 Game.prototype.update = function(dt) {
-  this.gm_.player.x += this.gm_.player.speed * dt * Math.SQRT1_2;
-  this.gm_.player.y += this.gm_.player.speed * dt * Math.SQRT1_2;
+  var player = this.gm_.player;
+  player.x = this.mouse_.x;
+  player.y = this.mouse_.y;
+  player.attacking = this.mouse_.down;
+  player.attackStart = this.mouse_.pressed;
+  player.attackEnd = this.mouse_.released;
 };

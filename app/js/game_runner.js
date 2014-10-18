@@ -1,5 +1,6 @@
 var GameRunner = di.service('GameRunner', [
-  'Game', 'Renderer', 'requestAnimationFrame', 'cancelAnimationFrame']);
+  'Game', 'Mouse', 'Renderer', 'requestAnimationFrame',
+  'cancelAnimationFrame']);
 
 GameRunner.MIN_FPS = 10;
 
@@ -37,4 +38,5 @@ GameRunner.prototype.requestNextStep_ = function() {
 GameRunner.prototype.update_ = function(dt) {
   this.game_.update(dt);
   this.renderer_.update(dt);
+  this.mouse_.clearInput();
 };
