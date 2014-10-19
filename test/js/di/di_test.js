@@ -1,4 +1,4 @@
-describe('di', function() {
+describe('DI', function() {
   initTestEnvironment(this);
 
   beforeEach(function() {
@@ -17,6 +17,16 @@ describe('di', function() {
       opt_fn && opt_fn(this);
     };
   }
+
+  it('can return an implementation', function() {
+    given(function() {
+      di.service('Tire');
+      di.service('Car', ['Tire']);
+    });
+    expect(di.get('Car')).toBeDefined();
+    expect(di.get('Tire')).toBeDefined();
+    expect(di.get('Car').tire_).toBeDefined()
+  });
 
   it('allows implementations to be registered in any order', function() {
     var Car, Jeep;

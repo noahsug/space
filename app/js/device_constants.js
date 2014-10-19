@@ -1,7 +1,9 @@
 di.constant('window', window);
 
 document.addEventListener("DOMContentLoaded", function() {
-  di.constant('canvas', window.document.getElementsByTagName('canvas')[0]);
+  var canvas = window.document.getElementsByTagName('canvas')[0];
+  di.constant('canvas', canvas);
+  di.constant('ctx', canvas.getContext('2d'));
 });
 
 di.constant('requestAnimationFrame',

@@ -8,18 +8,18 @@ GameRunner.prototype.init = function() {
   this.running_ = false;
 };
 
+GameRunner.prototype.isRunning = function() {
+  return this.running_;
+};
+
 GameRunner.prototype.run = function() {
-  if (!this.running_) {
-    this.running_ = true;
-    this.requestNextStep_();
-  }
+  this.running_ = true;
+  this.requestNextStep_();
 };
 
 GameRunner.prototype.stop = function() {
-  if (this.running_) {
-    this.cancelAnimationFrame_(this.frameRequest_);
-    this.running_ = false;
-  }
+  this.cancelAnimationFrame_(this.frameRequest_);
+  this.running_ = false;
 };
 
 GameRunner.prototype.step_ = function(prevStepTime) {

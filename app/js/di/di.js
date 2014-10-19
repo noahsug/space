@@ -120,6 +120,19 @@ Di.prototype.getPrivateMemberName_ = function(className) {
   return className[0].toLowerCase() + className.slice(1) + '_';
 };
 
+/** @testonly */
+Di.prototype.get = function(name) {
+  return this.impls_[name];
+};
+
+/** @testonly */
+Di.prototype.clone = function() {
+  var di = new Di();
+  di.implsToInit_ = this.implsToInit_;
+  di.mappings_ = this.mappings_;
+  return di;
+};
+
 window.di = new Di();
 
 window.document.addEventListener("DOMContentLoaded", function() {

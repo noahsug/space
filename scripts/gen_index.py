@@ -3,7 +3,7 @@ import os.path
 import re
 
 excluded_files = [
-  'di/*'
+  'di/*',
 ]
 
 impl_tags = []
@@ -53,12 +53,12 @@ test_file.close();
 # impl tags
 impl_tags_pattern = re.compile('/di\.js.*?' +
                                '(<script.*</script>)' +
-                               '.*<!-- Test environment -->', re.M | re.S)
+                               '.*<!-- Tests -->', re.M | re.S)
 match = re.search(impl_tags_pattern, test_html);
 test_html = test_html.replace(match.group(1), '\n  '.join(test_impl_tags));
 
 # test tags
-test_tags_pattern = re.compile('<!-- Tests -->.*?' +
+test_tags_pattern = re.compile('/test_environment\.js.*?' +
                                '(<script.*</script>)', re.M | re.S)
 match = re.search(test_tags_pattern, test_html);
 test_html = test_html.replace(match.group(1), '\n  '.join(test_tags));

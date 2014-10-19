@@ -1,4 +1,4 @@
-describe('diValidator', function() {
+describe('DI validator', function() {
   initTestEnvironment(this);
 
   beforeEach(function() {
