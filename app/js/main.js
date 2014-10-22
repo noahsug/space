@@ -8,11 +8,11 @@ Main.prototype.init = function() {
 
   this.on_('focus', function() {
     this.gameRunner_.run();
-    this.screen_.onResize();
+    this.screen_.resize();
   }, {running:false});
 
   this.on_('resize', function() {
-    this.screen_.onResize();
+    this.screen_.resize();
   }, {running:true});
 
   this.on_('mousemove', function(e) {
@@ -27,7 +27,8 @@ Main.prototype.init = function() {
     this.mouse_.onMouseUp();
   }, {running:true});
 
-  this.screen_.zoom(2);
+  this.screen_.setSurfaceArea(134400);
+  this.screen_.center(0, -this.screen_.height / 6);
   this.gameRunner_.run();
 };
 

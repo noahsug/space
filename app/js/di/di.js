@@ -104,7 +104,7 @@ Di.prototype.createFactory_ = function(name) {
       impl.init && impl.init.apply(impl, arguments);
       return impl;
     }.bind(this)
-  }
+  };
   return factory;
 };
 

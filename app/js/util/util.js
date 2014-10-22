@@ -5,3 +5,11 @@ _.radians = function(degrees) {
 _.isDef = function(value) {
   return value != undefined;
 };
+
+_.valueOrFn = function(valueOrFn) {
+  if (typeof valueOrFn == 'function') {
+    return valueOrFn();
+  } else {
+    return valueOrFn;
+  }
+};

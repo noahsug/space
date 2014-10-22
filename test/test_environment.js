@@ -9,4 +9,11 @@ window.initTestEnvironment = function(test) {
   test.afterEach(function() {
     di = appDi;
   });
+
+  test.inject = inject;
 };
+
+function inject(fn) {
+  fn();
+  di.init();
+}
