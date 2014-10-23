@@ -25,7 +25,7 @@ describe('DI', function() {
     });
     expect(di.get('Car')).toBeDefined();
     expect(di.get('Tire')).toBeDefined();
-    expect(di.get('Car').tire_).toBeDefined()
+    expect(di.get('Car').tire_).toBeDefined();
   });
 
   it('allows implementations to be registered in any order', function() {

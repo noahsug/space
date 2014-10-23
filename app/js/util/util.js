@@ -3,7 +3,7 @@ _.radians = function(degrees) {
 };
 
 _.isDef = function(value) {
-  return value != undefined;
+  return !_.isUndefined(value);
 };
 
 _.valueOrFn = function(valueOrFn) {
@@ -12,4 +12,12 @@ _.valueOrFn = function(valueOrFn) {
   } else {
     return valueOrFn;
   }
+};
+
+var uidCount = 0;
+_.uid = function(obj) {
+  if (obj.__hash__) {
+    return obj.__hash__;
+  }
+  return obj.__hash__ = uidCount++;
 };

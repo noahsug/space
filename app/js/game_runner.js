@@ -31,7 +31,7 @@ GameRunner.prototype.step_ = function(prevStepTime) {
 };
 
 GameRunner.prototype.requestNextStep_ = function() {
-  var now = window.Date.now();
+  var now = Date.now();
   this.frameRequest_ = this.requestAnimationFrame_(this.step_.bind(this, now));
 };
 

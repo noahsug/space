@@ -3,26 +3,25 @@ describe('screen', function() {
   var screen;
 
   beforeEach(function() {
+    inject(function() {
+      var mockWindow = mock.mock('window');
+      mockWindow.innerWidth = 100;
+      mockWindow.innerHeight = 150;
+    });
     screen = di.get('Screen');
-
-    var mockWindow = mock.mock('window');
-    mockWindow.innerWidth = 100;
-    mockWindow.innerHeight = 150;
-    screen.init();
-
-    screen.setSurfaceArea(100 * 150 / 2);
+    screen.setSurfaceArea(100 * 150 / 4);
     screen.center(20, 10);
   });
 
   it('translates game coordinates into canvas coordinates', function() {
     var pos = screen.translate(25, 40);
-    expect(pos.x).toBe(55);
-    expect(pos.y).toBe(105);
+    expect(pos.x).toBe(30);
+    expect(pos.y).toBe(67.5);
   });
 
   it('translates mouse coordinates into canvas coordinates', function() {
-    var pos = screen.translateMouse(50, 75);
-    expect(pos.x).toBe(40);
-    expect(pos.y).toBe(70);
+    var pos = screen.translateMouse(25, 40);
+    expect(pos.x).toBe(7.5);
+    expect(pos.y).toBe(-7.5);
   });
 });

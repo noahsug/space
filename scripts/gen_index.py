@@ -4,6 +4,7 @@ import re
 
 excluded_files = [
   'di/*',
+  'util/*'
 ]
 
 impl_files = []
@@ -21,19 +22,19 @@ for root, dirnames, filenames in os.walk('app/js'):
       continue
 
     impl_files.append('<script src="js/%s"></script>' % (path))
-    test_impl_files.append('<script src="app/js/%s"></script>' % (path))
+    test_impl_files.append('<script src="../app/js/%s"></script>' % (path))
 
 test_files = []
 for root, dirnames, filenames in os.walk('test/js'):
   for filename in filenames:
-    path = os.path.join(root, filename)
+    path = os.path.join(root, filename)[len('test/'):]
     test_files.append('<script src="%s"></script>' % (path))
 
 mock_files = []
 for root, dirnames, filenames in os.walk('test/mock'):
   for filename in filenames:
     if not fnmatch.fnmatch(filename, 'mock_manager.js'):
-      path = os.path.join(root, filename)
+      path = os.path.join(root, filename)[len('test/'):]
       mock_files.append('<script src="%s"></script>' % (path))
 
 
@@ -53,7 +54,7 @@ index_file.write(index_html);
 index_file.close();
 
 ## Write test_runner.html
-test_file = open('test_runner.html', 'r')
+test_file = open('test/test_runner.html', 'r')
 test_html = test_file.read();
 test_file.close();
 
@@ -72,11 +73,11 @@ match = re.search(mock_files_pattern, test_html);
 test_html = test_html.replace(match.group(1), '\n  '.join(mock_files));
 
 # test files
-test_files_pattern = re.compile('/test_environment\.js.*?' +
+test_files_pattern = re.compile('\"test_environment\.js.*?' +
                                '(<script.*</script>)', re.M | re.S)
 match = re.search(test_files_pattern, test_html);
 test_html = test_html.replace(match.group(1), '\n  '.join(test_files));
 
-test_file = open('test_runner.html', 'w')
+test_file = open('test/test_runner.html', 'w')
 test_file.write(test_html);
 test_file.close();

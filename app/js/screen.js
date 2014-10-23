@@ -15,14 +15,19 @@ Screen.prototype.center = function(x, y) {
   this.y_ = y;
 };
 
+// Translate from mouse position to game position.
 Screen.prototype.translateMouse = function(x, y) {
   var upscale = this.getUpscale_();
-  return this.translate(x / upscale, y / upscale);
+  return {
+    x: x / upscale - this.width / 2 + this.x_,
+    y: y / upscale - this.height / 2 + this.y_
+  };
 };
 
+// Translate from game position to canvas draw position.
 Screen.prototype.translate = function(x, y) {
   return {
-    x: x  + this.width / 2 - this.x_,
+    x: x + this.width / 2 - this.x_,
     y: y + this.height / 2 - this.y_
   };
 };

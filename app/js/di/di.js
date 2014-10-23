@@ -3,11 +3,13 @@ var validator = window.diValidator;
 /**
  * Provides dependency injection.
  */
-var Di = function() {
-  this.impls_ = {};
+var Di = function Di() {
   this.implsToInit_ = {};
   this.mappings_ = {};
+  _.decorate(this, _.decorator.eventEmitter);
 };
+
+Di.prototype.ready = _.decorator.eventEmitter.eventFn('ready');
 
 Di.prototype.constant = function(name, impl) {
   this.implsToInit_[name] = {type: 'constant', impl: impl, deps: []};
@@ -25,9 +27,11 @@ Di.prototype.factory = function(name, opt_deps) {
 Di.prototype.addImplToInit_ = function(name, deps, type) {
   validator.validateAddImplToInit_(name, deps);
   var parsedDeps = this.parseDeps_(deps || []);
+  var ImplClass = function() {};
+  //ImplClass.$name
   this.implsToInit_[name] = {
     type: type,
-    class: function() {},
+    class: ImplClass,
     deps: parsedDeps.deps,
     depRenames: parsedDeps.renames
   };
@@ -55,6 +59,7 @@ Di.prototype.map = function(mappings) {
 
 Di.prototype.init = function() {
   validator.validateInit(this.implsToInit_, this.mappings_);
+  this.impls_ = {};
   this.initMappings_();
   for (var name in this.implsToInit_) {
     this.initImpl_(name);
@@ -120,21 +125,20 @@ Di.prototype.getPrivateMemberName_ = function(className) {
   return className[0].toLowerCase() + className.slice(1) + '_';
 };
 
-/** @testonly */
 Di.prototype.get = function(name) {
   return this.impls_[name];
 };
 
-/** @testonly */
 Di.prototype.clone = function() {
   var di = new Di();
-  di.implsToInit_ = this.implsToInit_;
-  di.mappings_ = this.mappings_;
+  di.implsToInit_ = _.clone(this.implsToInit_);
+  di.mappings_ = _.clone(this.mappings_);
   return di;
 };
 
 window.di = new Di();
 
 window.document.addEventListener("DOMContentLoaded", function() {
-  window.setTimeout(di.init.bind(di), 0);
+  di.ready();
+  di.init();
 });
