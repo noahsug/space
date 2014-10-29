@@ -28,8 +28,8 @@ Main.prototype.init = function() {
   }, {running:true});
 
   this.screen_.setSurfaceArea(134400);
-  this.screen_.center(0, -this.screen_.height / 6);
-  this.gameRunner_.run();
+  this.screen_.center(0, 0);
+  this.gameRunner_.start();
 };
 
 Main.prototype.on_ = function(event, fn, opt_req) {

@@ -12,6 +12,11 @@ GameRunner.prototype.isRunning = function() {
   return this.running_;
 };
 
+GameRunner.prototype.start = function() {
+  this.game_.start();
+  this.run();
+};
+
 GameRunner.prototype.run = function() {
   this.running_ = true;
   this.requestNextStep_();

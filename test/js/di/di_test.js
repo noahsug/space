@@ -13,7 +13,7 @@ describe('DI', function() {
   function setTestInit(ImplClass, opt_fn) {
     ImplClass.prototype.init = function(var_args) {
       ImplClass.instance = this;
-      this.args = Array.prototype.slice.call(arguments);
+      this.args = _.toArray(arguments);
       opt_fn && opt_fn(this);
     };
   }

@@ -39,7 +39,7 @@ DiValidator.prototype.validateMapping_ = function() {
 
 DiValidator.prototype.assert_ = function(truth, var_msgArgs) {
   if (!truth) {
-    var msg = 'error: ' + Array.prototype.slice.call(arguments, 1).join(' ');
+    var msg = 'error: ' + _.toArray(arguments).slice(1).join(' ');
     throw msg;
   }
 };

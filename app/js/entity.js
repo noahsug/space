@@ -3,20 +3,12 @@ var Entity = di.factory('Entity');
 Entity.prototype.init = function(type) {
   this.type = type;
   this.x = this.y = 0;
-  this.decorators_ = {};
-};
-
-Entity.prototype.decorate = function(decorator) {
-  this.decorators_[decorator.name] = decorator;
-};
-
-Entity.prototype.update = function(dt) {
-  _.each(this.decorators_, function(d) {
-    d.update(dt);
-  }, this);
+  _.decorate(this, _.decorator.eventEmitter);
 };
 
 Entity.prototype.setPos = function(x, y) {
   this.x = x;
   this.y = y;
 };
+
+Entity.prototype.update = _.decorator.eventEmitter.eventFn('update');

@@ -1,8 +1,8 @@
 var Mouse = di.service('Mouse', ['Screen']);
 
 Mouse.prototype.init = function() {
-  this.x = 0;
-  this.y = 0;
+  this.x = 100000;
+  this.y = 100000;
   this.down = false;
   this.pressed = false;
   this.released = false;

@@ -1,11 +1,11 @@
-_.decorate = function(obj, decorator) {
-  decorator.decorate(obj);
+_.decorate = function(obj, decorator, var_args) {
+  decorator.decorate.apply(decorator, _.args(arguments, 0, 2));
 };
 
 _.decorator = {};
 
 _.decorator.eventEmitter = {
-  name: 'EventEmitter',
+  name: 'eventEmitter',
   decorate: function(obj) {
     var eventEmitter = new EventEmitter();
     obj.on = eventEmitter.on.bind(eventEmitter);

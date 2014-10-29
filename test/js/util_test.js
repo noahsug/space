@@ -1,12 +1,42 @@
 describe('Util function:', function() {
   describe('valueOrFn', function() {
+    it('returns the value when a value', function() {
+      expect(_.valueOrFn(6)).toBe(6);
+    });
+
     it('returns result from function call when a function', function() {
       var fn = function() { return 5; };
       expect(_.valueOrFn(fn)).toBe(5);
     });
 
-    it('returns the value when a value', function() {
-      expect(_.valueOrFn(6)).toBe(6);
+    it('can pass arguments to the function', function() {
+      var fn = function(x) { return x; };
+      expect(_.valueOrFn(fn, 5)).toBe(5);
+    });
+  });
+
+  describe('args', function() {
+    it('returns the partitioned arguments as one array', function() {
+      var result;
+      function test() { result = _.args(arguments, 0, 2); }
+      test(4, 6, 9, 10);
+      expect(result).toEqual([4, 9, 10]);
+    });
+
+    it('turns arguments into an array when no args are passed', function() {
+      var result;
+      function test() { result = _.args(arguments); }
+      test(4, 6, 9, 10);
+      expect(result).toEqual([4, 6, 9, 10]);
+    });
+  });
+
+  describe('uid', function() {
+    it('uniquely identifies an object', function() {
+      var a = {};
+      var b = {};
+      expect(_.uid(a)).not.toEqual(_.uid(b));
+      expect(_.uid(a)).toEqual(_.uid(a));
     });
   });
 
