@@ -40,6 +40,25 @@ describe('Util function:', function() {
     });
   });
 
+  describe('pseudorandom', function() {
+    it('returns the same result when given the same seed', function() {
+      expect(_.pseudorandom(.1)).not.toBe(_.pseudorandom(.2));
+      expect(_.pseudorandom(.1)).toBe(_.pseudorandom(.1));
+    });
+    it('has a uniform distribution between 0 and 1', function() {
+      var results = [];
+      var seed = _.pseudorandomSeed(0);
+      for (var i = 0; i < 1000; i++) {
+        var rand = Math.floor(_.pseudorandom(seed) * 10);
+        seed = _.pseudorandomSeed(seed);
+        results[rand] = results[rand] ? results[rand] + 1 : 1;
+      }
+      results.forEach(function(r) {
+        expect(r > 80).toBe(true);
+      });
+    });
+  });
+
   describe('decorator', function() {
     describe('.eventEmitter', function() {
       var obj;
@@ -61,9 +80,19 @@ describe('Util function:', function() {
         obj.on('event', callback);
 
         expect(callback).not.toHaveBeenCalled();
-        var args = {color:'blue'};
-        obj.emit_('event', args);
-        expect(callback).toHaveBeenCalledWith(args);
+        obj.emit_('event', 113, 'sally');
+        expect(callback).toHaveBeenCalledWith(113, 'sally');
+      });
+
+      it('allows listeners to listen to multiple events', function() {
+        var callback = jasmine.createSpy('callback');
+        obj.on('event', 'event2', callback);
+
+        expect(callback).not.toHaveBeenCalled();
+        obj.emit_('event', 113, 'sally');
+        expect(callback).toHaveBeenCalledWith(113, 'sally');
+        obj.emit_('event2', 456, 'bob');
+        expect(callback).toHaveBeenCalledWith(456, 'bob');
       });
 
       describe('.eventFn', function() {

@@ -45,3 +45,15 @@ _.fast_uid = function(obj) {
 };
 
 _.uid = _.fast_uid;
+
+_.pseudorandom = function(seed) {
+  var x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
+_.pseudorandomSeed = function(opt_seed) {
+  if (_.isDef(opt_seed)) {
+    return opt_seed + 1;
+  }
+  return Math.random() * (Math.PI / 2);
+};

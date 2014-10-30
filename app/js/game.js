@@ -3,6 +3,7 @@ var Game = di.service('Game', [
 
 Game.prototype.start = function() {
   this.startIntro_();
+  this.startBattle_();
 };
 
 Game.prototype.startIntro_ = function() {
@@ -35,13 +36,14 @@ Game.prototype.startBattle_ = function() {
 
   var player = this.entity_.create('ship');
   _.decorate(player, d.shape.circle, 10);
-  player.style = 'good';
-  player.speed = 110;
   _.decorate(player, d.movement.radial);
+  player.style = 'good';
+  player.speed = 135;
   this.battleEntities_['player'] = player;
 
   var enemy = this.entity_.create('ship');
   _.decorate(enemy, d.shape.circle, 10);
+  _.decorate(enemy, d.movement.radial);
   enemy.speed = 100;
   this.battleEntities_['enemy'] = enemy;
 

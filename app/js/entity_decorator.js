@@ -15,14 +15,14 @@ EntityDecorator.prototype.init = function() {
 };
 
 EntityDecorator.prototype.decorateClickable_ = function(obj) {
-  obj.update(function() {
+  obj.act(function() {
     obj.mouseOver = obj.collides(this.mouse_.x, this.mouse_.y);
     obj.clicked = obj.mouseOver && this.mouse_.pressed;
   }.bind(this));
 };
 
 EntityDecorator.prototype.decorateCircle_ = function(obj, radius) {
-  obj.update(function(dt) {
+  obj.act(function(dt) {
     obj.radius = _.valueOrFn(radius, dt);
     obj.collides = function(x, y) {
       var distance = Math.hypot(Math.abs(obj.x - x), Math.abs(obj.y - y));
@@ -33,7 +33,7 @@ EntityDecorator.prototype.decorateCircle_ = function(obj, radius) {
 
 EntityDecorator.prototype.decorateText_ = function(obj, text, size) {
   obj.text = text;
-  obj.update(function(dt) {
+  obj.act(function(dt) {
     obj.size = _.valueOrFn(size, dt);
   });
   obj.collides = function(x, y) {
@@ -46,9 +46,13 @@ EntityDecorator.prototype.decorateText_ = function(obj, text, size) {
 };
 
 EntityDecorator.prototype.decorateRadialMovement_ = function(obj) {
-  obj.update(function(dt) {
-    var dx = obj.x - obj.target.x;
-    var dy = obj.y - obj.target.y;
+  var target;
+  obj.think(function() {
+    target = {x: obj.target.x, y: obj.target.y};
+  });
+  obj.act(function(dt) {
+    var dx = obj.x - target.x;
+    var dy = obj.y - target.y;
     var currentAngle = Math.atan(dy / dx) + Math.PI * 2;
     if (dx < 0) {
       currentAngle += Math.PI;
