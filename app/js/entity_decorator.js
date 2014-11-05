@@ -159,7 +159,7 @@ EntityDecorator.prototype.decorateLaser_ = function(obj) {
     dangle: 0
   };
   var BURST_CHARGE_TIME = 2;
-  var BURST_SIZE = 8;
+  var BURST_SIZE = 7;
   var burtCooldown = 0;
   var burstRemaining = 0;
 
