@@ -17,3 +17,6 @@ function inject(fn) {
   fn();
   di.init();
 }
+
+// Stop game from actually running.
+Main.prototype.init = function() {};

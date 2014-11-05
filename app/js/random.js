@@ -4,8 +4,9 @@ Random.prototype.init = function() {
   this.seed();
 };
 
-Random.prototype.seed = function() {
-  this.seed_ = _.pseudorandomSeed();
+Random.prototype.seed = function(opt_seed) {
+  this.seed_ = _.isDef(opt_seed) ? opt_seed : _.pseudorandomSeed();
+  return this.seed_;
 };
 
 Random.prototype.getSeed = function() {

@@ -57,3 +57,19 @@ _.pseudorandomSeed = function(opt_seed) {
   }
   return Math.random() * (Math.PI / 2);
 };
+
+_.assert = function(truth, msg) {
+  if (!truth) {
+    throw 'Assert failed: ' + msg;
+  }
+};
+
+_.angle = function(x1, y1, x2, y2) {
+  var dx = x2 - x1;
+  var dy = y2 - y1;
+  var angle = Math.atan(dy / dx) + Math.PI * 2;
+  if (dx < 0) {
+    angle += Math.PI;
+  }
+  return angle;
+};

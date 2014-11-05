@@ -1,5 +1,5 @@
 var Main = di.service('Main', [
-  'Game', 'GameRunner', 'Mouse', 'Screen', 'window']);
+  'Game', 'GameRunner', 'Mouse', 'Screen', 'window', 'Random']);
 
 Main.prototype.init = function() {
   this.on_('blur', function() {
@@ -27,8 +27,8 @@ Main.prototype.init = function() {
     this.mouse_.onMouseUp();
   }, {running:true});
 
+  this.random_.seed();
   this.screen_.setSurfaceArea(134400);
-  this.screen_.center(0, 0);
   this.gameRunner_.start();
 };
 

@@ -3,7 +3,7 @@ describe('random', function() {
 
   beforeEach(function() {
     rand = di.get('Random');
-    rand.seed_ = .1;
+    rand.seed(.1);
   });
 
   it ('can get the next int within a range, inclusively', function() {
