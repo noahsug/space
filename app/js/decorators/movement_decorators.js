@@ -5,11 +5,10 @@ MovementDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'movement');
 };
 
-
-/**
- * @param {{speed}} spec
- */
 MovementDecorators.prototype.decorateRadial_ = function(obj, spec) {
+  _.defaults(spec, {
+    speed: 0
+  });
   obj.speed = spec.speed;
   var target;
   obj.act(function() {
@@ -31,11 +30,13 @@ MovementDecorators.prototype.decorateRadial_ = function(obj, spec) {
   });
 };
 
-
-/**
- * @param {{speed, accuracy, dangle, seek}} spec
- */
 MovementDecorators.prototype.decorateStraight_ = function(obj, spec) {
+  _.defaults(spec, {
+    speed: 0,
+    accuracy: 0,
+    dangle: 0,
+    seek: 0
+  });
   obj.speed = spec.speed;
   var target;
   obj.awake(function() {

@@ -10,7 +10,12 @@ di.constant('gameplay', {
       'weapon.shotgun': {},
       'movement.radial': {speed: 100},
       'health': {health: 20},
-      'shape.circle': {radius: 10}
+      'shape.circle': {radius: 10},
+      'power.teleport': {cooldown: 2}
+    },
+
+    items: {
+      'weapon.shotgun': {}
     }
   }
 });

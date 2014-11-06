@@ -12,11 +12,10 @@ BasicDecorators.prototype.decorateClickable_ = function(obj) {
   }.bind(this));
 };
 
-
-/**
- * @param {{health}} spec
- */
 BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
+  _.defaults(spec, {
+    health: 0
+  });
   obj.health = spec.health;
   obj.dmg = function(dmg) {
     obj.health -= dmg;
@@ -24,19 +23,23 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
   };
 };
 
-
-/**
- * @param {{dmg}} spec
- */
 BasicDecorators.prototype.decorateDmgCollision_ = function(obj, spec) {
+  _.defaults(spec, {
+    dmg: 0
+  });
   obj.affect(function() {
     if (obj.dead) return;
     var collides = _.some(obj.collidePoints, function(p) {
       return obj.target.collides(p.x, p.y);
     });
     if (collides) {
-      obj.target.dmg(spec.dmg);
-      obj.dead = true;
+      // TODO(sugarman): Create additive property (e.g. canAvoidCollision).
+      if (obj.target.teleport && obj.target.teleport.ready) {
+        obj.target.teleport.use = true;
+      } else {
+        obj.target.dmg(spec.dmg);
+        obj.dead = true;
+      }
     }
   });
 };

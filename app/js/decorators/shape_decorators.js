@@ -5,10 +5,10 @@ ShapeDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'shape');
 };
 
-/**
- * @param {{radius}} spec
- */
 ShapeDecorators.prototype.decorateCircle_ = function(obj, spec) {
+  _.defaults(spec, {
+    radius: 0
+  });
   obj.radius = spec.radius;
   obj.collides = function(x, y) {
     var distance = Math.hypot(Math.abs(obj.x - x), Math.abs(obj.y - y));
@@ -16,11 +16,14 @@ ShapeDecorators.prototype.decorateCircle_ = function(obj, spec) {
   };
 };
 
+
 /**
- * @param {{length}} spec
  * @requires {obj.rotation}
  */
 ShapeDecorators.prototype.decorateLine_ = function(obj, spec) {
+  _.defaults(spec, {
+    length: 0
+  });
   obj.length = spec.length;
   obj.collidePoints = [];
   obj.act(function(dt) {
@@ -34,11 +37,11 @@ ShapeDecorators.prototype.decorateLine_ = function(obj, spec) {
   });
 };
 
-
-/**
- * @param {{text, size}} spec
- */
 ShapeDecorators.prototype.decorateText_ = function(obj, spec) {
+  _.defaults(spec, {
+    text: '',
+    size: 0
+  });
   obj.text = spec.text;
   obj.size = _.valueOrFn(spec.size);
 
