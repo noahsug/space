@@ -1,8 +1,5 @@
 var Renderer = di.service('Renderer', ['GameModel as gm', 'Screen', 'ctx']);
 
-Renderer.prototype.init = function() {
-};
-
 Renderer.prototype.update = function() {
   this.drawBackground_();
   _.each(this.gm_.entities, this.drawEntity_.bind(this));

@@ -1,7 +1,7 @@
 var Main = di.service('Main', [
   'Game', 'GameRunner', 'Mouse', 'Screen', 'window', 'Random']);
 
-Main.prototype.init = function() {
+Main.prototype.start = function() {
   this.on_('blur', function() {
     this.gameRunner_.stop();
   }, {running:true});
@@ -40,3 +40,7 @@ Main.prototype.on_ = function(event, fn, opt_req) {
     fn.call(this, e);
   }.bind(this));
 };
+
+di.start(function() {
+  di.get('Main').start();
+});

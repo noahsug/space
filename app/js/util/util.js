@@ -73,3 +73,24 @@ _.angle = function(x1, y1, x2, y2) {
   }
   return angle;
 };
+
+_.startsWith = function(str, prefix) {
+  return str.indexOf(prefix) == 0;
+};
+
+_.capitalize = function(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+_.uncapitalize = function(str) {
+  return str.charAt(0).toLowerCase() + str.slice(1);
+};
+
+_.parse = function(context, str) {
+  var obj = context;
+  _.each(str.split('.'), function(name) {
+    obj[name] = _.isDef(obj[name]) ? obj[name] : {};
+    obj = obj[name];
+  });
+  return obj;
+};

@@ -15,6 +15,24 @@ describe('Util function:', function() {
     });
   });
 
+  describe('parse', function() {
+    it('returns an existing value', function() {
+      var obj = {name: 'sally'};
+      expect(_.parse(obj, 'name')).toBe('sally');
+    });
+
+    it('creates a new value if needed', function() {
+      var obj = {};
+      _.parse(obj, 'name');
+      expect(_.parse(obj, 'name')).toBe(obj.name);
+    });
+
+    it('creates multiple new values if needed', function() {
+      var obj = {};
+      expect(_.parse(obj, 'name.firstName')).toBe(obj.name.firstName);
+    });
+  });
+
   describe('args', function() {
     it('returns the partitioned arguments as one array', function() {
       var result;

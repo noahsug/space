@@ -10,6 +10,7 @@ var Di = function Di() {
 };
 
 Di.prototype.ready = _.decorator.eventEmitter.eventFn('ready');
+Di.prototype.start = _.decorator.eventEmitter.eventFn('start');
 
 Di.prototype.constant = function(name, impl) {
   this.implsToInit_[name] = {type: 'constant', impl: impl, deps: []};
@@ -141,4 +142,5 @@ window.di = new Di();
 window.document.addEventListener("DOMContentLoaded", function() {
   di.ready();
   di.init();
+  di.start();
 });
