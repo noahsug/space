@@ -1,5 +1,5 @@
 var IntroScene = di.service('IntroScene', [
-  'GameModel as gm', 'Screen', 'Entity', 'EntityDecorator', 'gameplay']);
+  'GameModel as gm', 'Screen', 'Entity', 'EntityDecorator']);
 
 IntroScene.prototype.init = function() {
   this.gm_.scenes['intro'] = 'inactive';
@@ -8,7 +8,6 @@ IntroScene.prototype.init = function() {
 IntroScene.prototype.start = function() {
   this.gm_.scenes['intro'] = 'active';
   this.addEntities_();
-  this.setPlayerItems_();
 };
 
 IntroScene.prototype.addEntities_ = function() {
@@ -30,16 +29,8 @@ IntroScene.prototype.removeEntities_ = function() {
   delete this.gm_.entities['newGameBtn'];
 };
 
-IntroScene.prototype.setPlayerItems_ = function() {
-  this.gm_.player.inventory = [];
-  this.gm_.player.specs = this.gameplay_.init.player;
-};
-
 IntroScene.prototype.update = function(dt) {
   if (this.gm_.scenes['intro'] != 'active') return;
-
-  // SKIP INTRO.
-  this.gm_.entities['newGameBtn'].clicked = true;
 
   this.gm_.entities['newGameBtn'].y = this.screen_.height / 4;
   if (this.gm_.entities['newGameBtn'].clicked) {

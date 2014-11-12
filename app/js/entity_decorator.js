@@ -20,13 +20,10 @@ EntityDecorator.prototype.decorate = function(entity, entitySpec) {
  */
 EntityDecorator.prototype.addDecoratorObj = function(obj, opt_name) {
   var baseName = opt_name ? opt_name + '.' : '';
-  for (var fnName in obj) {
-    var fn = obj[fnName];
-    if (_.isFunction(fn) && _.startsWith(fnName, 'decorate')) {
-      var decoratorName = _.uncapitalize(fnName.slice('decorate'.length, -1));
-      this.addDecorator(baseName + decoratorName, fn.bind(obj));
-    }
-  }
+  var fns = _.getFns(obj, {prefix: 'decorate', suffix: '_'});
+  _.each(fns, function(fn, name) {
+    this.addDecorator(baseName + name, fn);
+  }, this);
 };
 
 /**

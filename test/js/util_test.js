@@ -140,4 +140,29 @@ describe('Util function:', function() {
       });
     });
   });
+
+  describe('getFns', function() {
+    it('extracts functions from an class', function() {
+      var calls = '';
+      var Dog = function() {};
+      Dog.prototype.barkLoud_ = function() { calls += 'loud'; };
+      Dog.prototype.barkSoft_ = function() {calls += 'soft';};
+      var sam = new Dog();
+      var fns = _.getFns(sam, {prefix: 'bark', suffix: '_'});
+
+      expect(calls).toBe('');
+      fns['loud']();
+      fns['soft']();
+      expect(calls).toBe('loudsoft');
+    });
+
+    it('binds the extracted functions to the instance', function() {
+      var Dog = function() {};
+      Dog.prototype.bark = function() { this.barked = true; };
+      var sam = new Dog();
+      var fns = _.getFns(sam);
+      fns['bark']();
+      expect(sam.barked).toBe(true);
+    });
+  });
 });

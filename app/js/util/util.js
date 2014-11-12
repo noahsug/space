@@ -94,3 +94,20 @@ _.parse = function(context, str) {
   });
   return obj;
 };
+
+_.getFns = function(obj, opt_options) {
+  var fnMap = {};
+  var op = _.defaults(opt_options || {}, {prefix: '', suffix: ''});
+  _.each(_.functions(obj), function(fnName) {
+    if (_.startsWith(fnName, op.prefix)) {
+      var nameLength = fnName.length - op.suffix.length;
+      var name = _.uncapitalize(fnName.slice(op.prefix.length, nameLength));
+      fnMap[name] = obj[fnName].bind(obj);
+    }
+  });
+  return fnMap;
+};
+
+_.key = function(obj) {
+  return _.keys(obj)[0];
+};

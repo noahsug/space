@@ -14,8 +14,11 @@ di.constant('gameplay', {
       'power.teleport': {cooldown: 2}
     },
 
-    items: {
-      'weapon.shotgun': {}
-    }
+    inventory: [
+      {'weapon.shotgun': {}},
+      {'power.teleport': {}},
+      {'weapon.laser': {}},
+      {'movement.radial': {speed: 135}}
+    ]
   }
 });

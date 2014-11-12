@@ -14,7 +14,7 @@ BattleScene.prototype.addEntities_ = function() {
   var ed = this.entityDecorator_;
 
   var player = this.entity_.create('ship');
-  ed.decorate(player, this.gm_.player.specs);
+  ed.decorate(player, this.gm_.player.spec);
   player.style = 'good';
   this.gm_.entities['player'] = player;
 

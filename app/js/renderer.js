@@ -1,5 +1,9 @@
 var Renderer = di.service('Renderer', ['GameModel as gm', 'Screen', 'ctx']);
 
+Renderer.prototype.init = function() {
+  this.drawFns_ = _.getFns(this, {prefix: 'draw', suffix: '_'});
+};
+
 Renderer.prototype.update = function() {
   this.drawBackground_();
   _.each(this.gm_.entities, this.drawEntity_.bind(this));
@@ -21,12 +25,8 @@ Renderer.prototype.drawEntity_ = function(entity) {
 };
 
 Renderer.prototype.getDrawFn_ = function(type) {
-  switch(type) {
-    case 'ship': return this.drawShip_.bind(this);
-    case 'splash': return this.drawSplash_.bind(this);
-    case 'btn': return this.drawBtn_.bind(this);
-    case 'laser': return this.drawLaser_.bind(this);
-  }
+  var drawFn = this.drawFns_[type];
+  if (drawFn) return drawFn;
   throw 'invalid entity type: ' + type;
 };
 
@@ -98,6 +98,38 @@ Renderer.prototype.drawLaser_ = function(entity, pos) {
   this.ctx_.lineTo(pos.x - entity.dx, pos.y - entity.dy);
   this.ctx_.closePath();
   this.ctx_.stroke();
+};
+
+Renderer.prototype.drawInventorySlot_ = function(entity, pos) {
+  this.ctx_.fillStyle = '#000000';
+  this.ctx_.lineWidth = 2;
+  this.ctx_.shadowBlur = 0;
+
+  var color = '#FFFFFF';
+  if (entity.equiped) {
+    color = '#44FF77';
+  }
+  this.ctx_.strokeStyle = this.ctx_.shadowColor = color;
+
+  this.ctx_.beginPath();
+  this.ctx_.arc(pos.x, pos.y, entity.radius - 1, 0, 2 * Math.PI, false);
+  this.ctx_.closePath();
+  this.ctx_.stroke();
+  this.ctx_.fill();
+
+  if (entity.item) {
+    this.drawItem_(entity.item, pos);
+  };
+};
+
+Renderer.prototype.drawItem_ = function(item, pos) {
+  var SIZE = 10;
+  this.ctx_.fillStyle = '#FFFFFF';
+  this.ctx_.font = SIZE + 'px Arial';
+  this.ctx_.textAlign = 'center';
+  this.ctx_.textBaseline = 'middle';
+  var text = _.last(_.key(item).split('.'));
+  this.ctx_.fillText(text, pos.x, pos.y);
 };
 
 Renderer.prototype.handleBattleCamera_ = function() {
