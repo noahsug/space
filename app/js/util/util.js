@@ -95,7 +95,7 @@ _.parse = function(context, str) {
   return obj;
 };
 
-_.getFns = function(obj, opt_options) {
+_.pickFunctions = function(obj, opt_options) {
   var fnMap = {};
   var op = _.defaults(opt_options || {}, {prefix: '', suffix: ''});
   _.each(_.functions(obj), function(fnName) {
@@ -110,4 +110,14 @@ _.getFns = function(obj, opt_options) {
 
 _.key = function(obj) {
   return _.keys(obj)[0];
+};
+
+_.value = function(obj) {
+  return _.values(obj)[0];
+};
+
+_.swap = function(obj, a, b) {
+  var temp = obj[a];
+  obj[a] = obj[b];
+  obj[b] = temp;
 };

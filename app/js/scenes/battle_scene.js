@@ -29,13 +29,18 @@ BattleScene.prototype.addEntities_ = function() {
   enemy.target = player;
 };
 
+BattleScene.prototype.removeEntities_ = function() {
+  this.gm_.entities = {};
+};
+
 BattleScene.prototype.update = function() {
   if (this.gm_.scenes['battle'] != 'active') return;
   var player = this.gm_.entities['player'];
   var enemy = this.gm_.entities['enemy'];
   if (player.dead || enemy.dead) {
     this.gm_.scenes['battle'] = 'inactive';
-    this.gm_.scenes['intro'] = 'start';
+    this.removeEntities_();
+    this.gm_.scenes['equip'] = 'start';
   }
 };
 

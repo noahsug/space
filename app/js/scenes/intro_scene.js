@@ -43,5 +43,6 @@ IntroScene.prototype.update = function(dt) {
 IntroScene.prototype.resolve = function(dt) {
   if (this.gm_.scenes['intro'] == 'start') {
     this.start();
+    this.update(dt);
   }
 };

@@ -141,14 +141,14 @@ describe('Util function:', function() {
     });
   });
 
-  describe('getFns', function() {
+  describe('pickFunctions', function() {
     it('extracts functions from an class', function() {
       var calls = '';
       var Dog = function() {};
       Dog.prototype.barkLoud_ = function() { calls += 'loud'; };
       Dog.prototype.barkSoft_ = function() {calls += 'soft';};
       var sam = new Dog();
-      var fns = _.getFns(sam, {prefix: 'bark', suffix: '_'});
+      var fns = _.pickFunctions(sam, {prefix: 'bark', suffix: '_'});
 
       expect(calls).toBe('');
       fns['loud']();
@@ -160,9 +160,25 @@ describe('Util function:', function() {
       var Dog = function() {};
       Dog.prototype.bark = function() { this.barked = true; };
       var sam = new Dog();
-      var fns = _.getFns(sam);
+      var fns = _.pickFunctions(sam);
       fns['bark']();
       expect(sam.barked).toBe(true);
+    });
+  });
+
+  describe('key', function() {
+    it('picks any key from an object', function() {
+      var guns = {shotgun: 'red'};
+      expect(_.key(guns)).toBe('shotgun');
+    });
+  });
+
+  describe('swap', function() {
+    it('swaps two properties on an object', function() {
+      var obj = {x: 5, y: 6};
+      _.swap(obj, 'x', 'y');
+      expect(obj.x).toBe(6);
+      expect(obj.y).toBe(5);
     });
   });
 });

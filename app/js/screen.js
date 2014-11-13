@@ -41,6 +41,7 @@ Screen.prototype.resize = function() {
 
   this.width = this.canvas_.width;
   this.height = this.canvas_.height;
+  this.portrait = this.width > this.height;
 };
 
 Screen.prototype.getUpscale_ = function() {

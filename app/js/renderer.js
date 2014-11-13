@@ -1,7 +1,7 @@
 var Renderer = di.service('Renderer', ['GameModel as gm', 'Screen', 'ctx']);
 
 Renderer.prototype.init = function() {
-  this.drawFns_ = _.getFns(this, {prefix: 'draw', suffix: '_'});
+  this.drawFns_ = _.pickFunctions(this, {prefix: 'draw', suffix: '_'});
 };
 
 Renderer.prototype.update = function() {
@@ -34,7 +34,7 @@ Renderer.prototype.drawSplash_ = function(entity, pos) {
   var title = 'SPACE.';
   var fontSize = Math.min(this.screen_.width / 4, this.screen_.height / 2);
   this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
-  this.ctx_.lineWidth = 1;
+  this.ctx_.lineWidth = 2;
   this.ctx_.fillStyle = '#FFFFFF';
   this.ctx_.shadowBlur = fontSize / 8;
   this.ctx_.font = 'bold ' + fontSize + 'px Arial';
@@ -65,7 +65,7 @@ Renderer.prototype.drawBtn_ = function(entity, pos) {
 
 Renderer.prototype.drawShip_ = function(entity, pos) {
   this.ctx_.fillStyle = '#000000';
-  this.ctx_.lineWidth = 2;
+  this.ctx_.lineWidth = 4;
   this.ctx_.shadowBlur = 4;
 
   var color = '#00FF00';
@@ -75,14 +75,14 @@ Renderer.prototype.drawShip_ = function(entity, pos) {
   this.ctx_.strokeStyle = this.ctx_.shadowColor = color;
 
   this.ctx_.beginPath();
-  this.ctx_.arc(pos.x, pos.y, entity.radius - 1, 0, 2 * Math.PI, false);
+  this.ctx_.arc(pos.x, pos.y, entity.radius - 2, 0, 2 * Math.PI, false);
   this.ctx_.closePath();
   this.ctx_.stroke();
   this.ctx_.fill();
 };
 
 Renderer.prototype.drawLaser_ = function(entity, pos) {
-  this.ctx_.lineWidth = 1;
+  this.ctx_.lineWidth = 2;
   this.ctx_.shadowBlur = 2;
 
   var color;
@@ -102,17 +102,17 @@ Renderer.prototype.drawLaser_ = function(entity, pos) {
 
 Renderer.prototype.drawInventorySlot_ = function(entity, pos) {
   this.ctx_.fillStyle = '#000000';
-  this.ctx_.lineWidth = 2;
+  this.ctx_.lineWidth = 4;
   this.ctx_.shadowBlur = 0;
 
   var color = '#FFFFFF';
-  if (entity.equiped) {
+  if (entity.equipped) {
     color = '#44FF77';
   }
   this.ctx_.strokeStyle = this.ctx_.shadowColor = color;
 
   this.ctx_.beginPath();
-  this.ctx_.arc(pos.x, pos.y, entity.radius - 1, 0, 2 * Math.PI, false);
+  this.ctx_.arc(pos.x, pos.y, entity.radius - 2, 0, 2 * Math.PI, false);
   this.ctx_.closePath();
   this.ctx_.stroke();
   this.ctx_.fill();
@@ -123,7 +123,7 @@ Renderer.prototype.drawInventorySlot_ = function(entity, pos) {
 };
 
 Renderer.prototype.drawItem_ = function(item, pos) {
-  var SIZE = 10;
+  var SIZE = 12;
   this.ctx_.fillStyle = '#FFFFFF';
   this.ctx_.font = SIZE + 'px Arial';
   this.ctx_.textAlign = 'center';

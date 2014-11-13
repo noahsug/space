@@ -20,7 +20,7 @@ EntityDecorator.prototype.decorate = function(entity, entitySpec) {
  */
 EntityDecorator.prototype.addDecoratorObj = function(obj, opt_name) {
   var baseName = opt_name ? opt_name + '.' : '';
-  var fns = _.getFns(obj, {prefix: 'decorate', suffix: '_'});
+  var fns = _.pickFunctions(obj, {prefix: 'decorate', suffix: '_'});
   _.each(fns, function(fn, name) {
     this.addDecorator(baseName + name, fn);
   }, this);
