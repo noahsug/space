@@ -9,7 +9,7 @@ Mouse.prototype.init = function() {
 };
 
 Mouse.prototype.onMouseMove = function(e) {
-  var pos = this.screen_.translateMouse(e.x, e.y);
+  var pos = this.screen_.screenToCanvas(e.x, e.y);
   this.x = pos.x;
   this.y = pos.y;
 };

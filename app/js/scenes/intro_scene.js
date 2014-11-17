@@ -17,7 +17,7 @@ IntroScene.prototype.addEntities_ = function() {
   this.gm_.entities['splash'] = splash;
 
   var newGameBtn = this.entity_.create('btn');
-  _.decorate(newGameBtn, d.shape.text, {text: 'NEW GAME', size: function() {
+  _.decorate(newGameBtn, d.shape.text, {text: 'START', size: function() {
     return Math.min(this.screen_.width / 16, this.screen_.height / 8);
   }.bind(this)});
   _.decorate(newGameBtn, d.clickable);

@@ -14,13 +14,13 @@ describe('screen', function() {
   });
 
   it('translates game coordinates into canvas coordinates', function() {
-    var pos = screen.translate(25, 40);
+    var pos = screen.canvasToDraw(25, 40);
     expect(pos.x).toBe(30);
     expect(pos.y).toBe(67.5);
   });
 
   it('translates mouse coordinates into canvas coordinates', function() {
-    var pos = screen.translateMouse(25, 40);
+    var pos = screen.screenToCanvas(25, 40);
     expect(pos.x).toBe(7.5);
     expect(pos.y).toBe(-7.5);
   });

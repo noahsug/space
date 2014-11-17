@@ -15,8 +15,16 @@ Screen.prototype.center = function(x, y) {
   this.y_ = y;
 };
 
-// Translate from mouse position to game position.
-Screen.prototype.translateMouse = function(x, y) {
+Screen.prototype.getCenter = function() {
+  return {x: this.x_, y: this.y_};
+};
+
+Screen.prototype.screenToDraw = function(x, y) {
+  var pos = this.screenToCanvas(x, y);
+  return this.canvasToDraw(pos.x, pos.y);
+};
+
+Screen.prototype.screenToCanvas = function(x, y) {
   var upscale = this.getUpscale_();
   return {
     x: x / upscale - this.width / 2 + this.x_,
@@ -24,8 +32,7 @@ Screen.prototype.translateMouse = function(x, y) {
   };
 };
 
-// Translate from game position to canvas draw position.
-Screen.prototype.translate = function(x, y) {
+Screen.prototype.canvasToDraw = function(x, y) {
   return {
     x: x + this.width / 2 - this.x_,
     y: y + this.height / 2 - this.y_

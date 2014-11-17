@@ -207,4 +207,24 @@ describe('Util function:', function() {
       expect(_.findIndexWhere(list, {x: 2})).toBe(-1);
     });
   });
+
+  describe('generateColor', function() {
+    it('Generates a color based on a passed in value in [0, 1]', function() {
+      color = _.generateColor(.5);
+      expect(color).toBe('#800000');
+    });
+  });
+
+  describe('generateGray', function() {
+    it('Generates a gray based on a passed in value in [0, 1]', function() {
+      color = _.generateGray(.5);
+      expect(color).toBe('#808080');
+    });
+  });
+
+  describe('repeat', function() {
+    it('Repeats a string n times', function() {
+      expect(_.repeat('hi', 3)).toBe('hihihi');
+    });
+  });
 });

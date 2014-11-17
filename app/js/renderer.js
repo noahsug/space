@@ -2,6 +2,7 @@ var Renderer = di.service('Renderer', ['GameModel as gm', 'Screen', 'ctx']);
 
 Renderer.prototype.init = function() {
   this.drawFns_ = _.pickFunctions(this, {prefix: 'draw', suffix: '_'});
+  this.skySeed_ = Math.random();
 };
 
 Renderer.prototype.update = function() {
@@ -15,12 +16,47 @@ Renderer.prototype.update = function() {
 Renderer.prototype.drawBackground_ = function() {
   this.ctx_.fillStyle = '#000000';
   this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
+  this.drawSky_();
+};
+
+Renderer.prototype.drawSky_ = function() {
+  var GRID_SIZE = 50;
+  var NUM_COLS = (this.screen_.width / GRID_SIZE);
+  var NUM_ROWS = (this.screen_.height / GRID_SIZE);
+  var center = this.screen_.getCenter();
+  var canvasCenter = this.screen_.canvasToDraw(center.x, center.y);
+  var offsetX = canvasCenter.x % GRID_SIZE;
+  var offsetY = canvasCenter.y % GRID_SIZE;
+  var start = this.screen_.screenToDraw(-GRID_SIZE, -GRID_SIZE);
+  start.x = start.x - start.x % GRID_SIZE + offsetX;
+  start.y = start.y - start.y % GRID_SIZE + offsetY;
+  for (var col = 0; col < NUM_COLS; col++) {
+    for (var row = 0; row < NUM_ROWS; row++) {
+      var x = start.x + GRID_SIZE * col;
+      var y = start.y + GRID_SIZE * row;
+      var seed =
+          this.skySeed_ + (canvasCenter.x - x) * 10000 + (canvasCenter.y - y);
+      x += _.pseudorandom(seed) * GRID_SIZE - GRID_SIZE / 2;
+      seed += .1;
+      y += _.pseudorandom(seed) * GRID_SIZE - GRID_SIZE / 2;
+      seed += .1;
+      var radius = 4 * _.pseudorandom(seed);
+      radius = radius * radius * radius / 60 + 1;
+      seed += .1;
+      var color = _.generateGray(_.pseudorandom(seed) * .7 + .15);
+      this.ctx_.fillStyle = color;
+      this.ctx_.beginPath();
+      this.ctx_.arc(x, y, radius, 0, 2 * Math.PI, false);
+      this.ctx_.closePath();
+      this.ctx_.fill();
+    }
+  }
 };
 
 Renderer.prototype.drawEntity_ = function(entity) {
   if (entity.dead) return;
   var draw = this.getDrawFn_(entity.type);
-  var pos = this.screen_.translate(entity.x, entity.y);
+  var pos = this.screen_.canvasToDraw(entity.x, entity.y);
   draw(entity, pos);
 };
 
@@ -31,7 +67,7 @@ Renderer.prototype.getDrawFn_ = function(type) {
 };
 
 Renderer.prototype.drawSplash_ = function(entity, pos) {
-  var title = 'SPACE.';
+  var title = 'COSMAL'; // TODO: Use triangle/square/circle for the A, C and O.
   var fontSize = Math.min(this.screen_.width / 4, this.screen_.height / 2);
   this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
   this.ctx_.lineWidth = 2;

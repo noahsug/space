@@ -142,3 +142,16 @@ _.findIndexWhere = function(list, attrs) {
     return matches(item);
   });
 };
+
+_.generateColor = function(r) {
+  return '#' + (r.toString(16) + '000000').slice(2, 8);
+};
+
+_.generateGray = function(r) {
+  var repeating = (r.toString(16) + '00').slice(2, 4);
+  return '#' + _.repeat(repeating, 3);
+};
+
+_.repeat = function(str, times) {
+  return new Array(times + 1).join(str);
+};
