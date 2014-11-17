@@ -128,8 +128,7 @@ Renderer.prototype.drawItem_ = function(item, pos) {
   this.ctx_.font = SIZE + 'px Arial';
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'middle';
-  var text = _.last(_.key(item).split('.'));
-  this.ctx_.fillText(text, pos.x, pos.y);
+  this.ctx_.fillText(item.name, pos.x, pos.y);
 };
 
 Renderer.prototype.handleBattleCamera_ = function() {

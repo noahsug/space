@@ -8,29 +8,37 @@ EntityDecorator.prototype.getDecorators = function() {
   return this.decorators_;
 };
 
-EntityDecorator.prototype.decorate = function(entity, entitySpec) {
-  _.each(entitySpec, function(value, name) {
-    _.decorate(entity, _.parse(this.decorators_, name), value);
+EntityDecorator.prototype.decorate = function(entity, items) {
+  _.each(items, function(item) {
+    this.validateItem_(item);
+    var decorator = this.decorators_[item.category][item.type];
+    _.decorate(entity, decorator, item.spec);
   }, this);
 };
 
+EntityDecorator.prototype.validateItem_ = function(item) {
+  var ERROR_MSG = 'Invalid decorator: ' + item.category + '.' + item.type;
+  var category = this.decorators_[item.category];
+  _.assert(category && category[item.type], ERROR_MSG);
+};
+
 /**
- * Automagically add all functions that start with 'decorate' as decorators.
- * Functions must be of the format 'decorateMyDecorator_'.
+ * Automagically add all functions that start with 'decorate' and end with '_'
+ * as decorators (e.g. 'decorateMoveFast_').
  */
-EntityDecorator.prototype.addDecoratorObj = function(obj, opt_name) {
-  var baseName = opt_name ? opt_name + '.' : '';
+EntityDecorator.prototype.addDecoratorObj = function(obj, category) {
   var fns = _.pickFunctions(obj, {prefix: 'decorate', suffix: '_'});
-  _.each(fns, function(fn, name) {
-    this.addDecorator(baseName + name, fn);
+  _.each(fns, function(fn, type) {
+    this.addDecorator(category, type, fn);
   }, this);
 };
 
 /**
  * Name can look like 'weapon.laser' and it will be magically parsed correctly.
  */
-EntityDecorator.prototype.addDecorator = function(name, fn) {
-  var obj = _.parse(this.decorators_, name);
-  obj.name = name;
-  obj.decorate = fn;
+EntityDecorator.prototype.addDecorator = function(category, type, fn) {
+  var decorator = {name: category + '.' + type, decorate: fn};
+  this.decorators_[category] = this.decorators_[category] || {};
+  this.decorators_[category][type] = decorator;
+  if (category == 'base') this.decorators_[type] = decorator;
 };

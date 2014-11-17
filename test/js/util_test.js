@@ -177,8 +177,34 @@ describe('Util function:', function() {
     it('swaps two properties on an object', function() {
       var obj = {x: 5, y: 6};
       _.swap(obj, 'x', 'y');
-      expect(obj.x).toBe(6);
-      expect(obj.y).toBe(5);
+      expect(obj).toEqual({x: 6, y: 5});
+    });
+  });
+
+  describe('modObj', function() {
+    it('adds values to an object', function() {
+      var obj = {x: 1, y: 2, z: 3};
+      _.modObj(obj, {x: 5, y: 6});
+      expect(obj).toEqual({x: 6, y: 8, z: 3});
+    });
+  });
+
+  describe('findIndex', function() {
+    it('returns index of first item that passes the test', function() {
+      var list = [{x: 1}, {y: 2}, {z: 3}];
+      var isEven = function(o) { return _.value(o) % 2 == 0; };
+      var isOdd = function(o) { return _.value(o) % 2 == 1; };
+      expect(_.findIndex(list, isEven)).toBe(1);
+      expect(_.findIndex(list, isOdd)).toBe(0);
+    });
+  });
+
+  describe('findIndexWhere', function() {
+    it('returns index of first item that matches the attrs', function() {
+      var list = [{x: 1}, {y: 2}, {z: 3}];
+      expect(_.findIndexWhere(list, {y: 2})).toBe(1);
+      expect(_.findIndexWhere(list, {y: 3})).toBe(-1);
+      expect(_.findIndexWhere(list, {x: 2})).toBe(-1);
     });
   });
 });

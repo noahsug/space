@@ -121,3 +121,24 @@ _.swap = function(obj, a, b) {
   obj[a] = obj[b];
   obj[b] = temp;
 };
+
+_.modObj = function(obj, mod) {
+  _.each(obj, function(v, k) {
+    obj[k] += mod[k] || 0;
+  });
+  return obj;
+};
+
+_.findIndex = function(list, fn) {
+  for (var i = 0; i < list.length; i++) {
+    if (fn(list[i])) return i;
+  }
+  return -1;
+};
+
+_.findIndexWhere = function(list, attrs) {
+  var matches = _.matches(attrs);
+  return _.findIndex(list, function(item) {
+    return matches(item);
+  });
+};

@@ -45,9 +45,12 @@ EquipScene.prototype.createInventory_ = function() {
   }, this);
 };
 
+EquipScene.prototype.getEquippedItemIndex_ = function(item) {
+  return _.findIndexWhere(this.gm_.player.spec, {name: item.name});
+};
+
 EquipScene.prototype.isEquipped_ = function(item) {
-  var equippedSpec = this.gm_.player.spec[_.key(item)];
-  return _.isEqual(equippedSpec, _.value(item));
+  return this.getEquippedItemIndex_(item) != -1;
 };
 
 EquipScene.prototype.positionInventory_ = function() {
@@ -57,6 +60,7 @@ EquipScene.prototype.positionInventory_ = function() {
   var x = -((COLS - 1) * (WIDTH + GAP)) / 2;
   for (var i = 0; i < this.inventory_.length / 2; i ++) {
     var dy = (WIDTH + GAP) / 2;
+
     var topSlot = this.inventory_[i];
     topSlot.x = x;
     topSlot.y = -dy;
@@ -68,7 +72,6 @@ EquipScene.prototype.positionInventory_ = function() {
     x += WIDTH + GAP;
 
     if (!this.screen_.portrait) {
-      console.log('yes');
       _.swap(bottomSlot, 'x', 'y');
       _.swap(topSlot, 'x', 'y');
     }
@@ -87,11 +90,11 @@ EquipScene.prototype.update = function() {
   _.each(this.inventory_, function(slot, i) {
     if (slot.item && slot.clicked) {
       slot.equipped = !slot.equipped;
-      var name = _.key(slot.item);
       if (slot.equipped) {
-        this.gm_.player.spec[name] = _.value(slot.item);
+        this.gm_.player.spec.push(slot.item);
       } else {
-        delete this.gm_.player.spec[name];
+        var equipIndex = this.getEquippedItemIndex_(slot.item);
+        this.gm_.player.spec.splice(equipIndex, 1);
       }
     }
   }, this);

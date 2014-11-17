@@ -2,7 +2,7 @@ var BasicDecorators = di.service('BasicDecorators', [
   'EntityDecorator', 'Mouse']);
 
 BasicDecorators.prototype.init = function() {
-  this.entityDecorator_.addDecoratorObj(this);
+  this.entityDecorator_.addDecoratorObj(this, 'base');
 };
 
 BasicDecorators.prototype.decorateClickable_ = function(obj) {
