@@ -2,6 +2,7 @@ var Renderer = di.service('Renderer', ['GameModel as gm', 'Screen', 'ctx']);
 
 Renderer.prototype.init = function() {
   this.drawFns_ = _.pickFunctions(this, {prefix: 'draw', suffix: '_'});
+  this.nightSky_ = {};
   this.skySeed_ = Math.random();
 };
 
@@ -20,33 +21,37 @@ Renderer.prototype.drawBackground_ = function() {
 };
 
 Renderer.prototype.drawSky_ = function() {
+  var r = new SeededRandom();
   var GRID_SIZE = 50;
-  var NUM_COLS = (this.screen_.width / GRID_SIZE);
-  var NUM_ROWS = (this.screen_.height / GRID_SIZE);
+  var NUM_COLS = (this.screen_.width / GRID_SIZE) + 2;
+  var NUM_ROWS = (this.screen_.height / GRID_SIZE) + 2;
   var center = this.screen_.getCenter();
   var canvasCenter = this.screen_.canvasToDraw(center.x, center.y);
   var offsetX = canvasCenter.x % GRID_SIZE;
   var offsetY = canvasCenter.y % GRID_SIZE;
-  var start = this.screen_.screenToDraw(-GRID_SIZE, -GRID_SIZE);
+  var start = this.screen_.screenToDraw(-GRID_SIZE * 2, -GRID_SIZE * 2);
   start.x = start.x - start.x % GRID_SIZE + offsetX;
   start.y = start.y - start.y % GRID_SIZE + offsetY;
   for (var col = 0; col < NUM_COLS; col++) {
     for (var row = 0; row < NUM_ROWS; row++) {
       var x = start.x + GRID_SIZE * col;
       var y = start.y + GRID_SIZE * row;
-      var seed =
-          this.skySeed_ + (canvasCenter.x - x) * 10000 + (canvasCenter.y - y);
-      x += _.pseudorandom(seed) * GRID_SIZE - GRID_SIZE / 2;
-      seed += .1;
-      y += _.pseudorandom(seed) * GRID_SIZE - GRID_SIZE / 2;
-      seed += .1;
-      var radius = 4 * _.pseudorandom(seed);
-      radius = radius * radius * radius / 60 + 1;
-      seed += .1;
-      var color = _.generateGray(_.pseudorandom(seed) * .7 + .15);
-      this.ctx_.fillStyle = color;
+      var key = this.skySeed_ +
+          (canvasCenter.x - x) * 10000 + (canvasCenter.y - y);
+      var star = this.nightSky_[key];
+      if (!star) {
+        star = this.nightSky_[key] = {};
+        r.seed(key);
+        star.x = x + r.nextInt(GRID_SIZE) - GRID_SIZE / 2;
+        star.y = y + r.nextInt(GRID_SIZE) - GRID_SIZE / 2;
+        star.radius = Math.pow(r.nextInt(4), 2) / 14 + .75;
+        var colorValue = r.next() * .7 + .15;
+        if (star.radius > 1.5 && colorValue < .25) colorValue += .25;
+        star.color = _.generateGray(colorValue);
+      }
+      this.ctx_.fillStyle = star.color;
       this.ctx_.beginPath();
-      this.ctx_.arc(x, y, radius, 0, 2 * Math.PI, false);
+      this.ctx_.arc(star.x, star.y, star.radius, 0, 2 * Math.PI, false);
       this.ctx_.closePath();
       this.ctx_.fill();
     }

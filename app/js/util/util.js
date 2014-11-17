@@ -155,3 +155,11 @@ _.generateGray = function(r) {
 _.repeat = function(str, times) {
   return new Array(times + 1).join(str);
 };
+
+_.class = {};
+_.class.extend = function(destination, source) {
+  _.functions(source).forEach(function(fnName) {
+    destination[fnName] = source[fnName].bind(source);
+  });
+  return destination;
+};
