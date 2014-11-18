@@ -3,55 +3,47 @@ var Renderer = di.service('Renderer', ['GameModel as gm', 'Screen', 'ctx']);
 Renderer.prototype.init = function() {
   this.drawFns_ = _.pickFunctions(this, {prefix: 'draw', suffix: '_'});
   this.nightSky_ = {};
-  this.skySeed_ = Math.random();
 };
 
-Renderer.prototype.update = function() {
+Renderer.prototype.update = function(dt) {
+  this.handleCamera_(dt);
   this.drawBackground_();
   _.each(this.gm_.entities, this.drawEntity_.bind(this));
-  if (this.gm_.scenes['battle']) {
-    this.handleBattleCamera_();
-  }
 };
 
 Renderer.prototype.drawBackground_ = function() {
+  this.ctx_.save();
   this.ctx_.fillStyle = '#000000';
   this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
   this.drawSky_();
+  this.ctx_.restore();
 };
 
 Renderer.prototype.drawSky_ = function() {
-  var r = new SeededRandom();
-  var GRID_SIZE = 50;
-  var NUM_COLS = (this.screen_.width / GRID_SIZE) + 2;
+  var GRID_SIZE = 30;
+  var NUM_COLS = (this.screen_.width / GRID_SIZE)  + 2;
   var NUM_ROWS = (this.screen_.height / GRID_SIZE) + 2;
-  var center = this.screen_.getCenter();
-  var canvasCenter = this.screen_.canvasToDraw(center.x, center.y);
-  var offsetX = canvasCenter.x % GRID_SIZE;
-  var offsetY = canvasCenter.y % GRID_SIZE;
-  var start = this.screen_.screenToDraw(-GRID_SIZE * 2, -GRID_SIZE * 2);
-  start.x = start.x - start.x % GRID_SIZE + offsetX;
-  start.y = start.y - start.y % GRID_SIZE + offsetY;
+  var start = this.screen_.screenToCanvas(-GRID_SIZE, -GRID_SIZE, 2);
+  start.x = Math.floor(start.x - start.x % GRID_SIZE);
+  start.y = Math.floor(start.y - start.y % GRID_SIZE);
   for (var col = 0; col < NUM_COLS; col++) {
     for (var row = 0; row < NUM_ROWS; row++) {
       var x = start.x + GRID_SIZE * col;
       var y = start.y + GRID_SIZE * row;
-      var key = this.skySeed_ +
-          (canvasCenter.x - x) * 10000 + (canvasCenter.y - y);
-      var star = this.nightSky_[key];
-      if (!star) {
-        star = this.nightSky_[key] = {};
-        r.seed(key);
-        star.x = x + r.nextInt(GRID_SIZE) - GRID_SIZE / 2;
-        star.y = y + r.nextInt(GRID_SIZE) - GRID_SIZE / 2;
-        star.radius = Math.pow(r.nextInt(4), 2) / 14 + .75;
-        var colorValue = r.next() * .7 + .15;
-        if (star.radius > 1.5 && colorValue < .25) colorValue += .25;
-        star.color = _.generateGray(colorValue);
+      var key = x * 10000 + y;
+      if (!this.nightSky_[key]) {
+        this.nightSky_[key] = {
+          x: x + _.random(GRID_SIZE) - GRID_SIZE / 2,
+          y: y + _.random(GRID_SIZE) - GRID_SIZE / 2,
+          radius: Math.pow(_.random(4), 3) / 64 + .5,
+          color: _.generateGray(Math.random() * .75 + .2)
+        };
       }
+      var star = this.nightSky_[key];
+      var pos = this.screen_.canvasToDraw(star.x, star.y, 2);
       this.ctx_.fillStyle = star.color;
       this.ctx_.beginPath();
-      this.ctx_.arc(star.x, star.y, star.radius, 0, 2 * Math.PI, false);
+      this.ctx_.arc(pos.x, pos.y, star.radius, 0, 2 * Math.PI, false);
       this.ctx_.closePath();
       this.ctx_.fill();
     }
@@ -60,9 +52,11 @@ Renderer.prototype.drawSky_ = function() {
 
 Renderer.prototype.drawEntity_ = function(entity) {
   if (entity.dead) return;
+  this.ctx_.save();
   var draw = this.getDrawFn_(entity.type);
   var pos = this.screen_.canvasToDraw(entity.x, entity.y);
   draw(entity, pos);
+  this.ctx_.restore();
 };
 
 Renderer.prototype.getDrawFn_ = function(type) {
@@ -123,6 +117,7 @@ Renderer.prototype.drawShip_ = function(entity, pos) {
 };
 
 Renderer.prototype.drawLaser_ = function(entity, pos) {
+
   this.ctx_.lineWidth = 2;
   this.ctx_.shadowBlur = 2;
 
@@ -172,22 +167,23 @@ Renderer.prototype.drawItem_ = function(item, pos) {
   this.ctx_.fillText(item.name, pos.x, pos.y);
 };
 
-Renderer.prototype.handleBattleCamera_ = function() {
-  var e1 = this.gm_.entities['player'];
-  var e2 = this.gm_.entities['enemy'];
+var MAX_CAMERA_SPEED = 20;
+var MAX_ZOOM_SPEED = 20000;
+Renderer.prototype.handleCamera_ = function(dt) {
+  if (this.gm_.scenes['battle'] == 'active') {
+    // Pan camera.
+    var e1 = this.gm_.entities['player'];
+    var e2 = this.gm_.entities['enemy'];
+    var target = {x: (e1.x + e2.x) / 2, y: (e1.y + e2.y) / 2};
+    _.moveTowards(this.screen_, target, dt * MAX_CAMERA_SPEED);
 
-  //var x = (e1.x + e2.x) / 2;
-  //var y = (e1.y + e2.y) / 2;
-  //this.screen_.center(e2.x, e2.y);
-
-  //var xOffset = Math.abs(e1.x - x);
-  //if (xOffset > this.screen_.width / 2) {
-  //  this.screen_.setSurfaceArea((xOffset + 20) * 2 * this.screen_.height);
-  //  this.update();
-  //}
-  //var yOffset = Math.abs(e1.y - y);
-  //if (yOffset > this.screen_.height / 2) {
-  //  this.screen_.setSurfaceArea((yOffset + 20) * 2 * this.screen_.width);
-  //  this.update();
-  //}
+    // Zoom camera.
+    var dx = Math.abs(e1.x - this.screen_.x) - this.screen_.width / 2;
+    var dy = Math.abs(e1.y - this.screen_.y) - this.screen_.height / 2;
+    if (dx > -40 || dy > -40) {
+      this.screen_.zoom(-MAX_ZOOM_SPEED * dt);
+    } else if (dx < -100 && dy < -100) {
+      this.screen_.zoom(MAX_ZOOM_SPEED * dt);
+    }
+  }
 };

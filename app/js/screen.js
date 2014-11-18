@@ -10,13 +10,14 @@ Screen.prototype.setSurfaceArea = function(area) {
   this.resize();
 };
 
-Screen.prototype.center = function(x, y) {
-  this.x_ = x;
-  this.y_ = y;
+Screen.prototype.zoom = function(amount) {
+  this.surfaceArea_ -= amount;
+  this.resize();
 };
 
-Screen.prototype.getCenter = function() {
-  return {x: this.x_, y: this.y_};
+Screen.prototype.center = function(x, y) {
+  this.x = x;
+  this.y = y;
 };
 
 Screen.prototype.screenToDraw = function(x, y) {
@@ -24,18 +25,20 @@ Screen.prototype.screenToDraw = function(x, y) {
   return this.canvasToDraw(pos.x, pos.y);
 };
 
-Screen.prototype.screenToCanvas = function(x, y) {
+Screen.prototype.screenToCanvas = function(x, y, opt_z) {
   var upscale = this.getUpscale_();
+  var z = opt_z || 1;
   return {
-    x: x / upscale - this.width / 2 + this.x_,
-    y: y / upscale - this.height / 2 + this.y_
+    x: x / upscale - this.width / 2 + this.x / z,
+    y: y / upscale - this.height / 2 + this.y / z
   };
 };
 
-Screen.prototype.canvasToDraw = function(x, y) {
+Screen.prototype.canvasToDraw = function(x, y, opt_z) {
+  var z = opt_z || 1;
   return {
-    x: x + this.width / 2 - this.x_,
-    y: y + this.height / 2 - this.y_
+    x: x + this.width / 2 - this.x / z,
+    y: y + this.height / 2 - this.y / z
   };
 };
 

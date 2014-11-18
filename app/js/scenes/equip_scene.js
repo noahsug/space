@@ -62,12 +62,12 @@ EquipScene.prototype.positionInventory_ = function() {
     var dy = (WIDTH + GAP) / 2;
 
     var topSlot = this.inventory_[i];
-    topSlot.x = x;
-    topSlot.y = -dy;
+    topSlot.x = this.screen_.x + x;
+    topSlot.y = this.screen_.y - dy;
 
     var bottomSlot = this.inventory_[i + this.inventory_.length / 2];
-    bottomSlot.x = x;
-    bottomSlot.y = dy;
+    bottomSlot.x = topSlot.x;
+    bottomSlot.y = this.screen_.y + dy;
 
     x += WIDTH + GAP;
 
@@ -100,8 +100,8 @@ EquipScene.prototype.update = function() {
   }, this);
 
   var exitBtn = this.gm_.entities['exitBtn'];
-  exitBtn.x = this.screen_.width / 2 - 30;
-  exitBtn.y = -this.screen_.height / 2 + 30;
+  exitBtn.x = this.screen_.x + this.screen_.width / 2 - 30;
+  exitBtn.y = this.screen_.y + -this.screen_.height / 2 + 30;
 
   if (exitBtn.clicked) {
     this.gm_.scenes['equip'] = 'inactive';

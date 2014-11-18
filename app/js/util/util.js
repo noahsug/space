@@ -156,6 +156,15 @@ _.repeat = function(str, times) {
   return new Array(times + 1).join(str);
 };
 
+_.moveTowards = function(source, target, maxDistance) {
+  var dx = target.x - source.x;
+  var dy = target.y - source.y;
+  var d = Math.hypot(dx, dy);
+  var r = Math.min(d, maxDistance) / d;
+  source.x += dx * r;
+  source.y += dy * r;
+};
+
 _.class = {};
 _.class.extend = function(destination, source) {
   _.functions(source).forEach(function(fnName) {

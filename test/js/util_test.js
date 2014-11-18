@@ -227,4 +227,18 @@ describe('Util function:', function() {
       expect(_.repeat('hi', 3)).toBe('hihihi');
     });
   });
+
+  describe('moveTowards', function() {
+    it('Moves a point closer to another point', function() {
+      var p1 = {x: 4, y: 5};
+      _.moveTowards(p1, {x: 7, y: 9}, 2.5);
+      expect(p1).toEqual({x: 5.5, y: 7});
+    });
+
+    it('Doesn\'t move farther then the target point', function() {
+      var p1 = {x: 4, y: 5};
+      _.moveTowards(p1, {x: 7, y: 9}, 6);
+      expect(p1).toEqual({x: 7, y: 9});
+    });
+  });
 });

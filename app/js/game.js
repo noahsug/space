@@ -7,8 +7,8 @@ Game.prototype.start = function() {
   this.nextAction_ = 0;
   this.setPlayerItems_();
   this.scenes_ = [this.introScene_, this.battleScene_, this.equipScene_];
-  this.introScene_.start();
-  //this.battleScene_.start();
+  //this.introScene_.start();
+  this.battleScene_.start();
   //this.equipScene_.start();
 };
 
