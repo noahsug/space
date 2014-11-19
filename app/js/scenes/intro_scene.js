@@ -32,7 +32,8 @@ IntroScene.prototype.removeEntities_ = function() {
 IntroScene.prototype.update = function(dt) {
   if (this.gm_.scenes['intro'] != 'active') return;
 
-  this.gm_.entities['newGameBtn'].y = this.screen_.height / 4;
+  this.gm_.entities['newGameBtn'].y = this.screen_.y + this.screen_.height / 4;
+  this.gm_.entities['newGameBtn'].x = this.screen_.x;
   if (this.gm_.entities['newGameBtn'].clicked) {
     this.gm_.scenes['intro'] = 'inactive';
     this.removeEntities_();

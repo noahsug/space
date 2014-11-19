@@ -163,6 +163,13 @@ _.moveTowards = function(source, target, maxDistance) {
   var r = Math.min(d, maxDistance) / d;
   source.x += dx * r;
   source.y += dy * r;
+  return d <= maxDistance;
+};
+
+_.distance = function(p1, p2) {
+  var dx = p2.x - p1.x;
+  var dy = p2.y - p1.y;
+  return Math.hypot(dx, dy);
 };
 
 _.class = {};

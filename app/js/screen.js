@@ -1,5 +1,7 @@
 var Screen = di.service('Screen', ['window', 'canvas']);
 
+Screen.DESIRED_SURFACE_AREA = 134400;
+
 Screen.prototype.init = function() {
   this.resize();
   this.center(0, 0);
@@ -8,6 +10,10 @@ Screen.prototype.init = function() {
 Screen.prototype.setSurfaceArea = function(area) {
   this.surfaceArea_ = area;
   this.resize();
+};
+
+Screen.prototype.getSurfaceArea = function() {
+  return this.surfaceArea_;
 };
 
 Screen.prototype.zoom = function(amount) {

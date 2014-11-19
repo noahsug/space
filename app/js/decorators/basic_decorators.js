@@ -43,3 +43,7 @@ BasicDecorators.prototype.decorateDmgCollision_ = function(obj, spec) {
     }
   });
 };
+
+BasicDecorators.prototype.decoratePaused_ = function(obj) {
+  obj.act = obj.affect = obj.resolve = obj.update = Function;
+};

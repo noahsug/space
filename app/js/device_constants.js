@@ -1,9 +1,19 @@
 di.constant('window', window);
 
 di.ready(function() {
-  var canvas = window.document.getElementsByTagName('canvas')[0];
+  var canvas = window.document.getElementById('fg');
   di.constant('canvas', canvas);
   di.constant('ctx', canvas.getContext('2d'));
+
+  var bgs = [];
+  var bgCtxs = [];
+  for (var i = 0; i < 3; i++) {
+    var canvas = window.document.getElementById('bg' + (i + 1));
+    bgs.push(canvas);
+    bgCtxs.push(canvas.getContext('2d'));
+  }
+  di.constant('bgCanvas', bgs);
+  di.constant('bgCtx', canvas.getContext('2d'));
 });
 
 di.constant('requestAnimationFrame',

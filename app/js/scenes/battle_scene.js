@@ -22,11 +22,20 @@ BattleScene.prototype.addEntities_ = function() {
   ed.decorate(enemy, this.gameplay_.init.enemy);
   this.gm_.entities['enemy'] = enemy;
 
-  player.y = 100;
-  enemy.y = -100;
+  player.y = this.screen_.y + 100;
+  player.x = this.screen_.x;
+  enemy.y = this.screen_.y - 100;
+  enemy.x = this.screen_.x;
 
   player.target = enemy;
   enemy.target = player;
+};
+
+BattleScene.prototype.pauseEntities_ = function() {
+  var d = this.entityDecorator_.getDecorators();
+  _.each(this.gm_.entities, function(e) {
+    _.decorate(e, d.paused);
+  });
 };
 
 BattleScene.prototype.removeEntities_ = function() {
@@ -34,10 +43,14 @@ BattleScene.prototype.removeEntities_ = function() {
 };
 
 BattleScene.prototype.update = function() {
-  if (this.gm_.scenes['battle'] != 'active') return;
-  var player = this.gm_.entities['player'];
-  var enemy = this.gm_.entities['enemy'];
-  if (player.dead || enemy.dead) {
+  if (this.gm_.scenes['battle'] == 'active') {
+    var player = this.gm_.entities['player'];
+    var enemy = this.gm_.entities['enemy'];
+    if (player.dead || enemy.dead) {
+      this.gm_.scenes['battle'] = 'transition';
+      this.pauseEntities_();
+    }
+  } else if (this.gm_.scenes['battle'] == 'transitionOver') {
     this.gm_.scenes['battle'] = 'inactive';
     this.removeEntities_();
     this.gm_.scenes['equip'] = 'start';
