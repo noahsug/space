@@ -73,3 +73,117 @@ _.angle = function(x1, y1, x2, y2) {
   }
   return angle;
 };
+
+_.startsWith = function(str, prefix) {
+  return str.indexOf(prefix) == 0;
+};
+
+_.capitalize = function(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+_.uncapitalize = function(str) {
+  return str.charAt(0).toLowerCase() + str.slice(1);
+};
+
+_.parse = function(context, str) {
+  var obj = context;
+  _.each(str.split('.'), function(name) {
+    obj[name] = _.isDef(obj[name]) ? obj[name] : {};
+    obj = obj[name];
+  });
+  return obj;
+};
+
+_.pickFunctions = function(obj, opt_options) {
+  var fnMap = {};
+  var op = _.defaults(opt_options || {}, {prefix: '', suffix: ''});
+  _.each(_.functions(obj), function(fnName) {
+    if (_.startsWith(fnName, op.prefix)) {
+      var nameLength = fnName.length - op.suffix.length;
+      var name = _.uncapitalize(fnName.slice(op.prefix.length, nameLength));
+      fnMap[name] = obj[fnName].bind(obj);
+    }
+  });
+  return fnMap;
+};
+
+_.key = function(obj) {
+  return _.keys(obj)[0];
+};
+
+_.value = function(obj) {
+  return _.values(obj)[0];
+};
+
+_.swap = function(obj, a, b) {
+  var temp = obj[a];
+  obj[a] = obj[b];
+  obj[b] = temp;
+};
+
+_.modObj = function(obj, mod) {
+  _.each(obj, function(v, k) {
+    obj[k] += mod[k] || 0;
+  });
+  return obj;
+};
+
+_.findIndex = function(list, fn) {
+  for (var i = 0; i < list.length; i++) {
+    if (fn(list[i])) return i;
+  }
+  return -1;
+};
+
+_.findIndexWhere = function(list, attrs) {
+  var matches = _.matches(attrs);
+  return _.findIndex(list, function(item) {
+    return matches(item);
+  });
+};
+
+_.generateColor = function(r) {
+  return '#' + (r.toString(16) + '000000').slice(2, 8);
+};
+
+_.generateGray = function(r) {
+  var repeating = (r.toString(16) + '00').slice(2, 4);
+  return '#' + _.repeat(repeating, 3);
+};
+
+_.repeat = function(str, times) {
+  return new Array(times + 1).join(str);
+};
+
+_.moveTowards = function(source, target, maxDistance) {
+  var dx = target.x - source.x;
+  var dy = target.y - source.y;
+  var d = Math.hypot(dx, dy);
+  var r = Math.min(d, maxDistance) / d;
+  source.x += dx * r;
+  source.y += dy * r;
+  return d <= maxDistance;
+};
+
+_.distance = function(p1, p2) {
+  var dx = p2.x - p1.x;
+  var dy = p2.y - p1.y;
+  return Math.hypot(dx, dy);
+};
+
+_.generate = function(generator, length, opt_thisObj) {
+  var list = [];
+  for (var i = 0; i < length; i++) {
+    list.push(generator.call(opt_thisObj, i));
+  }
+  return list;
+};
+
+_.class = {};
+_.class.extend = function(destination, source) {
+  _.functions(source).forEach(function(fnName) {
+    destination[fnName] = source[fnName].bind(source);
+  });
+  return destination;
+};

@@ -11,15 +11,15 @@ IntroScene.prototype.start = function() {
 };
 
 IntroScene.prototype.addEntities_ = function() {
-  var d = this.entityDecorator_;
+  var d = this.entityDecorator_.getDecorators();
 
   var splash = this.entity_.create('splash');
   this.gm_.entities['splash'] = splash;
 
   var newGameBtn = this.entity_.create('btn');
-  _.decorate(newGameBtn, d.shape.text, 'NEW GAME', function() {
+  _.decorate(newGameBtn, d.shape.text, {text: 'START', size: function() {
     return Math.min(this.screen_.width / 16, this.screen_.height / 8);
-  }.bind(this));
+  }.bind(this)});
   _.decorate(newGameBtn, d.clickable);
   this.gm_.entities['newGameBtn'] = newGameBtn;
 };
@@ -31,7 +31,9 @@ IntroScene.prototype.removeEntities_ = function() {
 
 IntroScene.prototype.update = function(dt) {
   if (this.gm_.scenes['intro'] != 'active') return;
-  this.gm_.entities['newGameBtn'].y = this.screen_.height / 4;
+
+  this.gm_.entities['newGameBtn'].y = this.screen_.y + this.screen_.height / 4;
+  this.gm_.entities['newGameBtn'].x = this.screen_.x;
   if (this.gm_.entities['newGameBtn'].clicked) {
     this.gm_.scenes['intro'] = 'inactive';
     this.removeEntities_();
@@ -42,5 +44,6 @@ IntroScene.prototype.update = function(dt) {
 IntroScene.prototype.resolve = function(dt) {
   if (this.gm_.scenes['intro'] == 'start') {
     this.start();
+    this.update(dt);
   }
 };
