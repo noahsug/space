@@ -172,6 +172,14 @@ _.distance = function(p1, p2) {
   return Math.hypot(dx, dy);
 };
 
+_.generate = function(generator, length, opt_thisObj) {
+  var list = [];
+  for (var i = 0; i < length; i++) {
+    list.push(generator.call(opt_thisObj, i));
+  }
+  return list;
+};
+
 _.class = {};
 _.class.extend = function(destination, source) {
   _.functions(source).forEach(function(fnName) {

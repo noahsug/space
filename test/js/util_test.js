@@ -241,4 +241,13 @@ describe('Util function:', function() {
       expect(p1).toEqual({x: 7, y: 9});
     });
   });
+
+  describe('generate', function() {
+    it('generates a list by calling a function n times', function() {
+      var list = _.generate(function(i) {
+        return i * i;
+      }, 4);
+      expect(list).toEqual([0, 1, 4, 9]);
+    });
+  });
 });
