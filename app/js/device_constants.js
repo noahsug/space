@@ -12,8 +12,8 @@ di.ready(function() {
     bgs.push(canvas);
     bgCtxs.push(canvas.getContext('2d'));
   }
-  di.constant('bgCanvas', bgs);
-  di.constant('bgCtx', canvas.getContext('2d'));
+  di.constant('bgCanvasList', bgs);
+  di.constant('bgCtxList', bgCtxs);
 });
 
 di.constant('requestAnimationFrame',

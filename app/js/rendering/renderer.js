@@ -131,7 +131,7 @@ var TRANSITION_CAMERA_SPEED = 100;
 var TRANSITION_ZOOM_SPEED = 80000;
 Renderer.prototype.handleCamera_ = function(dt) {
   if (this.gm_.scenes['intro'] == 'active' ||
-     this.gm_.scenes['equip'] == 'active') {
+    this.gm_.scenes['equip'] == 'active') {
     this.screen_.x -= INTRO_SCROLL_SPEED * dt;
     this.screen_.y -= INTRO_SCROLL_SPEED * dt;
   }
