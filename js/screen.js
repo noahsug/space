@@ -1,4 +1,4 @@
-var Screen = di.service('Screen', ['window', 'canvas']);
+var Screen = di.service('Screen', ['window', 'canvas', 'bgCanvasList']);
 
 Screen.DESIRED_SURFACE_AREA = 134400;
 
@@ -9,7 +9,7 @@ Screen.prototype.init = function() {
 
 Screen.prototype.setSurfaceArea = function(area) {
   this.surfaceArea_ = area;
-  this.resize();
+  this.resize({resizeBg: true});
 };
 
 Screen.prototype.getSurfaceArea = function() {
@@ -48,16 +48,23 @@ Screen.prototype.canvasToDraw = function(x, y, opt_z) {
   };
 };
 
-Screen.prototype.resize = function() {
+Screen.prototype.resize = function(opt_options) {
   var upscale = this.getUpscale_();
-  this.canvas_.width = this.window_.innerWidth / upscale;
-  this.canvas_.height = this.window_.innerHeight / upscale;
-  this.canvas_.style.width = this.window_.innerWidth + 'px';
-  this.canvas_.style.height = this.window_.innerHeight + 'px';
+  this.resizeCanvas_(upscale, this.canvas_);
+  if (opt_options && opt_options.resizeBg) {
+    _.each(this.bgCanvasList_, this.resizeCanvas_.bind(this, upscale));
+  }
 
   this.width = this.canvas_.width;
   this.height = this.canvas_.height;
   this.portrait = this.width > this.height;
+};
+
+Screen.prototype.resizeCanvas_ = function(upscale, canvas) {
+  canvas.width = this.window_.innerWidth / upscale;
+  canvas.height = this.window_.innerHeight / upscale;
+  canvas.style.width = this.window_.innerWidth + 'px';
+  canvas.style.height = this.window_.innerHeight + 'px';
 };
 
 Screen.prototype.getUpscale_ = function() {

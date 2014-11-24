@@ -34,6 +34,7 @@ IntroScene.prototype.update = function(dt) {
 
   this.gm_.entities['newGameBtn'].y = this.screen_.y + this.screen_.height / 4;
   this.gm_.entities['newGameBtn'].x = this.screen_.x;
+
   if (this.gm_.entities['newGameBtn'].clicked) {
     this.gm_.scenes['intro'] = 'inactive';
     this.removeEntities_();

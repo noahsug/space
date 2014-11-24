@@ -3,3 +3,19 @@ canvas {
   top: 0;
   left: 0;
 }
+
+canvas#fg {
+  z-index: 3;
+}
+
+canvas#bg1 {
+  z-index: 2;
+}
+
+canvas#bg2 {
+  z-index: 1;
+}
+
+canvas#bg3 {
+  z-index: 0;
+}
