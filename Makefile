@@ -7,4 +7,4 @@ clean:
 	-rm rf js
 	-rm rf third_party
 	-rm rf css
-        -rm index.html
+	-rm index.html
