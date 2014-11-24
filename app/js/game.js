@@ -7,8 +7,8 @@ Game.prototype.start = function() {
   this.nextAction_ = 0;
   this.setPlayerItems_();
   this.scenes_ = [this.introScene_, this.battleScene_, this.equipScene_];
-  this.introScene_.start();
-  //this.battleScene_.start();
+  //this.introScene_.start();
+  this.battleScene_.start();
   //this.equipScene_.start();
 };
 
@@ -37,7 +37,7 @@ Game.prototype.updateEntities_ = function(dt) {
     this.entityAction_(Game.UPDATE_RATE);
     this.nextAction_ = Game.UPDATE_RATE;
   }
-  if (dt > 0) {
+  if (dt > 0 && (dt > .002 || this.nextAction_ <= dt)) {
     this.updateEntities_(dt);
   }
 };

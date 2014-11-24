@@ -22,18 +22,23 @@ ShapeDecorators.prototype.decorateCircle_ = function(obj, spec) {
  */
 ShapeDecorators.prototype.decorateLine_ = function(obj, spec) {
   _.defaults(spec, {
-    length: 0
+    length: 1
   });
   obj.length = spec.length;
   obj.collidePoints = [];
   obj.act(function(dt) {
     obj.dx = Math.cos(obj.rotation) * obj.length;
     obj.dy = Math.sin(obj.rotation) * obj.length;
-    var dx2 = (Math.cos(obj.rotation) * obj.speed * dt - obj.dx) / 2;
-    var dy2 = (Math.sin(obj.rotation) * obj.speed * dt - obj.dy) / 2;
     obj.collidePoints = [{x: obj.x, y: obj.y},
-                         {x: obj.x - obj.dx, y: obj.y - obj.dy},
-                         {x: obj.x + dx2, y: obj.y + dy2}];
+                         {x: obj.x - obj.dx, y: obj.y - obj.dy}];
+    if (obj.length > 7) {
+      obj.collidePoints.push({x: obj.x - obj.dx / 2, y: obj.y - obj.dy / 2});
+    }
+    if (obj.speed && obj.speed * .02 - obj.length > 5) {
+      var dx2 = (Math.cos(obj.rotation) * obj.speed * dt - obj.dx) / 2;
+      var dy2 = (Math.sin(obj.rotation) * obj.speed * dt - obj.dy) / 2;
+      obj.collidePoints.push({x: obj.x + dx2, y: obj.y + dy2});
+    }
   });
 };
 

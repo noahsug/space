@@ -159,6 +159,7 @@ _.repeat = function(str, times) {
 _.moveTowards = function(source, target, maxDistance) {
   var dx = target.x - source.x;
   var dy = target.y - source.y;
+  if (dx == 0 && dy == 0) return true;
   var d = Math.hypot(dx, dy);
   var r = Math.min(d, maxDistance) / d;
   source.x += dx * r;

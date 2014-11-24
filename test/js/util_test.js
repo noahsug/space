@@ -240,6 +240,12 @@ describe('Util function:', function() {
       _.moveTowards(p1, {x: 7, y: 9}, 6);
       expect(p1).toEqual({x: 7, y: 9});
     });
+
+    it('Doesn\'t move when at target point', function() {
+      var p1 = {x: 0, y: 0};
+      _.moveTowards(p1, {x: 0, y: 0}, .004);
+      expect(p1).toEqual({x: 0, y: 0});
+    });
   });
 
   describe('generate', function() {
