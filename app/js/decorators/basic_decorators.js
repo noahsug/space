@@ -13,7 +13,7 @@ BasicDecorators.prototype.decorateClickable_ = function(obj) {
 };
 
 BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
-  _.defaults(spec, {
+  spec = _.options(spec, {
     health: 0
   });
   obj.health = spec.health;
@@ -24,7 +24,7 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
 };
 
 BasicDecorators.prototype.decorateDmgCollision_ = function(obj, spec) {
-  _.defaults(spec, {
+  spec = _.options(spec, {
     dmg: 0
   });
   obj.affect(function() {
@@ -44,6 +44,24 @@ BasicDecorators.prototype.decorateDmgCollision_ = function(obj, spec) {
   });
 };
 
-BasicDecorators.prototype.decoratePaused_ = function(obj) {
+BasicDecorators.prototype.decorateFreeze_ = function(obj) {
   obj.act = obj.affect = obj.resolve = obj.update = Function;
+};
+
+BasicDecorators.prototype.decorateSlowToFreeze_ = function(obj, spec) {
+  spec = _.options(spec, {
+    duration: 0
+  });
+  _.each(['act', 'affect', 'resolve', 'update'], function(fnName) {
+     obj[fnName] = slowDown(obj[fnName].bind(obj));
+  });
+
+  function slowDown(fn) {
+    var duration = spec.duration;
+    return function(dt) {
+      if (duration <= 0) return;
+      duration -= dt;
+      fn((dt / 4) * (duration + .2) / spec.duration);
+    };
+  }
 };

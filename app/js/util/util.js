@@ -181,6 +181,10 @@ _.generate = function(generator, length, opt_thisObj) {
   return list;
 };
 
+_.options = function(options, expected) {
+  return _.defaults(options || {}, expected);
+};
+
 _.class = {};
 _.class.extend = function(destination, source) {
   _.functions(source).forEach(function(fnName) {

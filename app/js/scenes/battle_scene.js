@@ -1,6 +1,8 @@
 var BattleScene = di.service('BattleScene', [
   'GameModel as gm', 'Screen', 'Entity', 'EntityDecorator', 'gameplay']);
 
+var TRANSITION_TIME = 1.2;
+
 BattleScene.prototype.init = function() {
   this.gm_.scenes['battle'] = 'inactive';
 };
@@ -34,7 +36,7 @@ BattleScene.prototype.addEntities_ = function() {
 BattleScene.prototype.pauseEntities_ = function() {
   var d = this.entityDecorator_.getDecorators();
   _.each(this.gm_.entities, function(e) {
-    _.decorate(e, d.paused);
+    _.decorate(e, d.slowToFreeze, {duration: 1.15});
   });
 };
 
@@ -42,13 +44,19 @@ BattleScene.prototype.removeEntities_ = function() {
   this.gm_.entities = {};
 };
 
-BattleScene.prototype.update = function() {
+BattleScene.prototype.update = function(dt) {
   if (this.gm_.scenes['battle'] == 'active') {
     var player = this.gm_.entities['player'];
     var enemy = this.gm_.entities['enemy'];
     if (player.dead || enemy.dead) {
       this.gm_.scenes['battle'] = 'transition';
+      this.transitionTime_ = TRANSITION_TIME;
       this.pauseEntities_();
+    }
+  } else if (this.gm_.scenes['battle'] == 'transition') {
+    this.transitionTime_ -= dt;
+    if (this.transitionTime_ <= 0) {
+      this.gm_.scenes['battle'] = 'transitionOver';
     }
   } else if (this.gm_.scenes['battle'] == 'transitionOver') {
     this.gm_.scenes['battle'] = 'inactive';

@@ -154,23 +154,14 @@ Renderer.prototype.handleCamera_ = function(dt) {
   }
 
   if (this.gm_.scenes['battle'] == 'transition') {
-    // Pan Camera
-    var player = this.gm_.entities['player'];
-    var enemy = this.gm_.entities['enemy'];
-    var target = player.dead ? player : enemy;
-    var arrived =
-        _.moveTowards(this.screen_, target, dt * TRANSITION_CAMERA_SPEED);
-
     // Zoom camera
-    var da = this.screen_.getSurfaceArea() - Screen.DESIRED_SURFACE_AREA;
-    if (da > 0) {
-      this.screen_.zoom(Math.min(TRANSITION_ZOOM_SPEED * dt, da));
+    var difference =
+        this.screen_.getSurfaceArea() - Screen.DESIRED_SURFACE_AREA;
+    var zoom = Math.min(TRANSITION_ZOOM_SPEED * dt, difference);
+    if (difference > 0) {
+      this.screen_.zoom(zoom);
     } else {
-      this.screen_.zoom(Math.max(-TRANSITION_ZOOM_SPEED * dt, da));
-    }
-
-    if (arrived && Math.abs(da) <= TRANSITION_ZOOM_SPEED * dt) {
-      this.gm_.scenes['battle'] = 'transitionOver';
+      this.screen_.zoom(-zoom);
     }
   }
 };

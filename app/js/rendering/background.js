@@ -1,11 +1,16 @@
 var Background = di.service('Background', [
-  'Screen', 'ctx', 'bgCtxList', 'RepeatedBackground']);
+  'GameModel as gm', 'Screen', 'ctx', 'bgCtxList', 'RepeatedBackground']);
 
 // Screen should never have a width or height larger than 2x this value.
 var BG_TILE_SIZE = 600;
 
 Background.prototype.init = function() {
-  this.bgLayers_ = _.generate(function(i) {
+  this.bgLayers_ = this.createBgLayers_();
+  // TODO: Fade away bg layer 2 and 3 when in battle.
+};
+
+Background.prototype.createBgLayers_ = function() {
+  return _.generate(function(i) {
     var bg = this.repeatedBackground_.create(this.bgCtxList_[i]);
     var bgColor = i == this.bgCtxList_.length -1 ? '#000000' : '';
     var starTile = this.createStarTile_(bgColor);
@@ -13,7 +18,7 @@ Background.prototype.init = function() {
     bg.setBgDistance(Math.pow(2, i + 1));
     return bg;
   }, this.bgCtxList_.length, this);
-};
+}
 
 Background.prototype.createStarTile_ = function(bgColor) {
   var starTile = document.createElement('canvas');
@@ -24,7 +29,7 @@ Background.prototype.createStarTile_ = function(bgColor) {
     ctx.fillRect(0, 0, starTile.width, starTile.height);
   } else {
     // Hack: Background must be filled for arcs to be drawn correctly.
-    ctx.fillStyle = 'rgba(0, 0, 0, .01)';
+    ctx.fillStyle = 'rgba(0, 0, 0, .00001)';
     ctx.fillRect(0, 0, starTile.width, starTile.height);
   }
   this.drawSky_(ctx, starTile.width, starTile.height);
@@ -39,7 +44,7 @@ Background.prototype.drawSky_ = function(ctx, width, height) {
   var MIN_COLOR = .5;
   for (var col = 0; col < NUM_COLS; col++) {
     for (var row = 0; row < NUM_ROWS; row++) {
-      var radius = Math.pow(_.random(4), 3) / 75 + .6;
+      var radius = Math.pow(_.random(4), 3) / 80 + .6;
       var x = Math.floor(
           GRID_SIZE * col + radius + _.random(GRID_SIZE - radius * 2));
       var y = Math.floor(

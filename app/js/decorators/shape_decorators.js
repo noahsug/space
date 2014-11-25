@@ -6,8 +6,8 @@ ShapeDecorators.prototype.init = function() {
 };
 
 ShapeDecorators.prototype.decorateCircle_ = function(obj, spec) {
-  _.defaults(spec, {
-    radius: 0
+  spec = _.options(spec, {
+    radius: 10
   });
   obj.radius = spec.radius;
   obj.collides = function(x, y) {
@@ -21,7 +21,7 @@ ShapeDecorators.prototype.decorateCircle_ = function(obj, spec) {
  * @requires {obj.rotation}
  */
 ShapeDecorators.prototype.decorateLine_ = function(obj, spec) {
-  _.defaults(spec, {
+  spec = _.options(spec, {
     length: 1
   });
   obj.length = spec.length;
@@ -43,9 +43,9 @@ ShapeDecorators.prototype.decorateLine_ = function(obj, spec) {
 };
 
 ShapeDecorators.prototype.decorateText_ = function(obj, spec) {
-  _.defaults(spec, {
+  spec = _.options(spec, {
     text: '',
-    size: 0
+    size: 10
   });
   obj.text = spec.text;
   obj.size = _.valueOrFn(spec.size);
