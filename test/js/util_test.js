@@ -256,4 +256,12 @@ describe('Util function:', function() {
       expect(list).toEqual([0, 1, 4, 9]);
     });
   });
+
+  describe('pad', function() {
+    it('adds 0s on front of a number so it is the correct length', function() {
+      expect(_.pad(113, 5)).toBe('00113');
+      expect(_.pad(88, 2)).toBe('88');
+      expect(_.pad(3, 0)).toBe('3');
+    });
+  });
 });

@@ -22,6 +22,7 @@ BattleScene.prototype.addEntities_ = function() {
 
   var enemy = this.entity_.create('ship');
   ed.decorate(enemy, this.gameplay_.init.enemy);
+  enemy.style = 'bad';
   this.gm_.entities['enemy'] = enemy;
 
   player.y = this.screen_.y + 100;

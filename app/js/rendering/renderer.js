@@ -1,21 +1,28 @@
 var Renderer = di.service('Renderer', [
-  'GameModel as gm', 'Screen', 'ctx', 'Background']);
+  'GameModel as gm', 'Screen', 'ctx', 'Gfx', 'Background']);
 
 Renderer.prototype.init = function() {
+  this.style_ = {};
   this.drawFns_ = _.pickFunctions(this, {prefix: 'draw', suffix: '_'});
+  var styleFns = _.pickFunctions(this, {prefix: 'add', suffix: 'Style_'});
+  _.each(styleFns, function(fn, name) {
+    this.style_[name] = {};
+    fn.call(this, this.style_[name]);
+  }, this);
 };
 
 Renderer.prototype.update = function(dt) {
   this.handleCamera_(dt);
   this.background_.draw();
   _.each(this.gm_.entities, this.drawEntity_.bind(this));
+  this.gfx_.flush();
 };
 
 Renderer.prototype.drawEntity_ = function(entity) {
   this.ctx_.save();
   var draw = this.getDrawFn_(entity.type);
   var pos = this.screen_.canvasToDraw(entity.x, entity.y);
-  draw(entity, pos);
+  draw(entity, pos, this.style_[entity.type]);
   this.ctx_.restore();
 };
 
@@ -58,19 +65,26 @@ Renderer.prototype.drawBtn_ = function(entity, pos) {
   this.ctx_.fillText(entity.text, pos.x, pos.y);
 };
 
-Renderer.prototype.drawShip_ = function(entity, pos) {
+Renderer.prototype.addShipStyle_ = function(style) {
+  //var baseStyle = {
+  //  fill: Gfx.Color.BLACK,
+  //  lineWidth: 4
+  //};
+  //style.good = this.gfx_.addStyle(_.extend({
+  //  stroke: Gfx.Color.GREEN
+  //}, baseStyle));
+  //style.bad = this.gfx_.addStyle(_.extend({
+  //  stroke: Gfx.Color.RED
+  //}, baseStyle));
+};
+Renderer.prototype.drawShip_ = function(entity, pos, style) {
+  //this.gfx_.setStyle(style[entity.style]);
+  //this.gfx_.circle(pos.x, pos.y, entity.radius);
   this.ctx_.fillStyle = '#000000';
-  this.ctx_.lineWidth = 4;
-  this.ctx_.shadowBlur = 4;
-
-  var color = '#00FF00';
-  if (entity.style == 'good') {
-    color = '#4477FF';
-  }
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = color;
-
+  this.ctx_.lineWidth = 3;
+  this.ctx_.strokeStyle = entity.style == 'good' ? '#FF0000' : '#00FF00';
   this.ctx_.beginPath();
-  this.ctx_.arc(pos.x, pos.y, entity.radius - 2, 0, 2 * Math.PI);
+  this.ctx_.arc(pos.x, pos.y, entity.radius, 0, Math.PI * 2);
   this.ctx_.stroke();
   this.ctx_.fill();
 };
@@ -78,7 +92,6 @@ Renderer.prototype.drawShip_ = function(entity, pos) {
 Renderer.prototype.drawLaser_ = function(entity, pos) {
   if (entity.dead) return;
   this.ctx_.lineWidth = 2;
-  this.ctx_.shadowBlur = 2;
 
   var color;
   if (entity.style == 'weak') {
@@ -86,7 +99,7 @@ Renderer.prototype.drawLaser_ = function(entity, pos) {
   } else {
     color = '#33FFFF';
   }
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = color;
+  this.ctx_.strokeStyle = color;
 
   this.ctx_.beginPath();
   this.ctx_.moveTo(pos.x, pos.y);

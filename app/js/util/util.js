@@ -185,6 +185,15 @@ _.options = function(options, expected) {
   return _.defaults(options || {}, expected);
 };
 
+_.ifDef = function(value, valueWhenUndefined) {
+  return _.isDef(value) ? value : valueWhenUndefined;
+};
+
+_.pad = function(num, padding) {
+  var numAsStr = '' + num;
+  return _.repeat('0', padding - numAsStr.length) + numAsStr;
+};
+
 _.class = {};
 _.class.extend = function(destination, source) {
   _.functions(source).forEach(function(fnName) {
