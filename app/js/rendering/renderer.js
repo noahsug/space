@@ -14,22 +14,17 @@ Renderer.prototype.init = function() {
 Renderer.prototype.update = function(dt) {
   this.handleCamera_(dt);
   this.background_.draw();
-  _.each(this.gm_.entities, this.drawEntity_.bind(this));
+  for (var i = 0; i < this.gm_.entities.length; i++) {
+    this.drawEntity_(this.gm_.entities.arr[i]);
+  }
   this.gfx_.flush();
 };
 
 Renderer.prototype.drawEntity_ = function(entity) {
   this.ctx_.save();
-  var draw = this.getDrawFn_(entity.type);
   var pos = this.screen_.canvasToDraw(entity.x, entity.y);
-  draw(entity, pos, this.style_[entity.type]);
+  this.drawFns_[entity.type](entity, pos, this.style_[entity.type]);
   this.ctx_.restore();
-};
-
-Renderer.prototype.getDrawFn_ = function(type) {
-  var drawFn = this.drawFns_[type];
-  if (drawFn) return drawFn;
-  throw 'Invalid entity type: ' + type;
 };
 
 Renderer.prototype.drawSplash_ = function(entity, pos) {
@@ -142,8 +137,8 @@ Renderer.prototype.handleCamera_ = function(dt) {
 
   if (this.gm_.scenes['battle'] == 'active') {
     // Pan camera.
-    var e1 = this.gm_.entities['player'];
-    var e2 = this.gm_.entities['enemy'];
+    var e1 = this.gm_.entities.obj['player'];
+    var e2 = this.gm_.entities.obj['enemy'];
     var target = {x: (e1.x + e2.x) / 2, y: (e1.y + e2.y) / 2};
     _.moveTowards(this.screen_, target, dt * BATTLE_CAMERA_SPEED);
 

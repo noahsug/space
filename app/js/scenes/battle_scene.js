@@ -18,12 +18,12 @@ BattleScene.prototype.addEntities_ = function() {
   var player = this.entity_.create('ship');
   ed.decorate(player, this.gm_.player.spec);
   player.style = 'good';
-  this.gm_.entities['player'] = player;
+  this.gm_.entities.add(player, 'player');
 
   var enemy = this.entity_.create('ship');
   ed.decorate(enemy, this.gameplay_.init.enemy);
   enemy.style = 'bad';
-  this.gm_.entities['enemy'] = enemy;
+  this.gm_.entities.add(enemy, 'enemy');
 
   player.y = this.screen_.y + 100;
   player.x = this.screen_.x;
@@ -36,19 +36,19 @@ BattleScene.prototype.addEntities_ = function() {
 
 BattleScene.prototype.pauseEntities_ = function() {
   var d = this.entityDecorator_.getDecorators();
-  _.each(this.gm_.entities, function(e) {
-    _.decorate(e, d.slowToFreeze, {duration: 1.15});
-  });
+  for (var i = 0; i < this.gm_.entities.length; i++) {
+    _.decorate(this.gm_.entities.arr[i], d.slowToFreeze, {duration: 1.15});
+  }
 };
 
 BattleScene.prototype.removeEntities_ = function() {
-  this.gm_.entities = {};
+  this.gm_.entities.clear();
 };
 
 BattleScene.prototype.update = function(dt) {
   if (this.gm_.scenes['battle'] == 'active') {
-    var player = this.gm_.entities['player'];
-    var enemy = this.gm_.entities['enemy'];
+    var player = this.gm_.entities.obj['player'];
+    var enemy = this.gm_.entities.obj['enemy'];
     if (player.dead || enemy.dead) {
       this.gm_.scenes['battle'] = 'transition';
       this.transitionTime_ = TRANSITION_TIME;

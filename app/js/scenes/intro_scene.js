@@ -14,28 +14,28 @@ IntroScene.prototype.addEntities_ = function() {
   var d = this.entityDecorator_.getDecorators();
 
   var splash = this.entity_.create('splash');
-  this.gm_.entities['splash'] = splash;
+  this.gm_.entities.add(splash, 'splash');
 
   var newGameBtn = this.entity_.create('btn');
   _.decorate(newGameBtn, d.shape.text, {text: 'START', size: function() {
     return Math.min(this.screen_.width / 16, this.screen_.height / 8);
   }.bind(this)});
   _.decorate(newGameBtn, d.clickable);
-  this.gm_.entities['newGameBtn'] = newGameBtn;
+  this.gm_.entities.add(newGameBtn, 'newGameBtn');
 };
 
 IntroScene.prototype.removeEntities_ = function() {
-  delete this.gm_.entities['splash'];
-  delete this.gm_.entities['newGameBtn'];
+  this.gm_.entities.clear();
 };
 
 IntroScene.prototype.update = function(dt) {
   if (this.gm_.scenes['intro'] != 'active') return;
 
-  this.gm_.entities['newGameBtn'].y = this.screen_.y + this.screen_.height / 4;
-  this.gm_.entities['newGameBtn'].x = this.screen_.x;
+  this.gm_.entities.obj['newGameBtn'].y =
+      this.screen_.y + this.screen_.height / 4;
+  this.gm_.entities.obj['newGameBtn'].x = this.screen_.x;
 
-  if (this.gm_.entities['newGameBtn'].clicked) {
+  if (this.gm_.entities.obj['newGameBtn'].clicked) {
     this.gm_.scenes['intro'] = 'inactive';
     this.removeEntities_();
     this.gm_.scenes['battle'] = 'start';

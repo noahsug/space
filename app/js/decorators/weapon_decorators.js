@@ -79,7 +79,6 @@ WeaponDecorators.prototype.fireLaser = function(obj, dt, spec) {
   _.decorate(laser, d.dmgCollision, spec);
   laser.target = obj.target;
 
-  var rep = GameModel.rep(this.gm_, 'laser');
-  this.gm_.entities['laser' + rep] = laser;
+  this.gm_.entities.arr[this.gm_.entities.length++] = laser;
   laser.act(dt);
 };

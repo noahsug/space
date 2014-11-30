@@ -8,8 +8,8 @@ Game.prototype.start = function() {
   this.setPlayerItems_();
   this.scenes_ = [this.introScene_, this.battleScene_, this.equipScene_];
   //this.introScene_.start();
-  this.battleScene_.start();
-  //this.equipScene_.start();
+  //this.battleScene_.start();
+  this.equipScene_.start();
 };
 
 Game.prototype.setPlayerItems_ = function() {
@@ -33,7 +33,9 @@ Game.prototype.update = function(dt) {
 Game.prototype.updateEntities_ = function(dt) {
   var updateTime = Math.min(dt, this.nextAction_);
   if (updateTime > 0) {
-    _.each(this.gm_.entities, function(e) { e.update(updateTime); });
+    for (var i = 0; i < this.gm_.entities.length; i++) {
+      this.gm_.entities.arr[i].update(updateTime);
+    }
     dt -= updateTime;
     this.nextAction_ -= updateTime;
   }
@@ -47,7 +49,13 @@ Game.prototype.updateEntities_ = function(dt) {
 };
 
 Game.prototype.entityAction_ = function(dt) {
-  _.each(this.gm_.entities, function(e) { e.act(dt); });
-  _.each(this.gm_.entities, function(e) { e.affect(dt); });
-  _.each(this.gm_.entities, function(e) { e.resolve(dt); });
+  for (var i = 0; i < this.gm_.entities.length; i++) {
+    this.gm_.entities.arr[i].act(dt);
+  }
+  for (var i = 0; i < this.gm_.entities.length; i++) {
+    this.gm_.entities.arr[i].affect(dt);
+  }
+  for (var i = 0; i < this.gm_.entities.length; i++) {
+    this.gm_.entities.arr[i].resolve(dt);
+  }
 };

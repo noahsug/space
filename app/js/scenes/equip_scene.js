@@ -15,15 +15,15 @@ EquipScene.prototype.start = function() {
 EquipScene.prototype.addEntities_ = function() {
   this.createInventory_();
   this.positionInventory_();
-  _.each(this.inventory_, function(slot, i) {
-    this.gm_.entities['inventorySlot' + i] = slot;
+  _.each(this.inventory_, function(slot) {
+    this.gm_.entities.add(slot);
   }, this);
 
   var d = this.entityDecorator_.getDecorators();
   var exitBtn = this.entity_.create('btn');
   _.decorate(exitBtn, d.shape.text, {text: 'x', size: 40});
   _.decorate(exitBtn, d.clickable);
-  this.gm_.entities['exitBtn'] = exitBtn;
+  this.gm_.entities.add(exitBtn, 'exitBtn');
 };
 
 EquipScene.prototype.createInventory_ = function() {
@@ -79,10 +79,7 @@ EquipScene.prototype.positionInventory_ = function() {
 };
 
 EquipScene.prototype.removeEntities_ = function() {
-  delete this.gm_.entities['exitBtn'];
-  _.each(this.inventory_, function(slot, i) {
-    delete this.gm_.entities['inventorySlot' + i];
-  }, this);
+  this.gm_.entities.clear();
 };
 
 EquipScene.prototype.update = function() {
@@ -99,7 +96,7 @@ EquipScene.prototype.update = function() {
     }
   }, this);
 
-  var exitBtn = this.gm_.entities['exitBtn'];
+  var exitBtn = this.gm_.entities.obj['exitBtn'];
   exitBtn.x = this.screen_.x + this.screen_.width / 2 - 30;
   exitBtn.y = this.screen_.y + -this.screen_.height / 2 + 30;
 
