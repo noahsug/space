@@ -89,7 +89,7 @@ describe('Util function:', function() {
         expect(obj.on).toBeDefined();
       });
 
-      it('adds private method emit_("event", args)', function() {
+      it('adds private method emit_("event", arg)', function() {
         expect(obj.emit_).toBeDefined();
       });
 
@@ -98,19 +98,8 @@ describe('Util function:', function() {
         obj.on('event', callback);
 
         expect(callback).not.toHaveBeenCalled();
-        obj.emit_('event', 113, 'sally');
-        expect(callback).toHaveBeenCalledWith(113, 'sally');
-      });
-
-      it('allows listeners to listen to multiple events', function() {
-        var callback = jasmine.createSpy('callback');
-        obj.on('event', 'event2', callback);
-
-        expect(callback).not.toHaveBeenCalled();
-        obj.emit_('event', 113, 'sally');
-        expect(callback).toHaveBeenCalledWith(113, 'sally');
-        obj.emit_('event2', 456, 'bob');
-        expect(callback).toHaveBeenCalledWith(456, 'bob');
+        obj.emit_('event', 113);
+        expect(callback).toHaveBeenCalledWith(113);
       });
 
       describe('.eventFn', function() {

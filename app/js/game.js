@@ -19,11 +19,15 @@ Game.prototype.setPlayerItems_ = function() {
 
 Game.prototype.update = function(dt) {
   this.updateEntities_(dt);
-  _.each(this.scenes_, function(scene) { scene.update(dt); });
+  for (var i = 0; i < this.scenes_.length; i++) {
+    this.scenes_[i].update(dt);
+  }
   if (this.gm_.scenes['battle'] == 'start') {
     this.nextAction_ = 0;
   }
-  _.each(this.scenes_, function(scene) { scene.resolve(dt); });
+  for (var i = 0; i < this.scenes_.length; i++) {
+    this.scenes_[i].resolve(dt);
+  }
 };
 
 Game.prototype.updateEntities_ = function(dt) {

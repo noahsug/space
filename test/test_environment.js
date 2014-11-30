@@ -11,6 +11,7 @@ window.initTestEnvironment = function(test) {
   });
 
   test.inject = inject;
+  test.start = start;
 };
 
 function inject(fn) {
@@ -18,5 +19,11 @@ function inject(fn) {
   di.init();
 }
 
+function start() {
+  var main = di.get('Main');
+  spyOn(main, 'on_');
+  main.start();
+}
+
 // Stop game from actually running.
-Main.prototype.init = function() {};
+di.start = Function;

@@ -1,7 +1,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Space. tests</title>
+  <title>Cosmal tests</title>
+
+  <link rel="stylesheet" href="../app/css/app.css">
 
   <!-- Jasmine -->
   <link rel="shortcut icon" type="image/png" href="third_party/jasmine/lib/jasmine-2.0.0/jasmine_favicon.png">
@@ -58,6 +60,7 @@
   <script src="test_environment.js"></script>
 
   <script src="js/game_test.js"></script>
+  <script src="js/performance_test.js"></script>
   <script src="js/random_test.js"></script>
   <script src="js/screen_test.js"></script>
   <script src="js/util_test.js"></script>
@@ -65,9 +68,11 @@
   <script src="js/di/di_validator_test.js"></script>
 </head>
 <body>
-  <canvas style="display: none" id="fg"></canvas>
-  <canvas style="display: none" id="bg1"></canvas>
-  <canvas style="display: none" id="bg2"></canvas>
-  <canvas style="display: none" id="bg3"></canvas>
+  <div id="hide-canvas" style="display: none; height: 350px">
+    <canvas id="fg"></canvas>
+    <canvas id="bg1"></canvas>
+    <canvas id="bg2"></canvas>
+    <canvas id="bg3"></canvas>
+  </span>
 </body>
 </html>

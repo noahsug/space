@@ -14,6 +14,7 @@ _.valueOrFn = function(valueOrFn, var_args) {
   }
 };
 
+// Warning: Very slow.
 _.args = function(args, opt_indexes) {
   var indexes = _.toArray(arguments).slice(1);
   if (indexes.length == 0) {
@@ -174,9 +175,9 @@ _.distance = function(p1, p2) {
 };
 
 _.generate = function(generator, length, opt_thisObj) {
-  var list = [];
+  var list = new Array(length);
   for (var i = 0; i < length; i++) {
-    list.push(generator.call(opt_thisObj, i));
+    list[i] = generator.call(opt_thisObj, i);
   }
   return list;
 };

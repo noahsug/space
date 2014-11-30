@@ -29,7 +29,7 @@ Renderer.prototype.drawEntity_ = function(entity) {
 Renderer.prototype.getDrawFn_ = function(type) {
   var drawFn = this.drawFns_[type];
   if (drawFn) return drawFn;
-  throw 'invalid entity type: ' + type;
+  throw 'Invalid entity type: ' + type;
 };
 
 Renderer.prototype.drawSplash_ = function(entity, pos) {
@@ -66,45 +66,36 @@ Renderer.prototype.drawBtn_ = function(entity, pos) {
 };
 
 Renderer.prototype.addShipStyle_ = function(style) {
-  //var baseStyle = {
-  //  fill: Gfx.Color.BLACK,
-  //  lineWidth: 4
-  //};
-  //style.good = this.gfx_.addStyle(_.extend({
-  //  stroke: Gfx.Color.GREEN
-  //}, baseStyle));
-  //style.bad = this.gfx_.addStyle(_.extend({
-  //  stroke: Gfx.Color.RED
-  //}, baseStyle));
+  var baseStyle = {
+    fill: Gfx.Color.BLACK,
+    lineWidth: 3
+  };
+  style.good = this.gfx_.addStyle(_.extend({
+    stroke: Gfx.Color.GREEN
+  }, baseStyle));
+  style.bad = this.gfx_.addStyle(_.extend({
+    stroke: Gfx.Color.RED
+  }, baseStyle));
 };
 Renderer.prototype.drawShip_ = function(entity, pos, style) {
-  //this.gfx_.setStyle(style[entity.style]);
-  //this.gfx_.circle(pos.x, pos.y, entity.radius);
-  this.ctx_.fillStyle = '#000000';
-  this.ctx_.lineWidth = 3;
-  this.ctx_.strokeStyle = entity.style == 'good' ? '#FF0000' : '#00FF00';
-  this.ctx_.beginPath();
-  this.ctx_.arc(pos.x, pos.y, entity.radius, 0, Math.PI * 2);
-  this.ctx_.stroke();
-  this.ctx_.fill();
+  this.gfx_.setStyle(style[entity.style]);
+  this.gfx_.circle(pos.x, pos.y, entity.radius);
 };
 
-Renderer.prototype.drawLaser_ = function(entity, pos) {
+Renderer.prototype.addLaserStyle_ = function(style) {
+  style.weak = this.gfx_.addStyle({
+    stroke: Gfx.Color.RED,
+    lineWidth: 2
+  });
+  style.strong = this.gfx_.addStyle({
+    stroke: Gfx.Color.BLUE,
+    lineWidth: 3
+  });
+};
+Renderer.prototype.drawLaser_ = function(entity, pos, style) {
   if (entity.dead) return;
-  this.ctx_.lineWidth = 2;
-
-  var color;
-  if (entity.style == 'weak') {
-    color = '#FF3333';
-  } else {
-    color = '#33FFFF';
-  }
-  this.ctx_.strokeStyle = color;
-
-  this.ctx_.beginPath();
-  this.ctx_.moveTo(pos.x, pos.y);
-  this.ctx_.lineTo(pos.x - entity.dx, pos.y - entity.dy);
-  this.ctx_.stroke();
+  this.gfx_.setStyle(style[entity.style]);
+  this.gfx_.line(pos.x, pos.y, entity.dx, entity.dy);
 };
 
 Renderer.prototype.drawInventorySlot_ = function(entity, pos) {

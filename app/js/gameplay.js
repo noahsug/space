@@ -47,9 +47,9 @@ di.constant('gameplayFile', {
 
     'health I': {
       desc: '20 health',
-      type: 'health', spec: {health: 2}},
+      type: 'health', spec: {health: 200}},
     'health II': {
       desc: '25 health',
-      type: 'health', spec: {health: 3}}
+      type: 'health', spec: {health: 250}}
   }
 });

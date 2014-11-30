@@ -9,7 +9,7 @@ Screen.prototype.init = function() {
 
 Screen.prototype.setSurfaceArea = function(area) {
   this.surfaceArea_ = area;
-  this.resize({resizeBg: true});
+  this.resize();
 };
 
 Screen.prototype.getSurfaceArea = function() {
@@ -18,7 +18,7 @@ Screen.prototype.getSurfaceArea = function() {
 
 Screen.prototype.zoom = function(amount) {
   this.surfaceArea_ -= amount;
-  this.resize();
+  this.resize({resizeBg: false});
 };
 
 Screen.prototype.center = function(x, y) {
@@ -51,7 +51,7 @@ Screen.prototype.canvasToDraw = function(x, y, opt_z) {
 Screen.prototype.resize = function(opt_options) {
   var upscale = this.getUpscale_();
   this.resizeCanvas_(upscale, this.canvas_);
-  if (opt_options && opt_options.resizeBg) {
+  if (!opt_options || opt_options.resizeBg) {
     _.each(this.bgCanvasList_, this.resizeCanvas_.bind(this, upscale));
   }
 

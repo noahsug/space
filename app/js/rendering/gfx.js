@@ -5,16 +5,13 @@ Gfx.Color = {
   BLACK: '#000000',
   WHITE: '#FFFFFF',
   RED: '#FF0000',
-  GREEN: '#00FF00'
+  GREEN: '#00FF00',
+  BLUE: '#0000FF'
 };
 
-Gfx.DrawFns = {
-  CIRCLE: function(x, y, radius, isFirst) {
-    if (!isFirst) {
-      this.ctx_.moveTo(x + radius, y);
-    }
-    this.ctx_.arc(x, y, radius, 0, Math.PI * 2);
-  }
+Gfx.DrawFn = {
+  CIRCLE: 0,
+  LINE: 1
 };
 
 Gfx.AttrNames = {
@@ -42,7 +39,9 @@ Gfx.prototype.addStyle = function(styleAttrs) {
       id: this.nextStyleId_++,
       attrs: styleAttrs,
       sortOn: styleStr,
-      position: index
+      position: index,
+      drawFns: new Array(10),
+      drawFnCount: 0
     };
     this.idToStyle_[style.id] = style;
     this.sortedStyles_.splice(index, 0, style);
@@ -65,39 +64,71 @@ Gfx.prototype.setStyle = function(styleId) {
 };
 
 Gfx.prototype.circle = function(x, y, radius) {
-  this.addDrawFn_(Gfx.DrawFns.CIRCLE.bind(this, x, y, radius));
+  this.addDrawFn_([Gfx.DrawFn.CIRCLE, x, y, radius]);
 };
 
-Gfx.prototype.addDrawFn_ = function(drawFn) {
+Gfx.prototype.line = function(x, y, dx, dy) {
+  this.addDrawFn_([Gfx.DrawFn.LINE, x, y, dx, dy]);
+};
+
+Gfx.prototype.addDrawFn_ = function(drawFnArgs) {
   if (this.currentStyle_.flushCount != this.flushCount_) {
+    this.currentStyle_.drawFnCount = 0;
     this.currentStyle_.flushCount = this.flushCount_;
-    this.currentStyle_.drawFns = [drawFn];
-  } else {
-    this.currentStyle_.drawFns.push(drawFn);
   }
+  this.currentStyle_.drawFns[this.currentStyle_.drawFnCount++] = drawFnArgs;
 };
 
 Gfx.prototype.flush = function() {
   var prevStyleAttrs = Gfx.AttrNames;
-  _.each(this.sortedStyles_, function(style) {
-    if (style.flushCount != this.flushCount_) return;
+  for (var si = 0; si < this.sortedStyles_.length; si++) {
+    var style = this.sortedStyles_[si];
+    if (style.flushCount != this.flushCount_) continue;
 
     // Change context state.
-    _.each(style.attrs, function(value, name) {
+    for (var name in style.attrs) {
+      var value = style.attrs[name];
       if (prevStyleAttrs[name] != value) {
         this.ctx_[Gfx.AttrNames[name]] = value;
       }
-    }, this);
+    }
 
     // Draw every shape that has the same style.
     this.ctx_.beginPath();
-    _.each(style.drawFns, function(drawFn, i) {
-      drawFn(i == style.drawFns.length);
-    });
+    for (var i = 0; i < style.drawFnCount; i++) {
+      var args = style.drawFns[i];
+      var drawFn;
+      if (args[0] == Gfx.DrawFn.CIRCLE) {
+        this.drawCircle_(args[1], args[2], args[3],
+            i == style.drawFnCount);
+      } else if (args[0] == Gfx.DrawFn.LINE) {
+        this.drawLine_(args[1], args[2], args[3], args[4],
+            i == style.drawFnCount);
+      } else {
+        throw 'Invalid shape id: ' +  args[0];
+      }
+    }
     if (style.attrs.fill) this.ctx_.fill();
     if (style.attrs.stroke) this.ctx_.stroke();
 
+    // Double the array size for better performance.
+    if (style.drawFnCount == style.drawFns.length) {
+      style.drawFns[style.drawFns.length * 2] = 0;
+    }
+
     prevStyleAttrs = style.attrs;
-  }, this);
+  }
   this.flushCount_++;
+};
+
+Gfx.prototype.drawCircle_ = function(x, y, radius, isFirst) {
+  if (!isFirst) {
+    this.ctx_.moveTo(x + radius, y);
+  }
+  this.ctx_.arc(x, y, radius, 0, Math.PI * 2);
+};
+
+Gfx.prototype.drawLine_ = function(x, y, dx, dy) {
+  this.ctx_.moveTo(x, y);
+  this.ctx_.lineTo(x - dx, y - dy);
 };

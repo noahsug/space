@@ -3,7 +3,6 @@ var Entity = di.factory('Entity');
 Entity.prototype.init = function(type) {
   this.type = type;
   this.setPos(0, 0);
-  this.firstAction_ = true;
   _.decorate(this, _.decorator.eventEmitter);
 };
 
@@ -12,12 +11,12 @@ Entity.prototype.awake = _.decorator.eventEmitter.eventFn('awake');
 
 // Take action (e.g. shoot a laser).
 Entity.prototype.act_ = _.decorator.eventEmitter.eventFn('act');
-Entity.prototype.act = function() {
-  if (this.firstAction_ && !_.isFunction(arguments[0])) {
-    this.firstAction_ = false;
+Entity.prototype.act = function(opt_callbackOrArg) {
+  if (!this.awakened_ && !_.isFunction(arguments[0])) {
+    this.awakened_ = true;
     this.awake();
   }
-  this.act_.apply(this, _.args(arguments));
+  this.act_(opt_callbackOrArg);
 };
 
 // Be affected by other entities (e.g. collide with a laser).
