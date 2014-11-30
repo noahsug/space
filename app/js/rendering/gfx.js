@@ -40,8 +40,7 @@ Gfx.prototype.addStyle = function(styleAttrs) {
       attrs: styleAttrs,
       sortOn: styleStr,
       position: index,
-      drawFns: new Array(10),
-      drawFnCount: 0
+      drawFns: new List()
     };
     this.idToStyle_[style.id] = style;
     this.sortedStyles_.splice(index, 0, style);
@@ -73,10 +72,10 @@ Gfx.prototype.line = function(x, y, dx, dy) {
 
 Gfx.prototype.addDrawFn_ = function(drawFnArgs) {
   if (this.currentStyle_.flushCount != this.flushCount_) {
-    this.currentStyle_.drawFnCount = 0;
+    this.currentStyle_.drawFns.length = 0;
     this.currentStyle_.flushCount = this.flushCount_;
   }
-  this.currentStyle_.drawFns[this.currentStyle_.drawFnCount++] = drawFnArgs;
+  this.currentStyle_.drawFns[this.currentStyle_.drawFns.length++] = drawFnArgs;
 };
 
 Gfx.prototype.flush = function() {
@@ -95,26 +94,21 @@ Gfx.prototype.flush = function() {
 
     // Draw every shape that has the same style.
     this.ctx_.beginPath();
-    for (var i = 0; i < style.drawFnCount; i++) {
+    for (var i = 0; i < style.drawFns.length; i++) {
       var args = style.drawFns[i];
       var drawFn;
       if (args[0] == Gfx.DrawFn.CIRCLE) {
         this.drawCircle_(args[1], args[2], args[3],
-            i == style.drawFnCount);
+            i == style.drawFns.length);
       } else if (args[0] == Gfx.DrawFn.LINE) {
         this.drawLine_(args[1], args[2], args[3], args[4],
-            i == style.drawFnCount);
+            i == style.drawFns.length);
       } else {
         throw 'Invalid shape id: ' +  args[0];
       }
     }
     if (style.attrs.fill) this.ctx_.fill();
     if (style.attrs.stroke) this.ctx_.stroke();
-
-    // Double the array size for better performance.
-    if (style.drawFnCount == style.drawFns.length) {
-      style.drawFns[style.drawFns.length * 2] = 0;
-    }
 
     prevStyleAttrs = style.attrs;
   }
