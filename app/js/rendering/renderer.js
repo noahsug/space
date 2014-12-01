@@ -22,7 +22,12 @@ Renderer.prototype.update = function(dt) {
 
 Renderer.prototype.drawEntity_ = function(entity) {
   this.ctx_.save();
-  var pos = this.screen_.canvasToDraw(entity.x, entity.y);
+  var pos;
+  if (entity.staticPosition) {
+    pos = this.screen_.screenToDraw(entity.screenX, entity.screenY);
+  } else {
+    pos = this.screen_.canvasToDraw(entity.x, entity.y);
+  }
   this.drawFns_[entity.type](entity, pos, this.style_[entity.type]);
   this.ctx_.restore();
 };

@@ -1,6 +1,6 @@
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
 
-describe('Game performance', function() {
+xdescribe('Game performance', function() {
   initTestEnvironment(this);
   var MAX_SAMPLES = 700;
   var avgLogic, avgRender, count;

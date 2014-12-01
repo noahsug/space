@@ -21,6 +21,7 @@ IntroScene.prototype.addEntities_ = function() {
     return Math.min(this.screen_.width / 16, this.screen_.height / 8);
   }.bind(this)});
   _.decorate(newGameBtn, d.clickable);
+  _.decorate(newGameBtn, d.staticPosition);
   this.gm_.entities.add(newGameBtn, 'newGameBtn');
 };
 
@@ -31,9 +32,8 @@ IntroScene.prototype.removeEntities_ = function() {
 IntroScene.prototype.update = function(dt) {
   if (this.gm_.scenes['intro'] != 'active') return;
 
-  this.gm_.entities.obj['newGameBtn'].y =
-      this.screen_.y + this.screen_.height / 4;
-  this.gm_.entities.obj['newGameBtn'].x = this.screen_.x;
+  var newGameBtn = this.gm_.entities.obj['newGameBtn'];
+  newGameBtn.setPos(0, this.screen_.pixelHeight / 4);
 
   if (this.gm_.entities.obj['newGameBtn'].clicked) {
     this.gm_.scenes['intro'] = 'inactive';

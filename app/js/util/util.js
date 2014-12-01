@@ -16,15 +16,15 @@ _.valueOrFn = function(valueOrFn, var_args) {
 
 // Warning: Very slow.
 _.args = function(args, opt_indexes) {
-  var indexes = _.toArray(arguments).slice(1);
-  if (indexes.length == 0) {
-    indexes = [0];
+  if (arguments.length == 1) {
+    return _.toArray(args);
   }
+  var indexes = _.toArray(arguments).slice(1);
   var selections = _.initial(indexes);
   var rest = _.last(indexes);
-  var output = [];
+  var output = new Array(selections.length);
   selections.forEach(function(i) {
-    output.push(args[i]);
+    output[i] = args[i];
   });
   return output.concat(_.toArray(args).slice(rest));
 };

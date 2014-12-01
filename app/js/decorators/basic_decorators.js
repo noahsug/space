@@ -1,5 +1,5 @@
 var BasicDecorators = di.service('BasicDecorators', [
-  'EntityDecorator', 'Mouse']);
+  'EntityDecorator', 'Mouse', 'Screen']);
 
 BasicDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'base');
@@ -64,4 +64,17 @@ BasicDecorators.prototype.decorateSlowToFreeze_ = function(obj, spec) {
       fn((dt / 4) * (duration + .2) / spec.duration);
     };
   }
+};
+
+BasicDecorators.prototype.decorateStaticPosition_ = function(obj) {
+  obj.staticPosition = true;
+  obj.setPos = function(x, y) {
+    obj.staticX = x;
+    obj.staticY = y;
+    obj.screenX = x + this.screen_.pixelWidth / 2;
+    obj.screenY = y + this.screen_.pixelHeight / 2;
+    var pos = this.screen_.screenToCanvas(obj.screenX, obj.screenY);
+    obj.x = pos.x;
+    obj.y = pos.y;
+  }.bind(this);
 };
