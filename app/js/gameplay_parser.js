@@ -4,7 +4,16 @@ var GameplayParser = di.service('GameplayParser', [
 var gameplay = di.constant('gameplay', {init: {}, items: {}});
 
 GameplayParser.prototype.init = function() {
+  // Parse items.
+  this.gameplay_.items = {};
+  _.each(this.gameplayFile_.items, function(info, name) {
+    this.gameplay_.items[name] = this.parseItem_(name);
+  }, this);
+
+  // Parse initial inventory and equipment.
   this.parseItemObj_(this.gameplayFile_.init, this.gameplay_.init);
+
+  // Parse enemies for each level.
   this.gameplay_.level = [];
   for (var i = 0; i < this.gameplayFile_.level.length; i++) {
     this.gameplay_.level.push({});
@@ -21,7 +30,7 @@ GameplayParser.prototype.parseItemObj_ = function(itemObj, destination) {
 GameplayParser.prototype.parseItemList_ = function(itemList) {
   var parsedItemList = [];
   _.each(itemList, function(item) {
-    parsedItemList.push(this.parseItem_(item));
+    parsedItemList.push(this.gameplay_.items[item]);
   }, this);
   return parsedItemList;
 };

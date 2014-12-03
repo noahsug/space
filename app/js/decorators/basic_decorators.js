@@ -77,4 +77,10 @@ BasicDecorators.prototype.decorateStaticPosition_ = function(obj) {
     obj.x = pos.x;
     obj.y = pos.y;
   }.bind(this);
+  obj.setY = function(y) {
+    this.setPos(obj.staticX, y);
+  }.bind(obj);
+  obj.setX = function(x) {
+    this.setPos(x, obj.staticY);
+  }.bind(obj);
 };

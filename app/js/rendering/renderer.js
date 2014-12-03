@@ -47,6 +47,36 @@ Renderer.prototype.drawSplash_ = function(entity, pos) {
   this.ctx_.fillText(title, this.screen_.x + pos.x, this.screen_.y + pos.y);
 };
 
+Renderer.prototype.drawResultsSplash_ = function(entity, pos) {
+  var title = this.gm_.results.won ? 'Victory' : 'Defeat';
+  var fontSize = Math.min(this.screen_.width / 5, this.screen_.height / 2);
+  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
+  this.ctx_.lineWidth = 2;
+  this.ctx_.fillStyle = '#FFFFFF';
+  this.ctx_.shadowBlur = fontSize / 8;
+  this.ctx_.font = 'bold ' + fontSize + 'px Arial';
+  this.ctx_.textAlign = 'center';
+  this.ctx_.textBaseline = 'alphabetic';
+
+  var x = this.screen_.x + pos.x;
+  var y = this.screen_.y + pos.y - this.screen_.height / 2 + 100;
+  this.ctx_.strokeText(title, x, y);
+  this.ctx_.fillText(title, x, y);
+
+  if (this.gm_.results.won) {
+    var itemPos = {
+      x: this.screen_.x + pos.x,
+      y: this.screen_.y + pos.y
+    };
+    this.drawItem_(this.gm_.results.earned, itemPos);
+    this.ctx_.font = fontSize / 4 + 'px Arial';
+    title = 'aquired:';
+    y = itemPos.y - 20;
+    this.ctx_.strokeText(title, x, y);
+    this.ctx_.fillText(title, x, y);
+  }
+};
+
 Renderer.prototype.drawBtn_ = function(entity, pos) {
   this.ctx_.lineWidth = 2;
   this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
@@ -161,7 +191,7 @@ Renderer.prototype.handleCamera_ = function(dt) {
     // Zoom camera
     var difference =
         this.screen_.getSurfaceArea() - Screen.DESIRED_SURFACE_AREA;
-    var zoom = Math.min(TRANSITION_ZOOM_SPEED * dt, difference);
+    var zoom = Math.min(TRANSITION_ZOOM_SPEED * dt, Math.abs(difference));
     if (difference > 0) {
       this.screen_.zoom(zoom);
     } else {

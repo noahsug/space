@@ -46,6 +46,11 @@ BattleScene.prototype.update = function(dt, state) {
     var player = this.gm_.entities.obj['player'];
     var enemy = this.gm_.entities.obj['enemy'];
     if (player.dead || enemy.dead) {
+      if (!player.dead) {
+        player.health = 999999;
+        this.gm_.results.won = true;
+        this.rewardPlayer_();
+      }
       this.gm_.scenes[this.name] = 'transition';
       this.transitionTime_ = TRANSITION_TIME;
       this.pauseEntities_();
@@ -58,6 +63,18 @@ BattleScene.prototype.update = function(dt, state) {
   } else if (state == 'transitionOver') {
     this.gm_.scenes[this.name] = 'inactive';
     this.removeEntities_();
-    this.gm_.scenes['equip'] = 'start';
+    this.gm_.scenes['result'] = 'start';
   }
+};
+
+BattleScene.prototype.rewardPlayer_ = function() {
+  var level = this.gm_.level;
+  if (Math.random() < .25 && level) level--;
+  if (Math.random() < .25 && level) level--;
+  this.gm_.results.earned = this.getRandomItem_(level);
+  this.gm_.player.inventory.push(this.gm_.results.earned);
+};
+
+BattleScene.prototype.getRandomItem_ = function(level) {
+  return _.sample(_.where(this.gameplay_.items, {level: level}));
 };

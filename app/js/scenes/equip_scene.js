@@ -15,7 +15,7 @@ EquipScene.prototype.addEntities = function() {
 
   var d = this.entityDecorator_.getDecorators();
   var exitBtn = this.entity_.create('btn');
-  _.decorate(exitBtn, d.shape.text, {text: 'x', size: 40});
+  _.decorate(exitBtn, d.shape.text, {text: 'done', size: 20});
   _.decorate(exitBtn, d.clickable);
   _.decorate(exitBtn, d.staticPosition);
   this.gm_.entities.add(exitBtn, 'exitBtn');
@@ -54,7 +54,16 @@ EquipScene.prototype.removeEntities_ = function() {
 };
 
 EquipScene.prototype.update = function(dt, state) {
-  if (state != 'active') return;
+  var exitBtn = this.gm_.entities.obj['exitBtn'];
+  if (exitBtn.clicked) {
+    this.gm_.scenes[this.name] = 'inactive';
+    this.removeEntities_();
+    this.gm_.scenes['result'] = 'start';
+    return;
+  }
+
+  exitBtn.setPos(0, this.screen_.pixelHeight / 2 - 45 * this.screen_.upscale);
+
   this.positionInventory_();
   _.each(this.inventory_, function(slot, i) {
     if (slot.item && slot.clicked) {
@@ -67,21 +76,10 @@ EquipScene.prototype.update = function(dt, state) {
       }
     }
   }, this);
-
-  var exitBtn = this.gm_.entities.obj['exitBtn'];
-  exitBtn.setPos(this.screen_.pixelWidth / 2 - 30 * this.screen_.upscale,
-                 -this.screen_.pixelHeight / 2 + 30 * this.screen_.upscale);
-
-  if (exitBtn.clicked) {
-    this.gm_.scenes[this.name] = 'inactive';
-    this.removeEntities_();
-    this.gm_.level++;
-    this.gm_.scenes['battle'] = 'start';
-  }
 };
 
 EquipScene.prototype.positionInventory_ = function() {
-  var GAP = this.inventory_[0].radius * this.screen_.upscale;
+  var GAP = 10 * this.screen_.upscale;
   var COLS = EquipScene.MAX_INVENTORY_SIZE / 2;
   var WIDTH = this.inventory_[0].radius * 2 * this.screen_.upscale;
   var x = -((COLS - 1) * (WIDTH + GAP)) / 2;
@@ -100,5 +98,8 @@ EquipScene.prototype.positionInventory_ = function() {
       bottomSlot.setPos(bottomSlot.staticY, bottomSlot.staticX);
       topSlot.setPos(topSlot.staticY, topSlot.staticX);
     }
+
+    bottomSlot.setY(bottomSlot.staticY - 40);
+    topSlot.setY(topSlot.staticY - 40);
   }
 };

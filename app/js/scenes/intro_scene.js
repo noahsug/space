@@ -25,8 +25,6 @@ IntroScene.prototype.removeEntities_ = function() {
 };
 
 IntroScene.prototype.update = function(dt, state) {
-  if (state != 'active') return;
-
   var newGameBtn = this.gm_.entities.obj['newGameBtn'];
   newGameBtn.setPos(0, this.screen_.pixelHeight / 4);
 
