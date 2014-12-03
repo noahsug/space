@@ -4,15 +4,10 @@ var EquipScene = di.service('EquipScene', [
 EquipScene.MAX_INVENTORY_SIZE = 8;
 
 EquipScene.prototype.init = function() {
-  this.gm_.scenes['equip'] = 'inactive';
+  this.name = 'equip';
 };
 
-EquipScene.prototype.start = function() {
-  this.gm_.scenes['equip'] = 'active';
-  this.addEntities_();
-};
-
-EquipScene.prototype.addEntities_ = function() {
+EquipScene.prototype.addEntities = function() {
   this.createInventory_();
   _.each(this.inventory_, function(slot) {
     this.gm_.entities.add(slot);
@@ -22,7 +17,7 @@ EquipScene.prototype.addEntities_ = function() {
   var exitBtn = this.entity_.create('btn');
   _.decorate(exitBtn, d.shape.text, {text: 'x', size: 40});
   _.decorate(exitBtn, d.clickable);
-  exitBtn.staticPosition = true;
+  _.decorate(exitBtn, d.staticPosition);
   this.gm_.entities.add(exitBtn, 'exitBtn');
 };
 
@@ -58,8 +53,8 @@ EquipScene.prototype.removeEntities_ = function() {
   this.gm_.entities.clear();
 };
 
-EquipScene.prototype.update = function() {
-  if (this.gm_.scenes['equip'] != 'active') return;
+EquipScene.prototype.update = function(dt, state) {
+  if (state != 'active') return;
   this.positionInventory_();
   _.each(this.inventory_, function(slot, i) {
     if (slot.item && slot.clicked) {
@@ -74,12 +69,13 @@ EquipScene.prototype.update = function() {
   }, this);
 
   var exitBtn = this.gm_.entities.obj['exitBtn'];
-  exitBtn.x = this.screen_.pixelWidth - 30;
-  exitBtn.y = 30;
+  exitBtn.setPos(this.screen_.pixelWidth / 2 - 30 * this.screen_.upscale,
+                 -this.screen_.pixelHeight / 2 + 30 * this.screen_.upscale);
 
   if (exitBtn.clicked) {
-    this.gm_.scenes['equip'] = 'inactive';
+    this.gm_.scenes[this.name] = 'inactive';
     this.removeEntities_();
+    this.gm_.level++;
     this.gm_.scenes['battle'] = 'start';
   }
 };
@@ -104,12 +100,5 @@ EquipScene.prototype.positionInventory_ = function() {
       bottomSlot.setPos(bottomSlot.staticY, bottomSlot.staticX);
       topSlot.setPos(topSlot.staticY, topSlot.staticX);
     }
-  }
-};
-
-EquipScene.prototype.resolve = function(dt) {
-  if (this.gm_.scenes['equip'] == 'start') {
-    this.start();
-    this.update(dt);
   }
 };

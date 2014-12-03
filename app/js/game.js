@@ -1,15 +1,18 @@
 var Game = di.service('Game', [
-  'GameModel as gm', 'IntroScene', 'BattleScene', 'EquipScene', 'gameplay']);
+  'GameModel as gm', 'Scene', 'IntroScene', 'BattleScene', 'EquipScene',
+  'gameplay']);
 
 Game.UPDATE_RATE = .06;
 
 Game.prototype.start = function() {
   this.nextAction_ = 0;
   this.setPlayerItems_();
-  this.scenes_ = [this.introScene_, this.battleScene_, this.equipScene_];
-  this.introScene_.start();
-  //this.battleScene_.start();
-  //this.equipScene_.start();
+  this.scenes_ = [
+    this.scene_.create(this.introScene_),
+    this.scene_.create(this.battleScene_),
+    this.scene_.create(this.equipScene_)
+  ];
+  this.scenes_[1].start();
 };
 
 Game.prototype.setPlayerItems_ = function() {

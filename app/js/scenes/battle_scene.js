@@ -4,15 +4,10 @@ var BattleScene = di.service('BattleScene', [
 var TRANSITION_TIME = 1.2;
 
 BattleScene.prototype.init = function() {
-  this.gm_.scenes['battle'] = 'inactive';
+  this.name = 'battle';
 };
 
-BattleScene.prototype.start = function() {
-  this.gm_.scenes['battle'] = 'active';
-  this.addEntities_();
-};
-
-BattleScene.prototype.addEntities_ = function() {
+BattleScene.prototype.addEntities = function() {
   var ed = this.entityDecorator_;
 
   var player = this.entity_.create('ship');
@@ -21,7 +16,8 @@ BattleScene.prototype.addEntities_ = function() {
   this.gm_.entities.add(player, 'player');
 
   var enemy = this.entity_.create('ship');
-  ed.decorate(enemy, this.gameplay_.init.enemy);
+  var enemySpec = this.gameplay_.level[this.gm_.level].enemy;
+  ed.decorate(enemy, enemySpec);
   enemy.style = 'bad';
   this.gm_.entities.add(enemy, 'enemy');
 
@@ -45,29 +41,23 @@ BattleScene.prototype.removeEntities_ = function() {
   this.gm_.entities.clear();
 };
 
-BattleScene.prototype.update = function(dt) {
-  if (this.gm_.scenes['battle'] == 'active') {
+BattleScene.prototype.update = function(dt, state) {
+  if (state == 'active') {
     var player = this.gm_.entities.obj['player'];
     var enemy = this.gm_.entities.obj['enemy'];
     if (player.dead || enemy.dead) {
-      this.gm_.scenes['battle'] = 'transition';
+      this.gm_.scenes[this.name] = 'transition';
       this.transitionTime_ = TRANSITION_TIME;
       this.pauseEntities_();
     }
-  } else if (this.gm_.scenes['battle'] == 'transition') {
+  } else if (state == 'transition') {
     this.transitionTime_ -= dt;
     if (this.transitionTime_ <= 0) {
-      this.gm_.scenes['battle'] = 'transitionOver';
+      this.gm_.scenes[this.name] = 'transitionOver';
     }
-  } else if (this.gm_.scenes['battle'] == 'transitionOver') {
-    this.gm_.scenes['battle'] = 'inactive';
+  } else if (state == 'transitionOver') {
+    this.gm_.scenes[this.name] = 'inactive';
     this.removeEntities_();
     this.gm_.scenes['equip'] = 'start';
-  }
-};
-
-BattleScene.prototype.resolve = function(dt) {
-  if (this.gm_.scenes['battle'] == 'start') {
-    this.start();
   }
 };

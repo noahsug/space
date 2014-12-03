@@ -4,12 +4,17 @@ var GameplayParser = di.service('GameplayParser', [
 var gameplay = di.constant('gameplay', {init: {}, items: {}});
 
 GameplayParser.prototype.init = function() {
-  this.parseItemObj_(this.gameplayFile_.init);
+  this.parseItemObj_(this.gameplayFile_.init, this.gameplay_.init);
+  this.gameplay_.level = [];
+  for (var i = 0; i < this.gameplayFile_.level.length; i++) {
+    this.gameplay_.level.push({});
+    this.parseItemObj_(this.gameplayFile_.level[i], this.gameplay_.level[i]);
+  }
 };
 
-GameplayParser.prototype.parseItemObj_ = function(itemObj) {
+GameplayParser.prototype.parseItemObj_ = function(itemObj, destination) {
   _.each(itemObj, function(itemList, key) {
-    this.gameplay_.init[key] = this.parseItemList_(itemList);
+    destination[key] = this.parseItemList_(itemList);
   }, this);
 };
 

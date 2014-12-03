@@ -7,18 +7,17 @@ WeaponDecorators.prototype.init = function() {
 
 WeaponDecorators.prototype.decorateShotgun_ = function(obj) {
   var LASER_SPEC = {
-    dmg: 1,
+    dmg: 4,
     speed: 550,
     length: 2,
     seek: 0,
     accuracy: _.radians(30)
   };
-
-  var BLAST_SIZE = 100;
+  var BLAST_SIZE = 5;
   var BLAST_SPREAD = _.radians(20);
   var CHARGE_TIME = 1.2;
-  var cooldown = 0;
 
+  var cooldown = 0;
   obj.act(function(dt) {
     if (obj.dead) return;
     cooldown -= dt;
@@ -34,7 +33,7 @@ WeaponDecorators.prototype.decorateShotgun_ = function(obj) {
 
 WeaponDecorators.prototype.decorateLaser_ = function(obj) {
   var LASER_SPEC = {
-    dmg: 1,
+    dmg: 5,
     speed: 300,
     length: 7,
     seek: 0,
@@ -42,13 +41,12 @@ WeaponDecorators.prototype.decorateLaser_ = function(obj) {
     dangle: 0
   };
   var BURST_CHARGE_TIME = 2;
-  var BURST_SIZE = 100;
+  var BURST_SIZE = 4;
+  var CHARGE_TIME = .08;
+
   var burtCooldown = 0;
   var burstRemaining = 0;
-
-  var CHARGE_TIME = .01;
   var cooldown = 0;
-
   obj.act(function(dt) {
     if (obj.dead) return;
     if (burtCooldown <= dt) {

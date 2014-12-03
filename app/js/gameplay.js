@@ -6,13 +6,6 @@ di.constant('gameplayFile', {
       'health II',
       'circle'
     ],
-    enemy: [
-      'shotgun',
-      'teleport',
-      'radial I',
-      'health I',
-      'circle'
-    ],
 
     inventory: [
       'shotgun',
@@ -22,10 +15,32 @@ di.constant('gameplayFile', {
     ]
   },
 
+  level: [
+    {
+      enemy: [
+        'shotgun',
+        'teleport',
+        'radial I',
+        'health I',
+        'circle'
+      ]
+    },
+    {
+      enemy: [
+        'shotgun',
+        'burst laser',
+        'radial I',
+        'health I',
+        'circle'
+      ]
+    }
+  ],
+
   items: {
     'burst laser': {
       desc: 'Fires a rapid volley of shots every 2 seconds.',
       type: 'weapon.laser', spec: {}},
+      level: 1,
     'shotgun': {
       desc: 'Fires a powerful burst of shots in an arc.',
       type:'weapon.shotgun', spec: {}},
@@ -47,9 +62,9 @@ di.constant('gameplayFile', {
 
     'health I': {
       desc: '20 health',
-      type: 'health', spec: {health: 200}},
+      type: 'health', spec: {health: 20}},
     'health II': {
       desc: '25 health',
-      type: 'health', spec: {health: 250}}
+      type: 'health', spec: {health: 25}}
   }
 });

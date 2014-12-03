@@ -88,8 +88,8 @@ Renderer.prototype.addLaserStyle_ = function(style) {
     lineWidth: 2
   });
   style.strong = this.gfx_.addStyle({
-    stroke: Gfx.Color.BLUE,
-    lineWidth: 3
+    stroke: Gfx.Color.YELLOW,
+    lineWidth: 2
   });
 };
 Renderer.prototype.drawLaser_ = function(entity, pos, style) {
@@ -130,9 +130,9 @@ Renderer.prototype.drawItem_ = function(item, pos) {
 
 var INTRO_SCROLL_SPEED = 10;
 var BATTLE_CAMERA_SPEED = 20;
-var BATTLE_ZOOM_SPEED = 20000;
-var TRANSITION_CAMERA_SPEED = 100;
-var TRANSITION_ZOOM_SPEED = 80000;
+var BATTLE_ZOOM_SPEED = 40000;
+var TRANSITION_CAMERA_SPEED = 20;
+var TRANSITION_ZOOM_SPEED = 40000;
 Renderer.prototype.handleCamera_ = function(dt) {
   if (this.gm_.scenes['intro'] == 'active' ||
     this.gm_.scenes['equip'] == 'active') {
@@ -150,9 +150,9 @@ Renderer.prototype.handleCamera_ = function(dt) {
     // Zoom camera.
     var dx = Math.abs(e1.x - this.screen_.x) - this.screen_.width / 2;
     var dy = Math.abs(e1.y - this.screen_.y) - this.screen_.height / 2;
-    if (dx > -40 || dy > -40) {
+    if (dx > -60 || dy > -60) {
       this.screen_.zoom(-BATTLE_ZOOM_SPEED * dt);
-    } else if (dx < -100 && dy < -100) {
+    } else if (dx < -120 && dy < -120) {
       this.screen_.zoom(BATTLE_ZOOM_SPEED * dt);
     }
   }
@@ -167,5 +167,11 @@ Renderer.prototype.handleCamera_ = function(dt) {
     } else {
       this.screen_.zoom(-zoom);
     }
+
+    // Pan camera.
+    var e1 = this.gm_.entities.obj['player'];
+    var e2 = this.gm_.entities.obj['enemy'];
+    var target = e1.dead ? e1 : e2;
+    _.moveTowards(this.screen_, target, dt * TRANSITION_CAMERA_SPEED);
   }
 };

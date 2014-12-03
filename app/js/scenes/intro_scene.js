@@ -2,15 +2,10 @@ var IntroScene = di.service('IntroScene', [
   'GameModel as gm', 'Screen', 'Entity', 'EntityDecorator']);
 
 IntroScene.prototype.init = function() {
-  this.gm_.scenes['intro'] = 'inactive';
+  this.name = 'intro';
 };
 
-IntroScene.prototype.start = function() {
-  this.gm_.scenes['intro'] = 'active';
-  this.addEntities_();
-};
-
-IntroScene.prototype.addEntities_ = function() {
+IntroScene.prototype.addEntities = function() {
   var d = this.entityDecorator_.getDecorators();
 
   var splash = this.entity_.create('splash');
@@ -29,22 +24,15 @@ IntroScene.prototype.removeEntities_ = function() {
   this.gm_.entities.clear();
 };
 
-IntroScene.prototype.update = function(dt) {
-  if (this.gm_.scenes['intro'] != 'active') return;
+IntroScene.prototype.update = function(dt, state) {
+  if (state != 'active') return;
 
   var newGameBtn = this.gm_.entities.obj['newGameBtn'];
   newGameBtn.setPos(0, this.screen_.pixelHeight / 4);
 
   if (this.gm_.entities.obj['newGameBtn'].clicked) {
-    this.gm_.scenes['intro'] = 'inactive';
+    this.gm_.scenes[this.name] = 'inactive';
     this.removeEntities_();
     this.gm_.scenes['battle'] = 'start';
-  }
-};
-
-IntroScene.prototype.resolve = function(dt) {
-  if (this.gm_.scenes['intro'] == 'start') {
-    this.start();
-    this.update(dt);
   }
 };

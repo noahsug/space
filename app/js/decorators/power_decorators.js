@@ -8,7 +8,7 @@ PowerDecorators.prototype.init = function() {
 PowerDecorators.prototype.decorateTeleport_ = function(obj, spec) {
   spec = _.options(spec, {
     cooldown: 0,
-    distance: 100
+    distance: 50
   });
 
   obj.teleport = {
@@ -30,7 +30,7 @@ PowerDecorators.prototype.decorateTeleport_ = function(obj, spec) {
   }.bind(this));
 
   var teleport = function() {
-    obj.x += spec.distance * this.random_.next() - spec.distance / 2;
-    obj.y += spec.distance * this.random_.next() - spec.distance / 2;
+    obj.x += this.random_.nextSign() * spec.distance;
+    obj.y += this.random_.nextSign() * spec.distance;
   }.bind(this);
 };
