@@ -14,10 +14,10 @@ Game.prototype.start = function() {
     this.equipScene_
   ].map(this.scene_.create.bind(this.scene_));
 
-  this.gm_.results.won = true;
-  this.gm_.results.earned = _.value(this.gameplay_.items);
+  //this.gm_.results.won = true;
+  //this.gm_.results.earned = _.value(this.gameplay_.items);
 
-  this.scenes_[2].start();
+  this.scenes_[1].start();
 };
 
 Game.prototype.setPlayerItems_ = function() {

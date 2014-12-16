@@ -27,9 +27,17 @@ GameRunner.prototype.stop = function() {
   this.running_ = false;
 };
 
+window.time = 0; // DEBUG
 GameRunner.prototype.step_ = function(prevStepTime) {
   var now = Date.now();
   var dt = (now - prevStepTime) / 1000;
+
+  // DEBUG
+  time += dt;
+  var r = time > .99 ? .1 : 10;
+  window.debug = time > 1.5;
+  // DEBUG
+
   dt = Math.min(dt, 1 / GameRunner.MIN_FPS);
   this.update_(dt);
   this.requestNextStep_();

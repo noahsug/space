@@ -157,6 +157,10 @@ _.repeat = function(str, times) {
   return new Array(times + 1).join(str);
 };
 
+_.splitOnCaps = function(str) {
+  return str.split(/(?=[A-Z])/);
+};
+
 _.moveTowards = function(source, target, maxDistance) {
   var dx = target.x - source.x;
   var dy = target.y - source.y;
@@ -193,6 +197,25 @@ _.ifDef = function(value, valueWhenUndefined) {
 _.pad = function(num, padding) {
   var numAsStr = '' + num;
   return _.repeat('0', padding - numAsStr.length) + numAsStr;
+};
+
+_.unimplemented = function() {
+  throw 'This function has not been implemented!';
+};
+
+_.geometry = {};
+var RADIANS_120 = _.radians(120);
+_.geometry.circumscribeTriangle = function(x, y, radius, rotation) {
+  var result = {};
+  result.x1 = Math.sin(rotation) * radius + x;
+  result.y1 = Math.cos(rotation) * radius + y;
+  rotation += RADIANS_120;
+  result.x2 = Math.sin(rotation) * radius + x;
+  result.y2 = Math.cos(rotation) * radius + y;
+  rotation += RADIANS_120;
+  result.x3 = Math.sin(rotation) * radius + x;
+  result.y3 = Math.cos(rotation) * radius + y;
+  return result;
 };
 
 _.class = {};

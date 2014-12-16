@@ -7,7 +7,7 @@ BasicDecorators.prototype.init = function() {
 
 BasicDecorators.prototype.decorateClickable_ = function(obj) {
   obj.update(function() {
-    obj.mouseOver = obj.collides(this.mouse_.x, this.mouse_.y);
+    obj.mouseOver = obj.collides(this.mouse_);
     obj.clicked = obj.mouseOver && this.mouse_.pressed;
   }.bind(this));
 };
@@ -17,8 +17,13 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
     health: 0
   });
   obj.health = spec.health;
+  obj.maxHealth = obj.health;
+  obj.act(function() {
+    obj.dmgTaken = 0;
+  });
   obj.dmg = function(dmg) {
     obj.health -= dmg;
+    obj.dmgTaken += dmg;
     obj.dead = obj.health <= 0;
   };
 };
@@ -29,10 +34,7 @@ BasicDecorators.prototype.decorateDmgCollision_ = function(obj, spec) {
   });
   obj.affect(function() {
     if (obj.dead) return;
-    var collides = _.some(obj.collidePoints, function(p) {
-      return obj.target.collides(p.x, p.y);
-    });
-    if (collides) {
+    if (obj.collides(obj.target)) {
       // TODO(sugarman): Create additive property (e.g. canAvoidCollision).
       if (obj.target.teleport && obj.target.teleport.ready) {
         obj.target.teleport.use = true;

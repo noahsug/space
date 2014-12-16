@@ -28,6 +28,6 @@ SeededRandom.prototype.nextInt = function(minOrMax, opt_max) {
   return Math.floor(this.next() * (max - min + 1) + min);
 };
 
-SeededRandom.prototype.nextSign = function() {
+SeededRandom.prototype.flipCoin = function() {
   return this.next() < .5;
 };

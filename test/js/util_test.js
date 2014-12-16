@@ -253,4 +253,17 @@ describe('Util function:', function() {
       expect(_.pad(3, 0)).toBe('3');
     });
   });
+
+  describe('circumscribeTriangle', function() {
+    it('returns points of a triangle circumscribed in a circle', function() {
+      var t1 = _.geometry.circumscribeTriangle(5, 10, 1, 0);
+      var t2 = _.geometry.circumscribeTriangle(5, 10, 1, _.radians(120));
+      expect(t1).toEqual({x1: t2.x3, y1: t2.y3,
+                          x2: t2.x1, y2: t2.y1,
+                          x3: t2.x2, y3: t2.y2});
+      expect(t1.x1 < t1.x2 && t1.x1 > t1.x3).toBe(true);
+      expect(t1.y1 > t1.y2 && t1.y1 > t1.y3).toBe(true);
+      expect(t1.y2).toBe(t1.y3);
+    });
+  });
 });

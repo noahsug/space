@@ -47,7 +47,6 @@ BattleScene.prototype.update = function(dt, state) {
     var enemy = this.gm_.entities.obj['enemy'];
     if (player.dead || enemy.dead) {
       if (!player.dead) {
-        player.health = 999999;
         this.gm_.results.won = true;
         this.rewardPlayer_();
       }
