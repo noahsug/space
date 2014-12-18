@@ -7,7 +7,8 @@ Gfx.Color = {
   RED: '#FF0000',
   GREEN: '#00FF00',
   BLUE: '#7799FF',
-  YELLOW: '#FFFF00'
+  YELLOW: '#FFFF00',
+  PINK: '#FFCCEE'
 };
 
 Gfx.DrawFn = {

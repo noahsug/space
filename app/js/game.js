@@ -66,4 +66,10 @@ Game.prototype.entityAction_ = function(dt) {
   for (var i = 0; i < this.gm_.entities.length; i++) {
     this.gm_.entities.arr[i].resolve(dt);
   }
+  for (var i = 0; i < this.gm_.entities.length; i++) {
+    if (this.gm_.entities.arr[i].remove) {
+      this.gm_.entities.remove(i);
+      i--;
+    }
+  }
 };

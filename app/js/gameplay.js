@@ -1,12 +1,16 @@
 di.constant('gameplayFile', {
   init: {
     player: [
+      //'basic laser',
       //'burst laser',
       //'grenade',
-      'razors',
+      //'razors',
+      //'sniper',
+      'stun',
       'radial II',
       'health II',
-      'circle'
+      'circle',
+      '+explosion size'
     ],
 
     inventory: [
@@ -40,6 +44,10 @@ di.constant('gameplayFile', {
   ],
 
   items: {
+    'basic laser': {
+      desc: 'Basic laser weapon.',
+      type: 'primary.basicLaser', spec: {},
+      level: 0},
     'burst laser': {
       desc: 'Fires a rapid volley of shots every 2 seconds.',
       type: 'primary.laser', spec: {},
@@ -56,6 +64,10 @@ di.constant('gameplayFile', {
       desc: 'Fires three powerful shots in three directions.',
       type:'primary.razors', spec: {},
       level: 0},
+    'sniper': {
+      desc: 'Fires a fast, powerful shot.',
+      type:'primary.sniper', spec: {},
+      level: 1},
 
     'stun': {
       desc: 'Shot that stuns the enemy on contact.',

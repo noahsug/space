@@ -96,6 +96,18 @@ _.parse = function(context, str) {
   return obj;
 };
 
+_.set = function(context, str, value) {
+  var obj = context;
+  var split = str.split('.');
+  for (var i = 0; i < split.length - 1; i++) {
+    var name = split[i];
+    obj[name] = _.isDef(obj[name]) ? obj[name] : {};
+    obj = obj[name];
+  }
+  var key = _.last(split);
+  obj[key] = value;
+};
+
 _.pickFunctions = function(obj, opt_options) {
   var fnMap = {};
   var op = _.defaults(opt_options || {}, {prefix: '', suffix: ''});
@@ -216,6 +228,17 @@ _.geometry.circumscribeTriangle = function(x, y, radius, rotation) {
   result.x3 = Math.sin(rotation) * radius + x;
   result.y3 = Math.cos(rotation) * radius + y;
   return result;
+};
+
+// Returns a set of angles evenly distributed across an angle.
+_.geometry.spread = function(angle, numPoints) {
+  var points = new Array(numPoints);
+  var da = angle / numPoints;
+  var start = angle / 2;
+  for (var i = 0; i < numPoints; i++) {
+    points[i] = da * i - start;
+  };
+  return points;
 };
 
 _.class = {};

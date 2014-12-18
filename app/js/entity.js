@@ -1,6 +1,9 @@
 var Entity = di.factory('Entity');
 
 Entity.prototype.init = function(type) {
+  this.effects = {
+    stun: {}
+  };
   this.type = type;
   this.setPos(0, 0);
   _.decorate(this, _.decorator.eventEmitter);
@@ -12,7 +15,7 @@ Entity.prototype.awake = _.decorator.eventEmitter.eventFn('awake');
 // Take action (e.g. shoot a laser).
 Entity.prototype.act_ = _.decorator.eventEmitter.eventFn('act');
 Entity.prototype.act = function(opt_callbackOrArg) {
-  if (!this.awakened_ && !_.isFunction(arguments[0])) {
+  if (!this.awakened_ && !_.isFunction(opt_callbackOrArg)) {
     this.awakened_ = true;
     this.awake();
   }

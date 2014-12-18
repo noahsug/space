@@ -1,6 +1,6 @@
 var GameRunner = di.service('GameRunner', [
   'Game', 'Mouse', 'Renderer', 'requestAnimationFrame',
-  'cancelAnimationFrame']);
+  'cancelAnimationFrame', 'GameModel as gm']);
 
 GameRunner.MIN_FPS = 10;
 
@@ -34,11 +34,12 @@ GameRunner.prototype.step_ = function(prevStepTime) {
 
   // DEBUG
   time += dt;
-  var r = time > .99 ? .1 : 10;
+  var r = time > .34 ? .1 : 10;
   window.debug = time > 1.5;
+  r = 1;
   // DEBUG
 
-  dt = Math.min(dt, 1 / GameRunner.MIN_FPS);
+  dt = Math.min(dt, 1 / GameRunner.MIN_FPS) * this.gm_.speed * r;
   this.update_(dt);
   this.requestNextStep_();
 };

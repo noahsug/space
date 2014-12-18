@@ -33,6 +33,14 @@ describe('Util function:', function() {
     });
   });
 
+  describe('set', function() {
+    it('sets a value multiple keys deep', function() {
+      var obj = {person: {name: 'sally'}};
+      _.set(obj, 'person.name', 'bob');
+      expect(obj.person.name).toBe('bob');
+    });
+  });
+
   describe('args', function() {
     it('returns the partitioned arguments as one array', function() {
       var result;

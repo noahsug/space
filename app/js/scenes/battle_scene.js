@@ -1,7 +1,7 @@
 var BattleScene = di.service('BattleScene', [
   'GameModel as gm', 'Screen', 'Entity', 'EntityDecorator', 'gameplay']);
 
-var TRANSITION_TIME = 1.2;
+var TRANSITION_TIME = 2;
 
 BattleScene.prototype.init = function() {
   this.name = 'battle';
@@ -30,13 +30,6 @@ BattleScene.prototype.addEntities = function() {
   enemy.target = player;
 };
 
-BattleScene.prototype.pauseEntities_ = function() {
-  var d = this.entityDecorator_.getDecorators();
-  for (var i = 0; i < this.gm_.entities.length; i++) {
-    _.decorate(this.gm_.entities.arr[i], d.slowToFreeze, {duration: 1.15});
-  }
-};
-
 BattleScene.prototype.removeEntities_ = function() {
   this.gm_.entities.clear();
 };
@@ -52,14 +45,16 @@ BattleScene.prototype.update = function(dt, state) {
       }
       this.gm_.scenes[this.name] = 'transition';
       this.transitionTime_ = TRANSITION_TIME;
-      this.pauseEntities_();
     }
   } else if (state == 'transition') {
-    this.transitionTime_ -= dt;
+    this.transitionTime_ -= dt / this.gm_.speed;
     if (this.transitionTime_ <= 0) {
       this.gm_.scenes[this.name] = 'transitionOver';
     }
+    this.gm_.speed =
+        Math.max(.01, .25 * this.transitionTime_ / TRANSITION_TIME);
   } else if (state == 'transitionOver') {
+    this.gm_.speed = 1;
     this.gm_.scenes[this.name] = 'inactive';
     this.removeEntities_();
     this.gm_.scenes['result'] = 'start';

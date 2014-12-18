@@ -13,7 +13,7 @@ Renderer.prototype.init = function() {
 };
 
 Renderer.prototype.update = function(dt) {
-  this.handleCamera_(dt);
+  this.handleCamera_(dt / this.gm_.speed);
   this.background_.draw();
   for (var i = 0; i < this.gm_.entities.length; i++) {
     this.drawEntity_(this.gm_.entities.arr[i], dt);
@@ -24,7 +24,7 @@ Renderer.prototype.update = function(dt) {
 var INTRO_SCROLL_SPEED = 10;
 var BATTLE_CAMERA_SPEED = 20;
 var BATTLE_ZOOM_SPEED = 40000;
-var TRANSITION_CAMERA_SPEED = 20;
+var TRANSITION_CAMERA_SPEED = 35;
 var TRANSITION_ZOOM_SPEED = 40000;
 Renderer.prototype.handleCamera_ = function(dt) {
   if (this.gm_.scenes['battle'] == 'inactive') {
@@ -178,11 +178,14 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
   this.gfx_.circle(pos.x, pos.y, entity.radius - 2);
 
   if (!entity.dead) {
-    var rotationSpeed = Math.max(entity.health, 0) / ROTATION_HEALTH_RATIO +
-        BASE_ROTATION;
-    entity.render.rotation += rotationSpeed * dt;
-    this.gfx_.setStyle(style[entity.style + 'Engine']);
+    if (!entity.effects.stun || !entity.effects.stun.value) {
+      var rotationSpeed = Math.max(entity.health, 0) / ROTATION_HEALTH_RATIO +
+          BASE_ROTATION;
+      entity.render.rotation += rotationSpeed * dt;
+    }
+      this.gfx_.setStyle(style[entity.style + 'Engine']);
     var sizeRatio = (entity.health / entity.maxHealth) * .75;
+
     entity.render.engineSize = (entity.radius - 2) * sizeRatio;
     var triangle = _.geometry.circumscribeTriangle(
         pos.x, pos.y, entity.render.engineSize, entity.render.rotation);
@@ -192,6 +195,7 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
   }
 };
 
+var SPEED_FUDGING = 8;
 Renderer.prototype.addLaserStyle_ = function(style) {
   style.weak = this.gfx_.addStyle({
     stroke: Gfx.Color.RED,
@@ -201,20 +205,28 @@ Renderer.prototype.addLaserStyle_ = function(style) {
     stroke: Gfx.Color.YELLOW,
     lineWidth: 4
   });
+  style.effect = this.gfx_.addStyle({
+    stroke: Gfx.Color.PINK,
+    lineWidth: 6
+  });
 };
 Renderer.prototype.drawLaser_ = function(entity, pos, style) {
-  if (entity.dead) return;
+  if (entity.dead) {
+    entity.remove = true;
+    return;
+  }
 
-  var length = 8;
-  if (entity.style == 'pellet') {
+  if (entity.style == 'bullet') {
     this.gfx_.setStyle(style.strong);
-    length = 4;
+  } else if (entity.style == 'effect') {
+    this.gfx_.setStyle(style.effect);
   } else {
     this.gfx_.setStyle(style.weak);
   }
-  var dx = Math.cos(entity.rotation) * length;
-  var dy = Math.sin(entity.rotation) * length;
-  this.gfx_.line(pos.x, pos.y, dx, dy);
+  var dx = Math.cos(entity.rotation) * SPEED_FUDGING;
+  var dy = Math.sin(entity.rotation) * SPEED_FUDGING;
+  this.gfx_.line(pos.x + dx, pos.y + dy,
+                 entity.dx - dx * 2, entity.dy - dy * 2);
 };
 
 var EXPLOSION_DURATION = .1;
@@ -229,7 +241,6 @@ Renderer.prototype.addBombStyle_ = function(style) {
   });
 };
 Renderer.prototype.drawBomb_ = function(entity, pos, style, dt) {
-  if (entity.remove) return;
   if (entity.dead) {
     // Draw explosion.
     if (!_.isDef(entity.render.explodeTime)) {
@@ -259,7 +270,10 @@ Renderer.prototype.addBladeStyle_ = function(style) {
   });
 };
 Renderer.prototype.drawBlade_ = function(entity, pos, style, dt) {
-  if (entity.dead) return;
+  if (entity.dead) {
+    entity.remove = true;
+    return;
+  }
   entity.render.rotation += dt * ROTATION_SPEED;
   var triangle = _.geometry.circumscribeTriangle(
       pos.x, pos.y, entity.radius - 1, entity.render.rotation);
