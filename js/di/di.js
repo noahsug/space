@@ -9,8 +9,8 @@ var Di = function Di() {
   _.decorate(this, _.decorator.eventEmitter);
 };
 
-Di.prototype.ready = _.decorator.eventEmitter.eventFn('ready');
-Di.prototype.start = _.decorator.eventEmitter.eventFn('start');
+Di.prototype.ready = _.eventFn('ready');
+Di.prototype.start = _.eventFn('start');
 
 Di.prototype.constant = function(name, impl) {
   this.implsToInit_[name] = {type: 'constant', impl: impl, deps: []};

@@ -4,26 +4,21 @@ var EquipScene = di.service('EquipScene', [
 EquipScene.MAX_INVENTORY_SIZE = 8;
 
 EquipScene.prototype.init = function() {
-  this.gm_.scenes['equip'] = 'inactive';
+  this.name = 'equip';
 };
 
-EquipScene.prototype.start = function() {
-  this.gm_.scenes['equip'] = 'active';
-  this.addEntities_();
-};
-
-EquipScene.prototype.addEntities_ = function() {
+EquipScene.prototype.addEntities = function() {
   this.createInventory_();
-  this.positionInventory_();
-  _.each(this.inventory_, function(slot, i) {
-    this.gm_.entities['inventorySlot' + i] = slot;
+  _.each(this.inventory_, function(slot) {
+    this.gm_.entities.add(slot);
   }, this);
 
   var d = this.entityDecorator_.getDecorators();
   var exitBtn = this.entity_.create('btn');
-  _.decorate(exitBtn, d.shape.text, {text: 'x', size: 40});
+  _.decorate(exitBtn, d.shape.text, {text: 'done', size: 20});
   _.decorate(exitBtn, d.clickable);
-  this.gm_.entities['exitBtn'] = exitBtn;
+  _.decorate(exitBtn, d.staticPosition);
+  this.gm_.entities.add(exitBtn, 'exitBtn');
 };
 
 EquipScene.prototype.createInventory_ = function() {
@@ -34,6 +29,7 @@ EquipScene.prototype.createInventory_ = function() {
     var slot = this.entity_.create('inventorySlot');
     _.decorate(slot, d.shape.circle, {radius: 35});
     _.decorate(slot, d.clickable);
+    _.decorate(slot, d.staticPosition);
     slot.equipped = false;
     this.inventory_.push(slot);
   }
@@ -53,40 +49,22 @@ EquipScene.prototype.isEquipped_ = function(item) {
   return this.getEquippedItemIndex_(item) != -1;
 };
 
-EquipScene.prototype.positionInventory_ = function() {
-  var GAP = 35;
-  var COLS = EquipScene.MAX_INVENTORY_SIZE / 2;
-  var WIDTH = this.inventory_[0].radius * 2;
-  var x = -((COLS - 1) * (WIDTH + GAP)) / 2;
-  for (var i = 0; i < this.inventory_.length / 2; i ++) {
-    var dy = (WIDTH + GAP) / 2;
-
-    var topSlot = this.inventory_[i];
-    topSlot.x = this.screen_.x + x;
-    topSlot.y = this.screen_.y - dy;
-
-    var bottomSlot = this.inventory_[i + this.inventory_.length / 2];
-    bottomSlot.x = topSlot.x;
-    bottomSlot.y = this.screen_.y + dy;
-
-    x += WIDTH + GAP;
-
-    if (!this.screen_.portrait) {
-      _.swap(bottomSlot, 'x', 'y');
-      _.swap(topSlot, 'x', 'y');
-    }
-  }
-};
-
 EquipScene.prototype.removeEntities_ = function() {
-  delete this.gm_.entities['exitBtn'];
-  _.each(this.inventory_, function(slot, i) {
-    delete this.gm_.entities['inventorySlot' + i];
-  }, this);
+  this.gm_.entities.clear();
 };
 
-EquipScene.prototype.update = function() {
-  if (this.gm_.scenes['equip'] != 'active') return;
+EquipScene.prototype.update = function(dt, state) {
+  var exitBtn = this.gm_.entities.obj['exitBtn'];
+  if (exitBtn.clicked) {
+    this.gm_.scenes[this.name] = 'inactive';
+    this.removeEntities_();
+    this.gm_.scenes['result'] = 'start';
+    return;
+  }
+
+  exitBtn.setPos(0, this.screen_.pixelHeight / 2 - 45 * this.screen_.upscale);
+
+  this.positionInventory_();
   _.each(this.inventory_, function(slot, i) {
     if (slot.item && slot.clicked) {
       slot.equipped = !slot.equipped;
@@ -98,21 +76,30 @@ EquipScene.prototype.update = function() {
       }
     }
   }, this);
-
-  var exitBtn = this.gm_.entities['exitBtn'];
-  exitBtn.x = this.screen_.x + this.screen_.width / 2 - 30;
-  exitBtn.y = this.screen_.y + -this.screen_.height / 2 + 30;
-
-  if (exitBtn.clicked) {
-    this.gm_.scenes['equip'] = 'inactive';
-    this.removeEntities_();
-    this.gm_.scenes['battle'] = 'start';
-  }
 };
 
-EquipScene.prototype.resolve = function(dt) {
-  if (this.gm_.scenes['equip'] == 'start') {
-    this.start();
-    this.update(dt);
+EquipScene.prototype.positionInventory_ = function() {
+  var GAP = 10 * this.screen_.upscale;
+  var COLS = EquipScene.MAX_INVENTORY_SIZE / 2;
+  var WIDTH = this.inventory_[0].radius * 2 * this.screen_.upscale;
+  var x = -((COLS - 1) * (WIDTH + GAP)) / 2;
+  for (var i = 0; i < this.inventory_.length / 2; i ++) {
+    var dy = (WIDTH + GAP) / 2;
+
+    var topSlot = this.inventory_[i];
+    topSlot.setPos(x, -dy);
+
+    var bottomSlot = this.inventory_[i + this.inventory_.length / 2];
+    bottomSlot.setPos(x, dy);
+
+    x += WIDTH + GAP;
+
+    if (!this.screen_.portrait) {
+      bottomSlot.setPos(bottomSlot.staticY, bottomSlot.staticX);
+      topSlot.setPos(topSlot.staticY, topSlot.staticX);
+    }
+
+    bottomSlot.setY(bottomSlot.staticY - 40);
+    topSlot.setY(topSlot.staticY - 40);
   }
 };
