@@ -6,11 +6,13 @@ di.constant('gameplayFile', {
       //'grenade',
       //'razors',
       //'sniper',
-      'stun',
+      //'stun',
+      'emp',
       'radial II',
       'health II',
       'circle',
-      '+explosion size'
+      '+explosion size',
+      'baboon'
     ],
 
     inventory: [
@@ -92,7 +94,7 @@ di.constant('gameplayFile', {
       level: 1},
     'mink': {
       desc: 'Small and agile, but deal less damage.',
-      type: 'ability.tiny', spec: {},
+      type: 'ability.mink', spec: {},
       level: 1},
     'mosquito': {
       desc: 'Low health but repair by dealing damage.',

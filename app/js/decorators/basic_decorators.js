@@ -19,11 +19,10 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
   obj.health = spec.health;
   obj.maxHealth = obj.health;
   obj.act(function() {
-    obj.dmgTaken = 0;
+    obj.prevHealth = obj.health;
   });
   obj.dmg = function(dmg) {
     obj.health -= dmg;
-    obj.dmgTaken += dmg;
     obj.dead = obj.health <= 0;
   };
 };
@@ -74,7 +73,7 @@ BasicDecorators.prototype.decorateEffect_ = function(obj, spec) {
       var effect = obj.effects[spec.effect];
       if (!effect.duration) return;
       if (effect.duration <= dt) {
-        effect.duration.value = 0;
+        effect.value = 0;
         effect.duration = 0;
         spec.effectOver();
       } else {
@@ -86,32 +85,29 @@ BasicDecorators.prototype.decorateEffect_ = function(obj, spec) {
   _.extend(obj.effects[spec.effect], spec);
 };
 
-BasicDecorators.prototype.decorateFreeze_ = function(obj) {
+BasicDecorators.prototype.decorateSlow_ = function(obj) {
   var prevFns = _.pick(obj, 'act', 'affect', 'resolve', 'update');
-  obj.act = obj.affect = obj.resolve = obj.update = Function;
+
+  _.each(prevFns, function(fn, name) {
+    obj[name] = this.slow_(fn.bind(obj), 0);
+  }, this);
+
   obj.unfreeze = function() {
     _.each(prevFns, function(fn, name) {
-      obj[name] = fn;
+      obj[name] = fn.bind(obj);
     });
   };
 };
 
-BasicDecorators.prototype.decorateSlowToFreeze_ = function(obj, spec) {
-  spec = _.options(spec, {
-    duration: 0
-  });
-  _.each(['act', 'affect', 'resolve', 'update'], function(fnName) {
-     obj[fnName] = slowDown(obj[fnName].bind(obj));
-  });
-
-  function slowDown(fn) {
-    var duration = spec.duration;
-    return function(dt) {
-      if (duration <= 0) return;
-      duration -= dt;
-      fn((dt / 4) * (duration + .2) / spec.duration);
-    };
-  }
+BasicDecorators.prototype.slow_ = function(fn, slow) {
+  return function(opt_callbackOrArg) {
+    if (_.isFunction(opt_callbackOrArg)) {
+      fn(opt_callbackOrArg);
+    } else {
+      var dt = opt_callbackOrArg;
+      fn(dt * slow);
+    }
+  };
 };
 
 BasicDecorators.prototype.decorateStaticPosition_ = function(obj) {

@@ -18,6 +18,7 @@ UtilityDecorators.prototype.decorateTeleport_ = function(obj, spec) {
 
   var cooldown = spec.cooldown;
   obj.act(function(dt) {
+    if (obj.effects.stunned.value) return;
     cooldown -= dt;
     obj.teleport.ready = cooldown <= 0;
   });

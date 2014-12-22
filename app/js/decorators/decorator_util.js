@@ -29,6 +29,7 @@ DecoratorUtil.prototype.fireLaser = function(obj, spec) {
 DecoratorUtil.prototype.fireBomb = function(obj, spec) {
   var d = this.entityDecorator_.getDecorators();
   var bomb = this.entity_.create('bomb');
+  bomb.style = spec.style;
   _.decorate(bomb, d.shape.circle, spec);
   return this.fireProjectile_(bomb, obj, spec);
 };
@@ -36,6 +37,7 @@ DecoratorUtil.prototype.fireBomb = function(obj, spec) {
 DecoratorUtil.prototype.fireBlade = function(obj, spec) {
   var d = this.entityDecorator_.getDecorators();
   var blade = this.entity_.create('blade');
+  blade.style = spec.style;
   _.decorate(blade, d.shape.circle, spec);
   return this.fireProjectile_(blade, obj, spec);
 };
@@ -49,6 +51,15 @@ DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
   return this.gm_.entities.arr[this.gm_.entities.length++] = projectile;
 };
 
+DecoratorUtil.prototype.mod = function(obj, prop, multiplier) {
+  if (obj.awakened) {
+    var value = _.parse(obj, prop);
+    _.set(obj, prop, value * multiplier);
+  } else {
+    obj.awake(this.mod.bind(this, obj, prop, multiplier));
+  }
+};
+
 DecoratorUtil.prototype.onCooldown = function(obj, act) {
   return new EntityCooldown(obj, act);
 };
@@ -57,14 +68,15 @@ var EntityCooldown = function(obj, act) {
   this.cooldown_ = 0;
   this.act_ = act;
   this.obj_ = obj;
-  obj.act(this.update_.bind(this));
+  obj.act(this.update_.bind(this, obj));
 };
 
 EntityCooldown.prototype.set = function(cooldown) {
   this.cooldown_ = cooldown;
 };
 
-EntityCooldown.prototype.update_ = function(dt) {
+EntityCooldown.prototype.update_ = function(obj, dt) {
+  if (obj.effects.stunned.value || obj.effects.weaponsDisabled.value) return;
   this.cooldown_ -= dt;
   if (this.cooldown_ <= 0) {
     var newCooldown = this.act_(dt);

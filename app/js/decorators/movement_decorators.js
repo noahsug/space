@@ -17,6 +17,7 @@ MovementDecorators.prototype.decorateRadial_ = function(obj, spec) {
   });
 
   obj.update(function(dt) {
+    if (obj.effects.stunned.value) return;
     if (obj.dead) return;
     var currentAngle = _.angle(target.x, target.y, obj.x, obj.y);
     var dx = obj.x - target.x;

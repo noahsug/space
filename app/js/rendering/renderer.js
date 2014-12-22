@@ -178,12 +178,16 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
   this.gfx_.circle(pos.x, pos.y, entity.radius - 2);
 
   if (!entity.dead) {
-    if (!entity.effects.stun || !entity.effects.stun.value) {
+    if (!entity.effects.stunned.value) {
       var rotationSpeed = Math.max(entity.health, 0) / ROTATION_HEALTH_RATIO +
           BASE_ROTATION;
       entity.render.rotation += rotationSpeed * dt;
     }
+    if (entity.effects.weaponsDisabled.value) {
+      this.gfx_.setStyle(style.damagedEngine);
+    } else {
       this.gfx_.setStyle(style[entity.style + 'Engine']);
+    }
     var sizeRatio = (entity.health / entity.maxHealth) * .75;
 
     entity.render.engineSize = (entity.radius - 2) * sizeRatio;
@@ -236,8 +240,15 @@ Renderer.prototype.addBombStyle_ = function(style) {
     stroke: Gfx.Color.BLUE,
     lineWidth: 2
   });
+  style.effect = this.gfx_.addStyle({
+    stroke: Gfx.Color.PINK,
+    lineWidth: 2
+  });
   style.explode = this.gfx_.addStyle({
     fill: Gfx.Color.YELLOW
+  });
+  style.effectExplode = this.gfx_.addStyle({
+    fill: Gfx.Color.BLUE
   });
 };
 Renderer.prototype.drawBomb_ = function(entity, pos, style, dt) {
@@ -249,12 +260,20 @@ Renderer.prototype.drawBomb_ = function(entity, pos, style, dt) {
 
     entity.render.explodeTime += dt;
     var ratio = Math.min(entity.render.explodeTime / EXPLOSION_DURATION, 1);
-    this.gfx_.setStyle(style.explode);
+    if (entity.style == 'effect') {
+      this.gfx_.setStyle(style.effectExplode);
+    } else {
+      this.gfx_.setStyle(style.explode);
+    }
     this.gfx_.circle(pos.x, pos.y, Math.pow(ratio, 2) * entity.radius);
 
     if (ratio == 1) entity.remove = true;
   } else {
-    this.gfx_.setStyle(style.normal);
+    if (entity.style == 'effect') {
+      this.gfx_.setStyle(style.effect);
+    } else {
+      this.gfx_.setStyle(style.normal);
+    }
     this.gfx_.circle(pos.x, pos.y, entity.radius * NORMAL_SIZE);
   }
 };

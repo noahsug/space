@@ -13,3 +13,13 @@ EventEmitter.prototype.emit = function(event, arg) {
     this.listeners_[event][i](arg);
   }
 };
+
+_.eventFn = function(event) {
+  return function(opt_callbackOrArg) {
+    if (_.isFunction(opt_callbackOrArg)) {
+      this.on(event, opt_callbackOrArg);
+    } else {
+      this.emit_(event, opt_callbackOrArg);
+    }
+  };
+};

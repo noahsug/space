@@ -16,30 +16,34 @@ SecondaryDecorators.prototype.decorateStun_ = function(obj) {
     length: 4 + 16,
     duration: 1,
     style: 'effect',
-    effect: 'stun'
+    effect: 'stunned'
   };
 
-  this.addWeapon_(obj, function() {
-    var projectile = this.util_.fireLaser(obj, obj.secondary);
-    _.decorate(projectile, this.d_.collision, {
-      collide: this.stun_.bind(this),
-      dmg: obj.secondary.dmg,
-      duration: obj.secondary.duration,
-      effect: obj.secondary.effect
-    });
+  this.addEffectWeapon_(obj, this.util_.fireLaser.bind(this.util_));
+};
+
+SecondaryDecorators.prototype.decorateEmp_ = function(obj) {
+  obj.secondary = {
+    dmg: 2,
+    speed: 300,
+    accuracy: _.radians(40),
+    cooldown: 1.5,
+    radius: 20,
+    duration: 1.5,
+    style: 'effect',
+    effect: 'weaponsDisabled'
+  };
+
+  this.addEffectWeapon_(obj, this.util_.fireBomb.bind(this.util_));
+};
+
+SecondaryDecorators.prototype.addEffectWeapon_ = function(obj, fire) {
+  this.util_.addWeapon(obj, obj.secondary, function() {
+    var projectile = fire(obj, obj.secondary);
+    var spec = _.clone(obj.secondary);
+    spec.collide = this.effect_.bind(this);
+    _.decorate(projectile, this.d_.collision, spec);
   }.bind(this));
-};
-
-SecondaryDecorators.prototype.addWeapon_ = function(obj, fire) {
-  return this.util_.addWeapon(obj, obj.secondary, fire);
-};
-
-SecondaryDecorators.prototype.stun_ = function(obj, spec) {
-  _.decorate(obj.target, this.d_.freeze);
-  spec.effectOver = function() {
-    obj.target.unfreeze();
-  };
-  this.effect_(obj, spec);
 };
 
 SecondaryDecorators.prototype.effect_ = function(obj, spec) {

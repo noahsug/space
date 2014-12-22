@@ -112,7 +112,7 @@ describe('Util function:', function() {
 
       describe('.eventFn', function() {
         beforeEach(function() {
-          obj.ready = _.decorator.eventEmitter.eventFn('ready');
+          obj.ready = _.eventFn('ready');
         });
 
         it('listeners get notified when the event fn is called', function() {

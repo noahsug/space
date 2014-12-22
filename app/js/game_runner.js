@@ -34,9 +34,10 @@ GameRunner.prototype.step_ = function(prevStepTime) {
 
   // DEBUG
   time += dt;
-  var r = time > .34 ? .1 : 10;
-  window.debug = time > 1.5;
+  var r = time > 1 ? .1 : 10;
+  r = time > 1.5 ? 1 : 10;
   r = 1;
+  window.debug = time > 1.5;
   // DEBUG
 
   dt = Math.min(dt, 1 / GameRunner.MIN_FPS) * this.gm_.speed * r;
