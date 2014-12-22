@@ -14,16 +14,17 @@ _.valueOrFn = function(valueOrFn, var_args) {
   }
 };
 
+// Warning: Very slow.
 _.args = function(args, opt_indexes) {
-  var indexes = _.toArray(arguments).slice(1);
-  if (indexes.length == 0) {
-    indexes = [0];
+  if (arguments.length == 1) {
+    return _.toArray(args);
   }
+  var indexes = _.toArray(arguments).slice(1);
   var selections = _.initial(indexes);
   var rest = _.last(indexes);
-  var output = [];
+  var output = new Array(selections.length);
   selections.forEach(function(i) {
-    output.push(args[i]);
+    output[i] = args[i];
   });
   return output.concat(_.toArray(args).slice(rest));
 };
@@ -95,6 +96,18 @@ _.parse = function(context, str) {
   return obj;
 };
 
+_.set = function(context, str, value) {
+  var obj = context;
+  var split = str.split('.');
+  for (var i = 0; i < split.length - 1; i++) {
+    var name = split[i];
+    obj[name] = _.isDef(obj[name]) ? obj[name] : {};
+    obj = obj[name];
+  }
+  var key = _.last(split);
+  obj[key] = value;
+};
+
 _.pickFunctions = function(obj, opt_options) {
   var fnMap = {};
   var op = _.defaults(opt_options || {}, {prefix: '', suffix: ''});
@@ -156,6 +169,10 @@ _.repeat = function(str, times) {
   return new Array(times + 1).join(str);
 };
 
+_.splitOnCaps = function(str) {
+  return str.split(/(?=[A-Z])/);
+};
+
 _.moveTowards = function(source, target, maxDistance) {
   var dx = target.x - source.x;
   var dy = target.y - source.y;
@@ -174,11 +191,54 @@ _.distance = function(p1, p2) {
 };
 
 _.generate = function(generator, length, opt_thisObj) {
-  var list = [];
+  var list = new Array(length);
   for (var i = 0; i < length; i++) {
-    list.push(generator.call(opt_thisObj, i));
+    list[i] = generator.call(opt_thisObj, i);
   }
   return list;
+};
+
+_.options = function(options, expected) {
+  return _.defaults(options || {}, expected);
+};
+
+_.ifDef = function(value, valueWhenUndefined) {
+  return _.isDef(value) ? value : valueWhenUndefined;
+};
+
+_.pad = function(num, padding) {
+  var numAsStr = '' + num;
+  return _.repeat('0', padding - numAsStr.length) + numAsStr;
+};
+
+_.unimplemented = function() {
+  throw 'This function has not been implemented!';
+};
+
+_.geometry = {};
+var RADIANS_120 = _.radians(120);
+_.geometry.circumscribeTriangle = function(x, y, radius, rotation) {
+  var result = {};
+  result.x1 = Math.sin(rotation) * radius + x;
+  result.y1 = Math.cos(rotation) * radius + y;
+  rotation += RADIANS_120;
+  result.x2 = Math.sin(rotation) * radius + x;
+  result.y2 = Math.cos(rotation) * radius + y;
+  rotation += RADIANS_120;
+  result.x3 = Math.sin(rotation) * radius + x;
+  result.y3 = Math.cos(rotation) * radius + y;
+  return result;
+};
+
+// Returns a set of angles evenly distributed across an angle.
+_.geometry.spread = function(angle, numPoints) {
+  var points = new Array(numPoints);
+  var da = angle / numPoints;
+  var start = angle / 2;
+  for (var i = 0; i < numPoints; i++) {
+    points[i] = da * i - start;
+  };
+  return points;
 };
 
 _.class = {};

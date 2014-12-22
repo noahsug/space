@@ -1,6 +1,7 @@
 var SeededRandom = function(opt_seed) {
   this.seed();
-  this.seedIncrement_ = .1379;
+  this.seedIncrement_ = 1379.1379;
+  this.useTrueRandom_ = false;
 };
 
 SeededRandom.prototype.seed = function(opt_seed, opt_increment) {
@@ -12,7 +13,12 @@ SeededRandom.prototype.getSeed = function() {
   return this.seed_;
 };
 
+SeededRandom.prototype.trueRandom = function(enable) {
+  this.useTrueRandom_ = enable;
+};
+
 SeededRandom.prototype.next = function() {
+  if (this.useTrueRandom_) return Math.random();
   var r = _.pseudorandom(this.seed_);
   this.seed_ += this.seedIncrement_;
   return r;
@@ -26,4 +32,8 @@ SeededRandom.prototype.nextInt = function(minOrMax, opt_max) {
     min = 0;
   }
   return Math.floor(this.next() * (max - min + 1) + min);
+};
+
+SeededRandom.prototype.flipCoin = function() {
+  return this.next() < .5;
 };

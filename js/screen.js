@@ -9,7 +9,7 @@ Screen.prototype.init = function() {
 
 Screen.prototype.setSurfaceArea = function(area) {
   this.surfaceArea_ = area;
-  this.resize({resizeBg: true});
+  this.resize();
 };
 
 Screen.prototype.getSurfaceArea = function() {
@@ -18,7 +18,7 @@ Screen.prototype.getSurfaceArea = function() {
 
 Screen.prototype.zoom = function(amount) {
   this.surfaceArea_ -= amount;
-  this.resize();
+  this.resize({resizeBg: false});
 };
 
 Screen.prototype.center = function(x, y) {
@@ -49,20 +49,22 @@ Screen.prototype.canvasToDraw = function(x, y, opt_z) {
 };
 
 Screen.prototype.resize = function(opt_options) {
-  var upscale = this.getUpscale_();
-  this.resizeCanvas_(upscale, this.canvas_);
-  if (opt_options && opt_options.resizeBg) {
-    _.each(this.bgCanvasList_, this.resizeCanvas_.bind(this, upscale));
+  this.upscale = this.getUpscale_();
+  this.resizeCanvas_(this.canvas_);
+  if (!opt_options || opt_options.resizeBg) {
+    _.each(this.bgCanvasList_, this.resizeCanvas_.bind(this));
   }
 
   this.width = this.canvas_.width;
   this.height = this.canvas_.height;
+  this.pixelWidth = this.window_.innerWidth;
+  this.pixelHeight = this.window_.innerHeight;
   this.portrait = this.width > this.height;
 };
 
-Screen.prototype.resizeCanvas_ = function(upscale, canvas) {
-  canvas.width = this.window_.innerWidth / upscale;
-  canvas.height = this.window_.innerHeight / upscale;
+Screen.prototype.resizeCanvas_ = function(canvas) {
+  canvas.width = this.window_.innerWidth / this.upscale;
+  canvas.height = this.window_.innerHeight / this.upscale;
   canvas.style.width = this.window_.innerWidth + 'px';
   canvas.style.height = this.window_.innerHeight + 'px';
 };
