@@ -151,10 +151,12 @@ var BASE_ROTATION = 1;
 Renderer.prototype.initShip_ = function(entity) {
   entity.render.rotation = 0;
   entity.render.engineSize = entity.radius;
+  entity.render.damaged = 0;
+  entity.render.damageDuration = 0;
+  entity.render.radius = entity.radius;
 };
 Renderer.prototype.addShipStyle_ = function(style) {
   var baseStyle = {
-    fill: Gfx.Color.BLACK,
     lineWidth: 3
   };
   style.good = this.gfx_.addStyle(_.extend({
@@ -169,34 +171,60 @@ Renderer.prototype.addShipStyle_ = function(style) {
   style.badEngine = this.gfx_.addStyle({
     stroke: Gfx.Color.RED
   });
-  style.damagedEngine = this.gfx_.addStyle({
+  style.affectedEngine = this.gfx_.addStyle({
     stroke: Gfx.Color.BLUE
   });
 };
 Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
-  this.gfx_.setStyle(style[entity.style]);
-  this.gfx_.circle(pos.x, pos.y, entity.radius - 2);
-
   if (!entity.dead) {
+    // Don't resize instantly.
+    var rGap = entity.radius - entity.render.radius;
+    if (rGap) {
+      var dr = Math.sign(rGap) * 10 * dt;
+      if (Math.abs(rGap) < Math.abs(dr)) {
+        entity.render.radius = entity.radius;
+      } else {
+        entity.render.radius += dr;
+      }
+    }
+
+    // Shake afer taking damage.
+    var damage = entity.prevHealth - entity.health;
+    if (damage) {
+      entity.render.damageDuration = 3;
+      entity.render.damage = 2 + damage / 2;
+    }
+    if (entity.render.damageDuration) {
+      pos.x += Math.random() * entity.render.damage;
+      pos.y += Math.random() * entity.render.damage;
+      entity.render.damageDuration--;
+    }
+
+    // Rotate / size engine based on remaining health.
     if (!entity.effects.stunned.value) {
       var rotationSpeed = Math.max(entity.health, 0) / ROTATION_HEALTH_RATIO +
           BASE_ROTATION;
       entity.render.rotation += rotationSpeed * dt;
     }
     if (entity.effects.weaponsDisabled.value) {
-      this.gfx_.setStyle(style.damagedEngine);
+      this.gfx_.setStyle(style.affectedEngine);
     } else {
       this.gfx_.setStyle(style[entity.style + 'Engine']);
     }
-    var sizeRatio = (entity.health / entity.maxHealth) * .75;
+    var sizeRatio = (entity.health / entity.maxHealth) * .8 + .2;
 
-    entity.render.engineSize = (entity.radius - 2) * sizeRatio;
+    // Draw engine.
+    entity.render.engineSize = (entity.render.radius - 4) * sizeRatio;
     var triangle = _.geometry.circumscribeTriangle(
         pos.x, pos.y, entity.render.engineSize, entity.render.rotation);
     this.gfx_.triangle(triangle.x1, triangle.y1,
                        triangle.x2, triangle.y2,
                        triangle.x3, triangle.y3);
   }
+
+  // Draw ship.
+  this.gfx_.setStyle(style[entity.style]);
+  this.gfx_.circle(pos.x, pos.y, entity.render.radius - 2);
 };
 
 var SPEED_FUDGING = 8;

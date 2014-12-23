@@ -20,9 +20,9 @@ AbilityDecorators.prototype.decorateMink_ = function(obj) {
 
 AbilityDecorators.prototype.decorateRage_ = function(obj) {
   var spec = {
-    radius: 1.35,
-    dmg: 1.3,
-    enrageHealth: .5
+    radius: 1.5,
+    dmg: 1.5,
+    enrageHealth: .9
   };
 
   obj.resolve(function() {

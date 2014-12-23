@@ -16,8 +16,7 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
   spec = _.options(spec, {
     health: 0
   });
-  obj.health = spec.health;
-  obj.maxHealth = obj.health;
+  obj.health = obj.maxHealth = obj.prevHealth = spec.health;
   obj.act(function() {
     obj.prevHealth = obj.health;
   });
