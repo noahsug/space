@@ -31,41 +31,6 @@ Renderer.prototype.handleCamera_ = function(dt) {
     this.screen_.x -= INTRO_SCROLL_SPEED * dt;
     this.screen_.y -= INTRO_SCROLL_SPEED * dt;
   }
-
-  if (this.gm_.scenes['battle'] == 'active') {
-    // Pan camera.
-    var e1 = this.gm_.entities.obj['player'];
-    var e2 = this.gm_.entities.obj['enemy'];
-    var target = {x: (e1.x + e2.x) / 2, y: (e1.y + e2.y) / 2};
-    _.moveTowards(this.screen_, target, dt * BATTLE_CAMERA_SPEED);
-
-    // Zoom camera.
-    var dx = Math.abs(e1.x - this.screen_.x) - this.screen_.width / 2;
-    var dy = Math.abs(e1.y - this.screen_.y) - this.screen_.height / 2;
-    if (dx > -60 || dy > -60) {
-      this.screen_.zoom(-BATTLE_ZOOM_SPEED * dt);
-    } else if (dx < -120 && dy < -120) {
-      this.screen_.zoom(BATTLE_ZOOM_SPEED * dt);
-    }
-  }
-
-  if (this.gm_.scenes['battle'] == 'transition') {
-    // Zoom camera
-    var difference =
-        this.screen_.getSurfaceArea() - Screen.DESIRED_SURFACE_AREA;
-    var zoom = Math.min(TRANSITION_ZOOM_SPEED * dt, Math.abs(difference));
-    if (difference > 0) {
-      this.screen_.zoom(zoom);
-    } else {
-      this.screen_.zoom(-zoom);
-    }
-
-    // Pan camera.
-    var e1 = this.gm_.entities.obj['player'];
-    var e2 = this.gm_.entities.obj['enemy'];
-    var target = e1.dead ? e1 : e2;
-    _.moveTowards(this.screen_, target, dt * TRANSITION_CAMERA_SPEED);
-  }
 };
 
 Renderer.prototype.drawEntity_ = function(entity, dt) {
@@ -306,7 +271,7 @@ Renderer.prototype.drawBomb_ = function(entity, pos, style, dt) {
   }
 };
 
-var ROTATION_SPEED = 8;
+var ROTATION_SPEED = 10;
 Renderer.prototype.initBlade_ = function(entity) {
   entity.render.rotation = 0;
 };

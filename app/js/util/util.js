@@ -199,7 +199,7 @@ _.generate = function(generator, length, opt_thisObj) {
 };
 
 _.options = function(options, expected) {
-  return _.defaults(options || {}, expected);
+  return _.defaults((options && _.clone(options)) || {}, expected);
 };
 
 _.ifDef = function(value, valueWhenUndefined) {
@@ -233,7 +233,7 @@ _.geometry.circumscribeTriangle = function(x, y, radius, rotation) {
 // Returns a set of angles evenly distributed across an angle.
 _.geometry.spread = function(angle, numPoints) {
   var points = new Array(numPoints);
-  var da = angle / numPoints;
+  var da = angle / (numPoints - 1);
   var start = angle / 2;
   for (var i = 0; i < numPoints; i++) {
     points[i] = da * i - start;

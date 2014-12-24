@@ -46,7 +46,7 @@ MovementDecorators.prototype.decorateStraight_ = function(obj, spec) {
   obj.awake(function() {
     obj.rotation = _.angle(obj.x, obj.y, obj.target.x, obj.target.y);
     var a = this.random_.next() * spec.accuracy;
-    obj.rotation += a - a / 2;
+    obj.rotation += spec.accuracy / 2 - a;
     obj.rotation += spec.dangle;
   }.bind(this));
 

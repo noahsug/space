@@ -4,11 +4,11 @@ di.constant('gameplayFile', {
       //'basic laser',
       //'burst laser',
       //'grenade',
-      //'razors',
+      'razors',
       //'sniper',
       //'stun',
-      'emp',
-      'radial II',
+      //'emp',
+      'speed I',
       'health II',
       'circle',
       '+explosion size',
@@ -18,17 +18,16 @@ di.constant('gameplayFile', {
     inventory: [
       'shotgun',
       'teleport',
-      'burst laser',
-      'radial II',
+      'burst laser'
     ]
   },
 
   level: [
     {
       enemy: [
-        'shotgun',
+        //'shotgun',
         'teleport',
-        'radial I',
+        'speed I',
         'health II',
         'circle',
         '+health'
@@ -52,7 +51,7 @@ di.constant('gameplayFile', {
       level: 0},
     'burst laser': {
       desc: 'Fires a rapid volley of shots every 2 seconds.',
-      type: 'primary.laser', spec: {},
+      type: 'primary.burstLaser', spec: {},
       level: 0},
     'shotgun': {
       desc: 'Fires a powerful burst of shots in an arc.',
@@ -142,6 +141,9 @@ di.constant('gameplayFile', {
       desc: 'Stuns, slows and disables last 20% longer.',
       type: 'mod.disable', spec: {duration: 1.2}},
 
+
+    // Non-collectables.
+
     'radial I': {
       desc: 'Move in a circle around the enemy.',
       type:'movement.radial', spec: {speed: 100},
@@ -150,6 +152,10 @@ di.constant('gameplayFile', {
       desc: 'Move in a circle around the enemy.',
       type:'movement.radial', spec: {speed: 135},
       level: 1},
+    'speed I': {
+      desc: '135 speed',
+      type:'movement.ai', spec: {speed: 135},
+      level: 0},
 
     'circle': {
       desc: 'Circle',

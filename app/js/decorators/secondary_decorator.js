@@ -40,9 +40,8 @@ SecondaryDecorators.prototype.decorateEmp_ = function(obj) {
 SecondaryDecorators.prototype.addEffectWeapon_ = function(obj, fire) {
   this.util_.addWeapon(obj, obj.secondary, function() {
     var projectile = fire(obj, obj.secondary);
-    var spec = _.clone(obj.secondary);
     spec.collide = this.effect_.bind(this);
-    _.decorate(projectile, this.d_.collision, spec);
+    _.decorate(projectile, this.d_.collision, obj.secondary);
   }.bind(this));
 };
 

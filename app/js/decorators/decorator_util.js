@@ -11,9 +11,12 @@ DecoratorUtil.prototype.addWeapon = function(obj, spec, fire) {
 };
 
 DecoratorUtil.prototype.fireSpread_ = function(obj, spec, fire) {
-  var spread = _.geometry.spread(obj.primary.spread, obj.primary.projectiles);
-  for (var i = 0; i < spread.length; i++) {
-    spec.dangle = spread[i];
+  if (!obj.spreadPoints) {
+    // Save some time by only computing spread once.
+    obj.spreadPoints = _.geometry.spread(spec.spread, spec.projectiles);
+  }
+  for (var i = 0; i < obj.spreadPoints.length; i++) {
+    spec.dangle = obj.spreadPoints[i];
     fire(obj, spec);
   }
 };

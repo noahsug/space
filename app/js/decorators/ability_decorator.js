@@ -29,8 +29,8 @@ AbilityDecorators.prototype.decorateRage_ = function(obj) {
     var enrage = obj.maxHealth * spec.enrageHealth;
     if (obj.health <= enrage && obj.prevHealth > enrage) {
       obj.radius *= spec.radius;
-      obj.primary.dmg *= spec.dmg;
-      obj.secondary.dmg *= spec.dmg;
+      if (obj.primary) obj.primary.dmg *= spec.dmg;
+      if (obj.secondary) obj.secondary.dmg *= spec.dmg;
       return;
     }
 
