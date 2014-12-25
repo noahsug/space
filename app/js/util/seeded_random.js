@@ -13,7 +13,7 @@ SeededRandom.prototype.getSeed = function() {
   return this.seed_;
 };
 
-SeededRandom.prototype.trueRandom = function(enable) {
+SeededRandom.prototype.useTrueRandom = function(enable) {
   this.useTrueRandom_ = enable;
 };
 

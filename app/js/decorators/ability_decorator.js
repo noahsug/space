@@ -22,7 +22,7 @@ AbilityDecorators.prototype.decorateRage_ = function(obj) {
   var spec = {
     radius: 1.5,
     dmg: 1.5,
-    enrageHealth: .9
+    enrageHealth: .5
   };
 
   obj.resolve(function() {

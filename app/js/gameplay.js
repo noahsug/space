@@ -27,7 +27,7 @@ di.constant('gameplayFile', {
       enemy: [
         'shotgun',
         'teleport',
-        'radial I',
+        'speed II',
         'health II',
         'circle',
         '+health'
@@ -154,7 +154,11 @@ di.constant('gameplayFile', {
       level: 1},
     'speed I': {
       desc: '135 speed',
-      type:'movement.ai', spec: {speed: 70},
+      type:'movement.ai', spec: {speed: 100, distance: 100},
+      level: 0},
+    'speed II': {
+      desc: '135 speed',
+      type:'movement.ai', spec: {speed: 100, distance: 400},
       level: 0},
 
     'circle': {
@@ -163,9 +167,9 @@ di.constant('gameplayFile', {
 
     'health I': {
       desc: '20 health',
-      type: 'health', spec: {health: 20}},
+      type: 'health', spec: {health: 80}},
     'health II': {
       desc: '25 health',
-      type: 'health', spec: {health: 25}}
+      type: 'health', spec: {health: 85}}
   }
 });

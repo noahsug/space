@@ -21,7 +21,7 @@ BattleScene.prototype.addEntities = function() {
   enemy.style = 'bad';
   this.gm_.entities.add(enemy, 'enemy');
 
-  player.y = this.screen_.y + 100;
+  player.y = this.screen_.y;
   player.x = this.screen_.x;
   enemy.y = this.screen_.y - 100;
   enemy.x = this.screen_.x;

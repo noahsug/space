@@ -66,11 +66,18 @@ _.assert = function(truth, msg) {
 };
 
 _.angle = function(p1, p2) {
+  if (!p2) {
+    p2 = p1;
+    p1 = {x: 0, y: 0};
+  }
   var dx = p2.x - p1.x;
   var dy = p2.y - p1.y;
-  var angle = Math.atan(dy / dx) + Math.PI * 2;
+  var angle = Math.atan(dy / dx);
   if (dx < 0) {
     angle += Math.PI;
+  }
+  if (angle < 0) {
+    angle += Math.PI * 2;
   }
   return angle;
 };
@@ -215,16 +222,20 @@ _.unimplemented = function() {
   throw 'This function has not been implemented!';
 };
 
+_.RADIANS_90 = _.radians(90);
+_.RADIANS_120 = _.radians(120);
+_.RADIANS_180 = _.radians(180);
+_.RADIANS_360 = _.radians(360);
+
 _.geometry = {};
-var RADIANS_120 = _.radians(120);
 _.geometry.circumscribeTriangle = function(x, y, radius, rotation) {
   var result = {};
   result.x1 = Math.sin(rotation) * radius + x;
   result.y1 = Math.cos(rotation) * radius + y;
-  rotation += RADIANS_120;
+  rotation += _.RADIANS_120;
   result.x2 = Math.sin(rotation) * radius + x;
   result.y2 = Math.cos(rotation) * radius + y;
-  rotation += RADIANS_120;
+  rotation += _.RADIANS_120;
   result.x3 = Math.sin(rotation) * radius + x;
   result.y3 = Math.cos(rotation) * radius + y;
   return result;
@@ -243,10 +254,35 @@ _.geometry.spread = function(angle, numPoints) {
 
 _.vector = {};
 _.vector.cartesian = function(v) {
-  if (!v.x || !v.y) {
+  if (!_.isDef(v.x) && !_.isDef(v.y)) {
     v.x = Math.cos(v.angle) * v.length;
     v.y = Math.sin(v.angle) * v.length;
+    delete v.angle;
+    delete v.length;
   }
+};
+
+_.vector.add = function(v1, v2) {
+  _.vector.cartesian(v1);
+  _.vector.cartesian(v2);
+  v1.x += v2.x;
+  v1.y += v2.y;
+};
+
+_.vector.normalize = function(v) {
+  if (v.x && v.y) {
+    var d = Math.hypot(v.x, v.y);
+    v.x /= d;
+    v.y /= d;
+  } else {
+    v.x = v.y = 0;
+  }
+};
+
+_.vector.EMPTY = {x: 0, y: 0, angle: 0, length: 0};
+
+_.vector.isEmpty = function(v) {
+  return v.x == 0 && v.y == 0;
 };
 
 _.class = {};

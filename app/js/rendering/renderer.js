@@ -22,10 +22,6 @@ Renderer.prototype.update = function(dt) {
 };
 
 var INTRO_SCROLL_SPEED = 10;
-var BATTLE_CAMERA_SPEED = 20;
-var BATTLE_ZOOM_SPEED = 40000;
-var TRANSITION_CAMERA_SPEED = 35;
-var TRANSITION_ZOOM_SPEED = 40000;
 Renderer.prototype.handleCamera_ = function(dt) {
   if (this.gm_.scenes['battle'] == 'inactive') {
     this.screen_.x -= INTRO_SCROLL_SPEED * dt;
@@ -154,15 +150,17 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
     }
 
     // Shake afer taking damage.
-    var damage = entity.prevHealth - entity.health;
-    if (damage) {
-      entity.render.damageDuration = 3;
-      entity.render.damage = 2 + damage / 2;
-    }
-    if (entity.render.damageDuration) {
-      pos.x += Math.random() * entity.render.damage;
-      pos.y += Math.random() * entity.render.damage;
-      entity.render.damageDuration--;
+    if (this.gm_.scenes['battle'] == 'active') {
+      var damage = entity.prevHealth - entity.health;
+      if (damage) {
+        entity.render.damageDuration = 3;
+        entity.render.damage = 2 + damage / 2;
+      }
+      if (entity.render.damageDuration) {
+        pos.x += Math.random() * entity.render.damage;
+        pos.y += Math.random() * entity.render.damage;
+        entity.render.damageDuration--;
+      }
     }
 
     // Rotate / size engine based on remaining health.
