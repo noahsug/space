@@ -25,9 +25,9 @@ di.constant('gameplayFile', {
   level: [
     {
       enemy: [
-        //'shotgun',
+        'shotgun',
         'teleport',
-        'speed I',
+        'radial I',
         'health II',
         'circle',
         '+health'
@@ -146,7 +146,7 @@ di.constant('gameplayFile', {
 
     'radial I': {
       desc: 'Move in a circle around the enemy.',
-      type:'movement.radial', spec: {speed: 100},
+      type:'movement.radial', spec: {speed: 70},
       level: 0},
     'radial II': {
       desc: 'Move in a circle around the enemy.',
@@ -154,7 +154,7 @@ di.constant('gameplayFile', {
       level: 1},
     'speed I': {
       desc: '135 speed',
-      type:'movement.ai', spec: {speed: 135},
+      type:'movement.ai', spec: {speed: 70},
       level: 0},
 
     'circle': {

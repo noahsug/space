@@ -82,7 +82,7 @@ EntityCooldown.prototype.update_ = function(obj, dt) {
   if (obj.effects.stunned.value || obj.effects.weaponsDisabled.value) return;
   this.cooldown_ -= dt;
   if (this.cooldown_ <= 0) {
-    var newCooldown = this.act_(dt);
+    var newCooldown = this.act_();
     this.cooldown_ += _.ifDef(newCooldown, 0);
   }
 };

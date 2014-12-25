@@ -65,9 +65,9 @@ _.assert = function(truth, msg) {
   }
 };
 
-_.angle = function(x1, y1, x2, y2) {
-  var dx = x2 - x1;
-  var dy = y2 - y1;
+_.angle = function(p1, p2) {
+  var dx = p2.x - p1.x;
+  var dy = p2.y - p1.y;
   var angle = Math.atan(dy / dx) + Math.PI * 2;
   if (dx < 0) {
     angle += Math.PI;
@@ -239,6 +239,14 @@ _.geometry.spread = function(angle, numPoints) {
     points[i] = da * i - start;
   };
   return points;
+};
+
+_.vector = {};
+_.vector.cartesian = function(v) {
+  if (!v.x || !v.y) {
+    v.x = Math.cos(v.angle) * v.length;
+    v.y = Math.sin(v.angle) * v.length;
+  }
 };
 
 _.class = {};
