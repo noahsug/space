@@ -1,10 +1,10 @@
 di.constant('gameplayFile', {
   init: {
     player: [
-      //'basic laser',
+      'basic laser',
       //'burst laser',
       //'grenade',
-      'razors',
+      //'razors',
       //'sniper',
       //'stun',
       //'emp',
@@ -25,7 +25,7 @@ di.constant('gameplayFile', {
   level: [
     {
       enemy: [
-        'shotgun',
+        //'shotgun',
         'teleport',
         'speed II',
         'health II',
@@ -110,7 +110,7 @@ di.constant('gameplayFile', {
 
     'teleport': {
       desc: 'Teleport to a random location to avoid enemy projectiles.',
-      type: 'utility.teleport', spec: {cooldown: 4},
+      type: 'utility.teleport', spec: {cooldown: 6},
       level: 1},
     'invisible': {
       desc: 'Become untargetable for a short period of time.',
@@ -154,11 +154,11 @@ di.constant('gameplayFile', {
       level: 1},
     'speed I': {
       desc: '135 speed',
-      type:'movement.ai', spec: {speed: 100, distance: 100},
+      type:'movement.ai', spec: {speed: 90, distance: 600},
       level: 0},
     'speed II': {
       desc: '135 speed',
-      type:'movement.ai', spec: {speed: 100, distance: 400},
+      type:'movement.ai', spec: {speed: 50, distance: -1},
       level: 0},
 
     'circle': {

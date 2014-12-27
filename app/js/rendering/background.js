@@ -1,5 +1,6 @@
 var Background = di.service('Background', [
-  'GameModel as gm', 'Screen', 'ctx', 'bgCtxList', 'RepeatedBackground']);
+  'GameModel as gm', 'Screen', 'canvas', 'ctx', 'bgCtxList',
+  'RepeatedBackground']);
 
 // Screen should never have a width or height larger than 2x this value.
 var BG_TILE_SIZE = 600;
@@ -60,6 +61,5 @@ Background.prototype.drawSky_ = function(ctx, width, height) {
 
 Background.prototype.draw = function() {
   this.ctx_.clearRect(0, 0, this.screen_.width, this.screen_.height);
-  this.bgLayers_[0].draw();
   _.each(this.bgLayers_, function(bg) { bg.draw(); });
 };

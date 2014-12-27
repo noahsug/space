@@ -192,6 +192,9 @@ _.moveTowards = function(source, target, maxDistance) {
 };
 
 _.distance = function(p1, p2) {
+  if (!p2) {
+    p2 = {x: 0, y: 0};
+  }
   var dx = p2.x - p1.x;
   var dy = p2.y - p1.y;
   return Math.hypot(dx, dy);

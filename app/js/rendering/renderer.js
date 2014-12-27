@@ -177,12 +177,12 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
     var sizeRatio = (entity.health / entity.maxHealth) * .8 + .2;
 
     // Draw engine.
-    entity.render.engineSize = (entity.render.radius - 4) * sizeRatio;
-    var triangle = _.geometry.circumscribeTriangle(
-        pos.x, pos.y, entity.render.engineSize, entity.render.rotation);
-    this.gfx_.triangle(triangle.x1, triangle.y1,
-                       triangle.x2, triangle.y2,
-                       triangle.x3, triangle.y3);
+    //entity.render.engineSize = (entity.render.radius - 4) * sizeRatio;
+    //var triangle = _.geometry.circumscribeTriangle(
+    //    pos.x, pos.y, entity.render.engineSize, entity.render.rotation);
+    //this.gfx_.triangle(triangle.x1, triangle.y1,
+    //                   triangle.x2, triangle.y2,
+    //                   triangle.x3, triangle.y3);
   }
 
   // Draw ship.
