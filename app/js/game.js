@@ -41,6 +41,7 @@ Game.prototype.update = function(dt) {
 Game.prototype.updateEntities_ = function(dt) {
   var updateTime = Math.min(dt, this.nextAction_);
   if (updateTime > 0) {
+    this.gm_.time += updateTime;
     for (var i = 0; i < this.gm_.entities.length; i++) {
       this.gm_.entities.arr[i].update(updateTime);
     }

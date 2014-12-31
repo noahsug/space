@@ -9,7 +9,7 @@ ShapeDecorators.prototype.decorateCircle_ = function(obj, spec) {
   spec = _.options(spec, {
     radius: 10
   });
-  obj.radius = spec.radius;
+  obj.radius = obj.collideDis = spec.radius;
   obj.collides = function(target) {
     var collisionFn;
     if (target.radius) collisionFn = this.collision_.circleCircle;
@@ -26,7 +26,7 @@ ShapeDecorators.prototype.decorateLine_ = function(obj, spec) {
     length: 20
   });
   obj.rotation = obj.rotation || 0;
-  obj.length = spec.length;
+  obj.length = obj.collideDis = spec.length;
   obj.collides = function(target) {
     var collisionFn;
     if (target.radius) collisionFn = this.collision_.lineCircle;

@@ -274,4 +274,56 @@ describe('Util function:', function() {
       expect(t1.y2).toBe(t1.y3);
     });
   });
+
+  describe('aimPosition', function() {
+    var source, target, targetVector, targetSpeed;
+    var projectileSpeed, projectileLength;
+
+    function getAimPos() {
+      return _.geometry.aimPosition(source, target, targetVector, targetSpeed,
+                                    projectileSpeed, projectileLength);
+    }
+
+    beforeEach(function() {
+      source = {x: 0, y: 0};
+      target = {x: 15, y: 0};
+      targetVector = {x: 0, y: 1};
+      targetSpeed = projectileLength = 1;
+      projectileSpeed = 2;
+    });
+
+    describe('returns where to aim to hit a moving target', function() {
+      it('on top of target', function() {
+        target = source;
+        expect(getAimPos()).toEqual(target);
+      });
+
+      it('very close to target', function() {
+        target = {x: 5, y: 0};
+        expect(getAimPos()).toEqual(target);
+      });
+
+      it('target isnt moving', function() {
+        targetVector = {x: 0, y: 0};
+        expect(getAimPos()).toEqual(target);
+      });
+
+      it('projectile is moving slower then target', function() {
+        projectileSpeed = targetSpeed - .1;
+        expect(getAimPos()).toEqual(target);
+      });
+
+      it('projectile will take > 10 seconds to reach target', function() {
+        projectileSpeed = targetSpeed + .1;
+        target = {x: 1500, y: 0};
+        expect(getAimPos()).toEqual(target);
+      });
+
+      it('target is moving down', function() {
+        var aimPos = getAimPos();
+        expect(aimPos.x).toBe(target.x);
+        expect(Math.abs(aimPos.y - 8.08) < .01).toBe(true);
+      });
+    });
+  });
 });

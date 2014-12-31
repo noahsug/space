@@ -7,4 +7,5 @@ GameModel.prototype.init = function() {
   this.results = {};
   this.level = 0;
   this.speed = 1;
+  this.time = 0;
 };

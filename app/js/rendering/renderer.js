@@ -107,11 +107,7 @@ Renderer.prototype.drawBtn_ = function(entity, pos) {
   this.ctx_.fillText(entity.text, pos.x, pos.y);
 };
 
-var ROTATION_HEALTH_RATIO = 2;
-var BASE_ROTATION = 1;
 Renderer.prototype.initShip_ = function(entity) {
-  entity.render.rotation = 0;
-  entity.render.engineSize = entity.radius;
   entity.render.damaged = 0;
   entity.render.damageDuration = 0;
   entity.render.radius = entity.radius;
@@ -124,16 +120,11 @@ Renderer.prototype.addShipStyle_ = function(style) {
     stroke: Gfx.Color.GREEN
   }, baseStyle));
   style.bad = this.gfx_.addStyle(_.extend({
-    stroke: Gfx.Color.RED
-  }, baseStyle));
-  style.goodEngine = this.gfx_.addStyle({
-    stroke: Gfx.Color.GREEN
-  });
-  style.badEngine = this.gfx_.addStyle({
-    stroke: Gfx.Color.RED
-  });
-  style.affectedEngine = this.gfx_.addStyle({
     stroke: Gfx.Color.BLUE
+  }, baseStyle));
+  style.health = this.gfx_.addStyle({
+    lineWidth: 4,
+    stroke: Gfx.Color.RED
   });
 };
 Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
@@ -163,31 +154,22 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
       }
     }
 
-    // Rotate / size engine based on remaining health.
-    if (!entity.effects.stunned.value) {
-      var rotationSpeed = Math.max(entity.health, 0) / ROTATION_HEALTH_RATIO +
-          BASE_ROTATION;
-      entity.render.rotation += rotationSpeed * dt;
-    }
-    if (entity.effects.weaponsDisabled.value) {
-      this.gfx_.setStyle(style.affectedEngine);
-    } else {
-      this.gfx_.setStyle(style[entity.style + 'Engine']);
-    }
-    var sizeRatio = (entity.health / entity.maxHealth) * .8 + .2;
+    // Draw health indicator
+    var dmgTaken = entity.maxHealth - entity.health;
+    if (dmgTaken) {
 
-    // Draw engine.
-    //entity.render.engineSize = (entity.render.radius - 4) * sizeRatio;
-    //var triangle = _.geometry.circumscribeTriangle(
-    //    pos.x, pos.y, entity.render.engineSize, entity.render.rotation);
-    //this.gfx_.triangle(triangle.x1, triangle.y1,
-    //                   triangle.x2, triangle.y2,
-    //                   triangle.x3, triangle.y3);
+    }
   }
 
   // Draw ship.
   this.gfx_.setStyle(style[entity.style]);
   this.gfx_.circle(pos.x, pos.y, entity.render.radius - 2);
+
+  if (entity.aimPos) {
+    var dx = entity.aimPos.x - entity.x;
+    var dy = entity.aimPos.y - entity.y;
+    this.gfx_.circle(pos.x + dx, pos.y + dy, 3);
+  }
 };
 
 var SPEED_FUDGING = 8;

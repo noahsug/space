@@ -65,6 +65,11 @@ _.assert = function(truth, msg) {
   }
 };
 
+_.quadratic = function(a, b, c) {
+  var inner = Math.sqrt(b * b - 4 * a * c);
+  return Math.max((-b + inner) / (2 * a), (-b - inner) / (2 * a));
+};
+
 _.angle = function(p1, p2) {
   if (!p2) {
     p2 = p1;
@@ -80,6 +85,14 @@ _.angle = function(p1, p2) {
     angle += Math.PI * 2;
   }
   return angle;
+};
+
+// Given the angles of two vectors in a triangle, returns the difference.
+_.angleDif = function(a1, a2) {
+  var da = a1 - a2;
+  if (da < 0) da += Math.PI * 2;
+  if (da > Math.PI) da = Math.PI * 2 - da;
+  return da;
 };
 
 _.startsWith = function(str, prefix) {
@@ -191,9 +204,11 @@ _.moveTowards = function(source, target, maxDistance) {
   return d <= maxDistance;
 };
 
+_.ORIGIN = {x: 0, y: 0};
+
 _.distance = function(p1, p2) {
   if (!p2) {
-    p2 = {x: 0, y: 0};
+    p2 = _.ORIGIN;
   }
   var dx = p2.x - p1.x;
   var dy = p2.y - p1.y;
@@ -208,8 +223,16 @@ _.generate = function(generator, length, opt_thisObj) {
   return list;
 };
 
+_.min = function(list) {
+  var min;
+  for (var i = 0; i < list.length; i++) {
+    if (!_.isDef(min) || list[i] < min) min = list[i];
+  }
+  return min;
+};
+
 _.options = function(options, expected) {
-  return _.defaults((options && _.clone(options)) || {}, expected);
+  return _.defaults(_.clone(options) || {}, expected);
 };
 
 _.ifDef = function(value, valueWhenUndefined) {
@@ -225,9 +248,12 @@ _.unimplemented = function() {
   throw 'This function has not been implemented!';
 };
 
+_.RADIANS_2 = _.radians(2);
 _.RADIANS_90 = _.radians(90);
 _.RADIANS_120 = _.radians(120);
+_.RADIANS_178 = _.radians(180);
 _.RADIANS_180 = _.radians(180);
+_.RADIANS_270 = _.radians(270);
 _.RADIANS_360 = _.radians(360);
 
 _.geometry = {};
@@ -255,7 +281,36 @@ _.geometry.spread = function(angle, numPoints) {
   return points;
 };
 
+_.geometry.aimPosition = function(source, target, targetVector, targetSpeed,
+                                  projectileSpeed, projectileLength,
+                                  leadRatio) {
+  if (projectileSpeed <= targetSpeed) return target;
+  var d = _.distance(source, target) - projectileLength;
+  if (d < 10) return target;
+  var targetToAimPos = _.angle(targetVector);
+  if (isNaN(targetToAimPos)) return target;
+  var targetToSource = _.angle(target, source);
+  if (isNaN(targetToSource)) return target;
+  var da = _.angleDif(targetToSource, targetToAimPos);
+  if (da < _.RADIANS_2 || da > _.RADIANS_178) return target;
+
+  // Solve for t = time, where 0 = at^2 + bt + c.
+  var a = projectileSpeed * projectileSpeed - targetSpeed * targetSpeed;
+  var b = 2 * targetSpeed * d * Math.cos(da);
+  var c = -(d * d);
+  var time = _.quadratic(a, b, c);
+  if (time > 10) return target;
+
+  return {
+    x: target.x + Math.cos(targetToAimPos) * targetSpeed * time * leadRatio,
+    y: target.y + Math.sin(targetToAimPos) * targetSpeed * time * leadRatio,
+    distance: d,
+    time: time
+  };
+};
+
 _.vector = {};
+
 _.vector.cartesian = function(v) {
   if (!_.isDef(v.x) && !_.isDef(v.y)) {
     v.x = Math.cos(v.angle) * v.length;

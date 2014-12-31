@@ -23,8 +23,9 @@ PrimaryDecorators.prototype.decorateBasicLaser_ = function(obj) {
     dmg: 4,
     speed: 300,
     accuracy: _.radians(10),
-    cooldown: 0.75,
-    length: 8 + 16
+    cooldown: .75,
+    length: 8 + 16,
+    range: 150
   };
 
   this.addDmgWeapon_(obj, this.util_.fireLaser.bind(this.util_));
@@ -39,7 +40,8 @@ PrimaryDecorators.prototype.decorateShotgun_ = function(obj) {
     spread: _.radians(25),
     projectiles: 5,
     length: 4 + 16,
-    style: 'bullet'
+    style: 'bullet',
+    range: 100
   };
 
   this.addDmgWeapon_(obj, this.util_.fireLaser.bind(this.util_));
@@ -61,11 +63,11 @@ PrimaryDecorators.prototype.decorateRazors_ = function(obj) {
 
 PrimaryDecorators.prototype.decorateSniper_ = function(obj) {
   obj.primary = {
-    dmg: 15,
-    speed: 750,
+    dmg: 10,
+    speed: 250,
     length: 30 + 16,
     accuracy: _.radians(5),
-    cooldown: 2
+    cooldown: 1.2
   };
 
   this.addDmgWeapon_(obj, this.util_.fireLaser.bind(this.util_));
@@ -74,7 +76,7 @@ PrimaryDecorators.prototype.decorateSniper_ = function(obj) {
 PrimaryDecorators.prototype.decorateBurstLaser_ = function(obj) {
   obj.primary = {
     dmg: 4,
-    speed: 300,
+    speed: 200,
     accuracy: _.radians(25),
     cooldown: 2,
     projectiles: 5,

@@ -1,5 +1,6 @@
 var AiMovement = di.service('AiMovement', [
-  'EntityDecorator', 'Screen', 'DecoratorUtil as util', 'Random']);
+  'EntityDecorator', 'Screen', 'DecoratorUtil as util', 'Random',
+  'SharedComputation as c']);
 
 AiMovement.prototype.init = function() {
   this.entityDecorator_.addDecorator(
@@ -9,17 +10,17 @@ AiMovement.prototype.init = function() {
 AiMovement.prototype.aiMovement_ = function(obj, spec) {
   obj.movement = _.options(spec, {
     speed: 0,
-    accel: 7,
+    accel: 4,
     vector: {x: 0, y: 0},
     intelligence: .1,
-    distance: 200,
     urgeCooldown: 1.5
   });
 
   this.util_.onCooldown(obj, function() {
     if (obj.dead) return 0;
     this.think_(obj);
-    return obj.movement.intelligence;
+    var int = obj.movement.intelligence;
+    return this.random_.nextFloat(int - .1, int + .1);
   }.bind(this));
 
   this.util_.onCooldown(obj, function() {
@@ -35,6 +36,7 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
   }.bind(this));
 
   obj.update(function(dt) {
+    if (obj.effects.stunned.value) return;
     if (obj.dead) return;
     this.updateVector_(obj, dt);
     this.move_(obj, dt);
@@ -42,116 +44,214 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
 };
 
 AiMovement.prototype.think_ = function(obj, dt) {
-  //console.log('----- think -----');
+  //console.log('----- think ' + obj.style + ' -----');
+  obj.movement.distance = this.getDesiredDistance_(obj) - 20;
+  this.maybeUseDash_(obj);
   this.setDesiredVector_(obj);
   //console.log('result:', obj.movement.desiredVector);
 };
 
+AiMovement.prototype.getDesiredDistance_ = function(obj) {
+  var ti = 0;
+  var rating = 0;
+  var bestRating = -9;
+  var bestDistance = 2000;
+  for (var i = 0; i < obj.c.ranges.length; i++) {
+    var self = obj.c.ranges[i];
+    var target = obj.c.targetRanges[ti] || 0;
+    if (self > target) {
+      rating++;
+      if (rating > bestRating) {
+        bestRating = rating;
+        bestDistance = self;
+        continue;
+      }
+
+      if (rating == bestRating &&
+          Math.abs(obj.c.targetDis - self) <
+          Math.abs(obj.c.targetDis - bestDistance)) {
+        bestRating = rating;
+        bestDistance = self;
+        continue;
+      }
+    } else if (self < target) {
+      rating--;
+      i--;
+      ti++;
+    } else if (rating > bestRating) {
+      bestRating = rating;
+      bestDistance = self;
+      ti++;
+    }
+  }
+
+  return bestDistance;
+};
+
+AiMovement.prototype.maybeUseDash_ = function(obj) {
+  if (!obj.utility.dashReady) return;
+  var dd = obj.c.targetDis - obj.movement.distance;
+  if (Math.abs(dd) < 35) return;
+
+  var dir = Math.sign(dd);
+  var pos = {
+    x: obj.x + Math.cos(obj.c.targetAngle) * 35 * dir,
+    y: obj.y + Math.sin(obj.c.targetAngle) * 35 * dir,
+    collideDis: obj.collideDis
+  };
+  this.c_.wallDis(pos);
+  if (pos.c.hitWall) return;
+  obj.utility.useDash = this.random_.next() < .1;
+};
+
 AiMovement.prototype.setDesiredVector_ = function(obj) {
-  var c = this.getCommonVectorCalculations_(obj);
-  var v = this.getWallXVector_(obj, c);
-  _.vector.add(v, this.getWallYVector_(obj, c));
-  _.vector.add(v, this.getEnemyDistanceVector_(obj, c));
-  _.vector.add(v, this.getCurrentPerpendicularVector_(obj, c));
-  _.vector.add(v, this.getCurrentDirection_(obj, c));
-  _.vector.add(v, this.getCenterVector_(obj, c));
-//  _.vector.add(v, this.getRandomUrgeVector_(obj, v, c));
-//  _.vector.add(v, this.getPerpendicularVector_(obj, v, c));
+  var v = {x: 0, y: 0};
+//  _.vector.add(v, this.getRandomUrgeVector_(obj, v));
+//  _.vector.add(v, this.getCurrentDirection_(obj));
+  _.vector.add(v, this.getWallXVector_(obj, 4));
+  _.vector.add(v, this.getWallYVector_(obj, 4));
+  _.vector.add(v, this.getEnemyDistanceVector_(obj, 4));
+  _.vector.add(v, this.getCurrentPerpendicularVector_(obj, 4));
+  _.vector.add(v, this.getDodgeVector_(obj, 2));
+  _.vector.add(v, this.getFleeVector_(obj, 4));
+  _.vector.add(v, this.getPerpendicularVector_(obj, 2, v));
   _.vector.normalize(v);
   obj.movement.desiredVector = v;
 };
 
-AiMovement.prototype.getCommonVectorCalculations_ = function(obj) {
-  var c = {};
-  // Angle to target.
-  c.ta = _.angle(obj, obj.target);
-  return c;
-};
-
-AiMovement.prototype.getWallXVector_ = function(obj) {
-  var dx = obj.x - this.screen_.x;
-  var wallDis = this.screen_.width / 2 - Math.abs(dx);
+AiMovement.prototype.getWallXVector_ = function(obj, weight) {
   var v = {
-    length: this.getWallVectorLength_(wallDis - obj.radius),
-    angle: dx < 0 ? 0 : _.RADIANS_180};
+    length: this.getWallVectorLength_(obj.c.wallDisX) * weight,
+    angle: obj.c.wallDisW < obj.c.wallDisE ? 0 : -_.RADIANS_180
+  };
   //console.log('wallx:', v);
   return v;
 };
 
-AiMovement.prototype.getWallYVector_ = function(obj) {
-  var dy = obj.y - this.screen_.y;
-  var wallDis = this.screen_.height / 2 - Math.abs(dy);
+AiMovement.prototype.getWallYVector_ = function(obj, weight) {
   var v = {
-    length: this.getWallVectorLength_(wallDis - obj.radius),
-    angle: dy < 0 ? _.RADIANS_90 : -_.RADIANS_90
+    length: this.getWallVectorLength_(obj.c.wallDisY) * weight,
+    angle: obj.c.wallDisN < obj.c.wallDisS ? _.RADIANS_90 : -_.RADIANS_90
   };
   //console.log('wally:', v);
   return v;
 };
 
+// Returns 1 at 20, 1.5 at 0, .4 at 50, .05 at 100.
 AiMovement.prototype.getWallVectorLength_ = function(distance) {
-  var len = 200 - Math.min(distance, 200);
-  return (len * len * len) / (200 * 200 * 8);
+  distance = Math.max(distance, 0);
+  var len = 150 - Math.min(distance, 150);
+  return (len * len) / (150 * 100);
 };
 
-AiMovement.prototype.getCenterVector_ = function(obj) {
-  var a = _.angle(obj, this.screen_);
-  if (isNaN(a)) return _.vector.EMPTY;
-  var v = {length: 4, angle: a};
-  //console.log('center:', v);
-  return v;
-};
-
-AiMovement.prototype.getRandomUrgeVector_ = function(obj) {
+AiMovement.prototype.getRandomUrgeVector_ = function(obj, weight) {
   if (!obj.movement.urge) return _.vector.EMPTY;
   var a = _.angle(obj, obj.movement.urge);
   if (isNaN(a)) return _.vector.EMPTY;
-  var v = {length: 8, angle: a};
+  var v = {length: weight, angle: a};
   //console.log('urge:', v);
   return v;
 };
 
-AiMovement.prototype.getEnemyDistanceVector_ = function(obj, c) {
-  var d = _.distance(obj, obj.target);
-  var dir = 0;
-  if (obj.movement.distance > 0) {
-    if (d < obj.movement.distance) {
-      dir = -1;
-    }
-  } else if (d > Math.abs(obj.movement.distance)) {
-    dir = 1;
-
-  }
-  var v = {length: 15 * dir, angle: c.ta};
+AiMovement.prototype.getEnemyDistanceVector_ = function(obj, weight) {
+  if (!obj.movement.distance) return _.vector.EMPTY;
+  var dd = obj.c.targetDis - obj.movement.distance;
+  // If we're a little too close or too far, don't panic.
+  if (dd < 0 && dd > -40) weight *= dd * dd / (40 * 40);
+  if (dd > 0 && dd < 40) weight = (weight - 5) * dd * dd / (40 * 40) + 5;
+  var v = {length: weight * Math.sign(dd), angle: obj.c.targetAngle};
   //console.log('edis:', v);
   return v;
 };
 
-AiMovement.prototype.getCurrentDirection_ = function(obj, c) {
+AiMovement.prototype.getCurrentDirection_ = function(obj, weight) {
   if (_.vector.isEmpty(obj.movement.vector)) return _.vector.EMPTY;
   var cv = obj.movement.vector;
-  var v = {length: 2, angle: _.angle(cv)};
+  var v = {length: weight, angle: _.angle(cv)};
   //console.log('cur:', v);
   return v;
 };
 
-AiMovement.prototype.getCurrentPerpendicularVector_ = function(obj, c) {
+AiMovement.prototype.getDodgeVector_ = function(obj, weight) {
+  if (!obj.c.dodge || _.vector.isEmpty(obj.c.dodge)) {
+    obj.movement.startDodge = obj.movement.dodging = false;
+    return _.vector.EMPTY;
+  }
+  if (!obj.movement.startDodge) {
+    obj.movement.startDodge = true;
+    if (obj.utility.dashReady) {
+      obj.utility.useDash = this.random_.next() < .25;
+    }
+  }
+  var v = {
+    length: -weight,
+    angle: _.angle(obj.c.dodge)
+  };
+  //console.log('dodge:', v);
+  return v;
+};
+
+AiMovement.prototype.getCurrentPerpendicularVector_ = function(obj, weight) {
   if (_.vector.isEmpty(obj.movement.vector)) return _.vector.EMPTY;
   var a = _.angle(obj.movement.vector);
-  var da = a - c.ta;
+  var da = a - obj.c.targetAngle;
   if (da < 0) da += _.RADIANS_360;
-  var pa = c.ta + _.RADIANS_90 * (da < _.RADIANS_180 ? 1 : -1);
+  var pa = obj.c.targetAngle + _.RADIANS_90 * (da < _.RADIANS_180 ? 1 : -1);
   var v = {
-    length: Math.abs(Math.cos(da)) * 6,
+    length: Math.abs(Math.cos(da)) * weight,
     angle: pa
   };
   //console.log('cperp:', v);
   return v;
 };
 
-AiMovement.prototype.getPerpendicularVector_ = function(obj, mv, c) {
-  var pa = this.getClosestPerpAngle_(c.ta, _.angle(mv));
-  var v = {length: 2.5, angle: pa};
+AiMovement.prototype.getFleeVector_ = function(obj, weight) {
+  if (!obj.movement.fleeing) {
+    if (obj.c.wallDis > 30) return _.vector.EMPTY;
+    var dd = obj.movement.distance - obj.c.targetDis;
+    if (dd < 50) return _.vector.EMPTY;
+    if (obj.target.c.centerDis < 50) return _.vector.EMPTY;
+
+    obj.movement.fleeing = true;
+    var dirs = ['N', 'E', 'S', 'W'];
+    var oppositeDirs = ['S', 'W', 'N', 'E'];
+    for (var i = 0; i < dirs.length; i++) {
+      var name = 'wallDis' + dirs[i];
+      if (obj.c.wallDis == obj.c[name] &&
+          obj.target.c.wallDis == obj.target.c[name]) {
+        obj.movement.fleeing = true;
+        obj.movement.fleeDirection = oppositeDirs[i];
+        if (obj.utility.dashReady) {
+          obj.utility.useDash = this.random_.next() < .5;
+        }
+        break;
+      }
+    }
+    return _.vector.EMPTY;
+  }
+
+  if (obj.c['wallDis' + obj.movement.fleeDirection] < 100) {
+    obj.movement.fleeing = false;
+    return _.vector.EMPTY;
+  }
+
+  var angle;
+  if (obj.movement.fleeDirection == 'N') angle = _.RADIANS_270;
+  if (obj.movement.fleeDirection == 'E') angle = 0;
+  if (obj.movement.fleeDirection == 'S') angle = _.RADIANS_90;
+  if (obj.movement.fleeDirection == 'W') angle = _.RADIANS_180;
+  var v = {
+    length: weight,
+    angle: angle
+  };
+
+  //console.log('flee:', v);
+  return v;
+};
+
+AiMovement.prototype.getPerpendicularVector_ = function(obj, weight, mv) {
+  var pa = this.getClosestPerpAngle_(obj.c.targetAngle, _.angle(mv));
+  var v = {length: weight, angle: pa};
   //console.log('perp:', v);
   return v;
 };
@@ -190,6 +290,14 @@ AiMovement.prototype.updateVector_ = function(obj, dt) {
 };
 
 AiMovement.prototype.move_ = function(obj, dt) {
+  obj.prevX = obj.x;
+  obj.prevY = obj.y;
   obj.x += obj.movement.vector.x * obj.movement.speed * dt;
   obj.y += obj.movement.vector.y * obj.movement.speed * dt;
+  this.c_.wallDis(obj);
+  if (obj.c.wallDisN < 0) obj.y = obj.y -= obj.c.wallDisN;
+  else if (obj.c.wallDisS < 0) obj.y = obj.y += obj.c.wallDisS;
+  else if (obj.c.wallDisE < 0) obj.x = obj.x += obj.c.wallDisE;
+  else if (obj.c.wallDisW < 0) obj.x = obj.x -= obj.c.wallDisW;
+  if (obj.c.hitWall && obj.utility.dash) obj.utility.stopDash();
 };

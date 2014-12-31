@@ -26,6 +26,22 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
   };
 };
 
+// Requires obj.movement.speed.
+BasicDecorators.prototype.decorateRange_ = function(obj, spec) {
+  spec = _.options(spec, {
+    range: 0
+  });
+  obj.remainingDistance = spec.range;
+  obj.act(function(dt) {
+    obj.remainingDistance -= obj.movement.speed * dt;
+  });
+  obj.resolve(function(dt) {
+    if (obj.remainingDistance <= 0) {
+      obj.dead = true;;
+    }
+  });
+};
+
 BasicDecorators.prototype.decorateDmgCollision_ = function(obj, spec) {
   spec = _.options(spec, {
     dmg: 0
@@ -49,7 +65,7 @@ BasicDecorators.prototype.decorateCollision_ = function(obj, spec) {
   });
 };
 
-BasicDecorators.prototype.decorateScreenBound_ = function(obj, spec) {
+BasicDecorators.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
   obj.act(function() {
     if (Math.abs(obj.x - this.screen_.x) > this.screen_.width / 2 + 50 ||
         Math.abs(obj.y - this.screen_.y) > this.screen_.height / 2 + 50) {

@@ -4,8 +4,10 @@ var DecoratorUtil = di.service('DecoratorUtil', [
 DecoratorUtil.prototype.addWeapon = function(obj, spec, fire) {
   this.onCooldown(obj, function() {
     if (obj.dead) return 0;
+    if (spec.range && obj.c.targetDis > spec.range) return 0;
     if (spec.spread) this.fireSpread_(obj, spec, fire);
     else fire(obj, spec);
+    spec.lastFired = this.gm_.time;
     return spec.cooldown;
   }.bind(this));
 };
@@ -45,11 +47,16 @@ DecoratorUtil.prototype.fireBlade = function(obj, spec) {
   return this.fireProjectile_(blade, obj, spec);
 };
 
+var EXTRA_RANGE_RATIO = 1.5;
 DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
   var d = this.entityDecorator_.getDecorators();
   projectile.setPos(obj.x, obj.y);
   _.decorate(projectile, d.movement.straight, spec);
-  _.decorate(projectile, d.screenBound, spec);
+  _.decorate(projectile, d.removeOffScreen, spec);
+  if (spec.range) {
+    var range = spec.range * EXTRA_RANGE_RATIO;
+    _.decorate(projectile, d.range, {range: range});
+  }
   projectile.target = obj.target;
   return this.gm_.entities.arr[this.gm_.entities.length++] = projectile;
 };
@@ -80,7 +87,7 @@ EntityCooldown.prototype.set = function(cooldown) {
 
 EntityCooldown.prototype.update_ = function(obj, dt) {
   if (obj.effects.stunned.value || obj.effects.weaponsDisabled.value) return;
-  this.cooldown_ -= dt;
+  if (this.cooldown_ > 0) this.cooldown_ -= dt;
   if (this.cooldown_ <= 0) {
     var newCooldown = this.act_();
     this.cooldown_ += _.ifDef(newCooldown, 0);

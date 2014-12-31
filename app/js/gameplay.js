@@ -1,3 +1,7 @@
+/**
+ * Movement should be listed LAST so targeting is consistant.
+ */
+
 di.constant('gameplayFile', {
   init: {
     player: [
@@ -8,11 +12,12 @@ di.constant('gameplayFile', {
       //'sniper',
       //'stun',
       //'emp',
-      'speed I',
+      //'shotgun',
       'health II',
       'circle',
       '+explosion size',
-      'baboon'
+      'baboon',
+      'speed I',
     ],
 
     inventory: [
@@ -26,11 +31,13 @@ di.constant('gameplayFile', {
     {
       enemy: [
         //'shotgun',
-        'teleport',
-        'speed II',
+        'sniper',
+        //'basic laser',
+        'dash',
         'health II',
         'circle',
-        '+health'
+        '+health',
+        'speed II',
       ]
     },
     {
@@ -108,6 +115,10 @@ di.constant('gameplayFile', {
       type: 'ability.slow', spec: {},
       level: 1},
 
+    'dash': {
+      desc: 'dash.',
+      type: 'utility.dash', spec: {},
+      level: 1},
     'teleport': {
       desc: 'Teleport to a random location to avoid enemy projectiles.',
       type: 'utility.teleport', spec: {cooldown: 6},
@@ -154,11 +165,11 @@ di.constant('gameplayFile', {
       level: 1},
     'speed I': {
       desc: '135 speed',
-      type:'movement.ai', spec: {speed: 90, distance: 600},
+      type:'movement.ai', spec: {speed: 110},
       level: 0},
     'speed II': {
       desc: '135 speed',
-      type:'movement.ai', spec: {speed: 50, distance: -1},
+      type:'movement.ai', spec: {speed: 120},
       level: 0},
 
     'circle': {
@@ -167,9 +178,9 @@ di.constant('gameplayFile', {
 
     'health I': {
       desc: '20 health',
-      type: 'health', spec: {health: 80}},
+      type: 'health', spec: {health: 20}},
     'health II': {
       desc: '25 health',
-      type: 'health', spec: {health: 85}}
+      type: 'health', spec: {health: 25}}
   }
 });

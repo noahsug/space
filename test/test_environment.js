@@ -1,3 +1,4 @@
+// Use this if you are modifying di or want to use inject() or start().
 window.initTestEnvironment = function(test) {
   var appDi = di;
 

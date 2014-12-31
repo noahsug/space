@@ -34,6 +34,16 @@ SeededRandom.prototype.nextInt = function(minOrMax, opt_max) {
   return Math.floor(this.next() * (max - min + 1) + min);
 };
 
+SeededRandom.prototype.nextFloat = function(minOrMax, opt_max) {
+  var max = opt_max;
+  var min = minOrMax;
+  if (!_.isDef(max)) {
+    max = minOrMax;
+    min = 0;
+  }
+  return this.next() * (max - min) + min;
+};
+
 SeededRandom.prototype.flipCoin = function() {
   return this.next() < .5;
 };

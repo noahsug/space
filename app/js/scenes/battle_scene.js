@@ -1,5 +1,6 @@
 var BattleScene = di.service('BattleScene', [
-  'GameModel as gm', 'Screen', 'Entity', 'EntityDecorator', 'gameplay']);
+  'GameModel as gm', 'Screen', 'Entity', 'EntityDecorator', 'gameplay',
+  'ShipDecorator']);
 
 var TRANSITION_TIME = 2;
 
@@ -11,17 +12,19 @@ BattleScene.prototype.addEntities = function() {
   var ed = this.entityDecorator_;
 
   var player = this.entity_.create('ship');
+  _.decorate(player, this.shipDecorator_);
   ed.decorate(player, this.gm_.player.spec);
   player.style = 'good';
   this.gm_.entities.add(player, 'player');
 
   var enemy = this.entity_.create('ship');
+  _.decorate(enemy, this.shipDecorator_);
   var enemySpec = this.gameplay_.level[this.gm_.level].enemy;
   ed.decorate(enemy, enemySpec);
   enemy.style = 'bad';
   this.gm_.entities.add(enemy, 'enemy');
 
-  player.y = this.screen_.y;
+  player.y = this.screen_.y + 100;
   player.x = this.screen_.x;
   enemy.y = this.screen_.y - 100;
   enemy.x = this.screen_.x;
