@@ -5,12 +5,12 @@
 di.constant('gameplayFile', {
   init: {
     player: [
-      'basic laser',
+      //'basic laser',
       //'burst laser',
       //'grenade',
       //'razors',
       //'sniper',
-      //'stun',
+      'stun',
       //'emp',
       //'shotgun',
       'health II',
@@ -36,7 +36,7 @@ di.constant('gameplayFile', {
         'dash',
         'health II',
         'circle',
-        '+health',
+        //'+health',
         'speed II',
       ]
     },

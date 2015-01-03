@@ -108,8 +108,8 @@ Renderer.prototype.drawBtn_ = function(entity, pos) {
 };
 
 Renderer.prototype.initShip_ = function(entity) {
-  entity.render.damaged = 0;
-  entity.render.damageDuration = 0;
+  entity.render.shake = 0;
+  entity.render.shakeStop = 0;
   entity.render.radius = entity.radius;
 };
 Renderer.prototype.addShipStyle_ = function(style) {
@@ -122,9 +122,15 @@ Renderer.prototype.addShipStyle_ = function(style) {
   style.bad = this.gfx_.addStyle(_.extend({
     stroke: Gfx.Color.BLUE
   }, baseStyle));
-  style.health = this.gfx_.addStyle({
+  style.goodDmged = this.gfx_.addStyle({
     lineWidth: 4,
-    stroke: Gfx.Color.RED
+    stroke: Gfx.Color.OPAC_RED,
+    shadow: 'none'
+  });
+  style.badDmged = this.gfx_.addStyle({
+    lineWidth: 4,
+    stroke: Gfx.Color.MORE_OPAC_RED,
+    shadow: 'none'
   });
 };
 Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
@@ -144,20 +150,21 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
     if (this.gm_.scenes['battle'] == 'active') {
       var damage = entity.prevHealth - entity.health;
       if (damage) {
-        entity.render.damageDuration = 3;
-        entity.render.damage = 2 + damage / 2;
+        entity.render.shakeStop = this.gm_.tick + damage / 6;
+        entity.render.shake = 1 + damage / 2;
       }
-      if (entity.render.damageDuration) {
-        pos.x += Math.random() * entity.render.damage;
-        pos.y += Math.random() * entity.render.damage;
-        entity.render.damageDuration--;
+      if (entity.render.shakeStop > this.gm_.tick) {
+        pos.x += Math.random() * entity.render.shake;
+        pos.y += Math.random() * entity.render.shake;
       }
     }
 
     // Draw health indicator
     var dmgTaken = entity.maxHealth - entity.health;
-    if (dmgTaken) {
-
+    if (entity.health <= 10) {
+      var healthStyle = style[entity.style + 'Dmged'];
+      this.gfx_.setStyle(healthStyle);
+      this.gfx_.circle(pos.x, pos.y, entity.render.radius - 5);
     }
   }
 
@@ -165,6 +172,7 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
   this.gfx_.setStyle(style[entity.style]);
   this.gfx_.circle(pos.x, pos.y, entity.render.radius - 2);
 
+  // DEBUG.
   if (entity.aimPos) {
     var dx = entity.aimPos.x - entity.x;
     var dy = entity.aimPos.y - entity.y;
@@ -175,16 +183,16 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
 var SPEED_FUDGING = 8;
 Renderer.prototype.addLaserStyle_ = function(style) {
   style.weak = this.gfx_.addStyle({
-    stroke: Gfx.Color.RED,
-    lineWidth: 4
+    stroke: Gfx.Color.YELLOW,
+    lineWidth: 2
   });
   style.strong = this.gfx_.addStyle({
-    stroke: Gfx.Color.YELLOW,
-    lineWidth: 4
+    stroke: Gfx.Color.RED,
+    lineWidth: 2
   });
   style.effect = this.gfx_.addStyle({
     stroke: Gfx.Color.PINK,
-    lineWidth: 6
+    lineWidth: 3
   });
 };
 Renderer.prototype.drawLaser_ = function(entity, pos, style) {

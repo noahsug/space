@@ -10,7 +10,6 @@ SharedComputation.prototype.decorate = function(obj) {
     this.distawnceInfo_(obj);
     this.targetInfo_(obj);
     this.cooldownInfo_(obj);
-    this.rangeInfo_(obj);
   }.bind(this));
 };
 
@@ -65,15 +64,25 @@ SharedComputation.prototype.cooldownInfo_ = function(obj) {
   }
 };
 
+SharedComputation.prototype.rangeInfo = function(obj) {
+  this.cachedCompute_(obj, 'rangeInfo_');
+};
 SharedComputation.prototype.rangeInfo_ = function(obj) {
   // TODO: Account for cooldowns in own ranges.
   var ranges = [];
+  if (obj.health > obj.collision.dmg && obj.health > obj.target.health) {
+    ranges.push(1);
+  }
   if (obj.primary.range) ranges.push(obj.primary.range);
   if (obj.secondary.range) ranges.push(obj.secondary.range);
   if (obj.ability.range) ranges.push(obj.ability.range);
   obj.c.ranges = _.sortBy(ranges).reverse();
 
   var targetRanges = [];
+  if (obj.target.health > obj.target.collision.dmg &&
+      obj.target.health > obj.health) {
+    targetRanges.push(1);
+  }
   if (obj.target.primary.range) targetRanges.push(obj.target.primary.range);
   if (obj.target.secondary.range) targetRanges.push(obj.target.secondary.range);
   if (obj.target.ability.range) targetRanges.push(obj.target.ability.range);

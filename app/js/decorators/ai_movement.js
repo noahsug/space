@@ -36,9 +36,11 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
   }.bind(this));
 
   obj.update(function(dt) {
-    if (obj.effects.stunned.value) return;
+    if (obj.effect.stunned) return;
     if (obj.dead) return;
-    this.updateVector_(obj, dt);
+    if (!obj.effect.disabled) {
+      this.updateVector_(obj, dt);
+    }
     this.move_(obj, dt);
   }.bind(this));
 };
@@ -52,36 +54,29 @@ AiMovement.prototype.think_ = function(obj, dt) {
 };
 
 AiMovement.prototype.getDesiredDistance_ = function(obj) {
-  var ti = 0;
-  var rating = 0;
-  var bestRating = -9;
+  this.c_.rangeInfo_(obj);
+  var targetIndex = 0;
+  var numAttacks = 0;
+  var bestNumAttacks = -9;
   var bestDistance = 2000;
   for (var i = 0; i < obj.c.ranges.length; i++) {
     var self = obj.c.ranges[i];
-    var target = obj.c.targetRanges[ti] || 0;
-    if (self > target) {
-      rating++;
-      if (rating > bestRating) {
-        bestRating = rating;
-        bestDistance = self;
-        continue;
-      }
-
-      if (rating == bestRating &&
-          Math.abs(obj.c.targetDis - self) <
-          Math.abs(obj.c.targetDis - bestDistance)) {
-        bestRating = rating;
+    var target = obj.c.targetRanges[targetIndex] || 0;
+    if (self >= target) {
+      numAttacks++;
+      if (numAttacks > bestNumAttacks) {
+        bestNumAttacks = numAttacks;
         bestDistance = self;
         continue;
       }
     } else if (self < target) {
-      rating--;
+      numAttacks--;
       i--;
-      ti++;
-    } else if (rating > bestRating) {
-      bestRating = rating;
+      targetIndex++;
+    } else if (numAttacks > bestNumAttacks) {
+      bestNumAttacks = numAttacks;
       bestDistance = self;
-      ti++;
+      targetIndex++;
     }
   }
 
@@ -212,7 +207,6 @@ AiMovement.prototype.getFleeVector_ = function(obj, weight) {
     if (dd < 50) return _.vector.EMPTY;
     if (obj.target.c.centerDis < 50) return _.vector.EMPTY;
 
-    obj.movement.fleeing = true;
     var dirs = ['N', 'E', 'S', 'W'];
     var oppositeDirs = ['S', 'W', 'N', 'E'];
     for (var i = 0; i < dirs.length; i++) {
@@ -227,8 +221,8 @@ AiMovement.prototype.getFleeVector_ = function(obj, weight) {
         break;
       }
     }
-    return _.vector.EMPTY;
   }
+  if (!obj.movement.fleeing) return _.vector.EMPTY;
 
   if (obj.c['wallDis' + obj.movement.fleeDirection] < 100) {
     obj.movement.fleeing = false;

@@ -19,7 +19,7 @@ Background.prototype.createBgLayers_ = function() {
     bg.setBgDistance(Math.pow(2, i + 1));
     return bg;
   }, this.bgCtxList_.length, this);
-}
+};
 
 Background.prototype.createStarTile_ = function(bgColor) {
   var starTile = document.createElement('canvas');
@@ -38,7 +38,7 @@ Background.prototype.createStarTile_ = function(bgColor) {
 };
 
 Background.prototype.drawSky_ = function(ctx, width, height) {
-  var GRID_SIZE = 30;
+  var GRID_SIZE = 33;
   var NUM_COLS = (width / GRID_SIZE);
   var NUM_ROWS = (height / GRID_SIZE);
   var COLOR_RANGE = .4;

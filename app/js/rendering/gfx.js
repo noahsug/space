@@ -5,6 +5,8 @@ Gfx.Color = {
   BLACK: '#000000',
   WHITE: '#FFFFFF',
   RED: '#FF0000',
+  OPAC_RED: 'rgba(255, 0, 0, .4)',
+  MORE_OPAC_RED: 'rgba(255, 0, 0, .3)',
   GREEN: '#00FF00',
   BLUE: '#7799FF',
   YELLOW: '#FFFF00',
@@ -19,11 +21,18 @@ Gfx.DrawFn = {
 
 Gfx.AttrMap = {
   layer: '',
+  shadow: 'shadowColor',
+  shadowBlur: 'shadowBlur',
   fill: 'fillStyle',
   stroke: 'strokeStyle',
   lineWidth: 'lineWidth'
 };
 Gfx.AttrNames = _.keys(Gfx.AttrMap);
+
+Gfx.AttrDefaults = {
+  shadowColor: 'rgba(0, 0, 0, 0)',
+  shadowBlur: 0
+};
 
 Gfx.prototype.init = function() {
   this.nextStyleId_ = 0;
@@ -33,6 +42,7 @@ Gfx.prototype.init = function() {
 };
 
 Gfx.prototype.addStyle = function(styleAttrs) {
+  this.setDefaults_(styleAttrs);
   var styleStr = this.getStyleStr_(styleAttrs);
 
   var index = _.sortedIndex(this.sortedStyles_, {sortOn: styleStr}, 'sortOn');
@@ -50,6 +60,15 @@ Gfx.prototype.addStyle = function(styleAttrs) {
     this.idToStyle_[style.id] = style;
     this.sortedStyles_.splice(index, 0, style);
     return style.id;
+  }
+};
+
+Gfx.prototype.setDefaults_ = function(attrs) {
+  if (attrs['shadow'] == 'none') return;
+  var stroke = attrs['stroke'];
+  if (stroke) {
+    if (!attrs['shadow']) attrs['shadow'] = stroke;
+    if (!attrs['shadowBlur']) attrs['shadowBlur'] = 6;
   }
 };
 
@@ -95,9 +114,13 @@ Gfx.prototype.flush = function() {
     for (var i = 1; i < Gfx.AttrNames.length; i++) {
       var name = Gfx.AttrNames[i];
       var value = style.attrs[name];
-      if (_.isDef(value) && prevStyleAttrs[name] != value) {
+      if (prevStyleAttrs[name] != value) {
         prevStyleAttrs[name] = value;
-        this.ctx_[Gfx.AttrMap[name]] = value;
+        if (_.isDef(value)) {
+          this.ctx_[Gfx.AttrMap[name]] = value;
+        } else if (_.isDef(Gfx.AttrDefaults[name])) {
+          this.ctx_[Gfx.AttrMap[name]] = Gfx.AttrDefaults[name];
+        }
       }
     }
 

@@ -58,6 +58,7 @@ Game.prototype.updateEntities_ = function(dt) {
 };
 
 Game.prototype.entityAction_ = function(dt) {
+  this.gm_.tick++;
   for (var i = 0; i < this.gm_.entities.length; i++) {
     this.gm_.entities.arr[i].act(dt);
   }

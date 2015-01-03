@@ -1,5 +1,5 @@
 var BasicDecorators = di.service('BasicDecorators', [
-  'EntityDecorator', 'Mouse', 'Screen']);
+  'EntityDecorator', 'Mouse', 'Screen', 'GameModel as gm']);
 
 BasicDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'base');
@@ -17,13 +17,17 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
     health: 0
   });
   obj.health = obj.maxHealth = obj.prevHealth = spec.health;
+  obj.dmg = function(dmg) {
+    obj.health -= dmg;
+  };
   obj.act(function() {
     obj.prevHealth = obj.health;
   });
-  obj.dmg = function(dmg) {
-    obj.health -= dmg;
-    obj.dead = obj.health <= 0;
-  };
+  obj.resolve(function() {
+    if (obj.health <= 0) {
+      obj.dead = this.gm_.tick;
+    }
+  }.bind(this));
 };
 
 // Requires obj.movement.speed.
@@ -74,30 +78,27 @@ BasicDecorators.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
   }.bind(this));
 };
 
-BasicDecorators.prototype.decorateEffect_ = function(obj, spec) {
-  spec = _.options(spec, {
-    duration: 0,
-    effect: '',
-    value: 1,
-    effectOver: Function
-  });
+// stunned: everything stops including movement + cooldowns.
+// disabled: stunned but continues to move in current direction.
+// weaponsDisabled: no primary or secondary weapons.
+BasicDecorators.prototype.decorateEffectable_ = function(obj) {
+  var effectNames = [];
+  obj.effect = {};
+  obj.addEffect = function(effect, duration) {
+    var currentDuration = obj.effect[effect];
+    if (!_.isDef(currentDuration)) effectNames.push(effect);
+    obj.effect[effect] = Math.max(currentDuration || 0, duration);
+  };
 
-  // Only add event handler once - effects don't stack.
-  if (_.isEmpty(obj.effects[spec.effect])) {
-    obj.act(function(dt) {
-      var effect = obj.effects[spec.effect];
-      if (!effect.duration) return;
-      if (effect.duration <= dt) {
-        effect.value = 0;
-        effect.duration = 0;
-        spec.effectOver();
+  obj.act(function(dt) {
+    for (var i = 0; i < effectNames.length; i++) {
+      if (obj.effect[effectNames[i]] <= dt) {
+        obj.effect[effectNames[i]] = 0;
       } else {
-        effect.duration -= dt;
+        obj.effect[effectNames[i]] -= dt;
       }
-    });
-  }
-
-  _.extend(obj.effects[spec.effect], spec);
+    }
+  });
 };
 
 BasicDecorators.prototype.decorateSlow_ = function(obj) {

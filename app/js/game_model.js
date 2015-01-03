@@ -8,4 +8,5 @@ GameModel.prototype.init = function() {
   this.level = 0;
   this.speed = 1;
   this.time = 0;
+  this.tick = 1;
 };

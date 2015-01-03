@@ -318,6 +318,7 @@ _.vector.cartesian = function(v) {
     delete v.angle;
     delete v.length;
   }
+  return v;
 };
 
 _.vector.add = function(v1, v2) {

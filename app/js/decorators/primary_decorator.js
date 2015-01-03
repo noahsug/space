@@ -65,7 +65,7 @@ PrimaryDecorators.prototype.decorateSniper_ = function(obj) {
   obj.primary = {
     dmg: 10,
     speed: 250,
-    length: 30 + 16,
+    length: 20 + 16,
     accuracy: _.radians(5),
     cooldown: 1.2
   };
