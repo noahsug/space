@@ -107,10 +107,13 @@ Renderer.prototype.drawBtn_ = function(entity, pos) {
   this.ctx_.fillText(entity.text, pos.x, pos.y);
 };
 
+var DEATH_ANIMATION_DURATION = .3;
 Renderer.prototype.initShip_ = function(entity) {
   entity.render.shake = 0;
   entity.render.shakeStop = 0;
+  entity.render.deathAnimation = DEATH_ANIMATION_DURATION;
   entity.render.radius = entity.radius;
+  entity.render.battleOver = false;
 };
 Renderer.prototype.addShipStyle_ = function(style) {
   var baseStyle = {
@@ -146,19 +149,6 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
       }
     }
 
-    // Shake afer taking damage.
-    if (this.gm_.scenes['battle'] == 'active') {
-      var damage = entity.prevHealth - entity.health;
-      if (damage) {
-        entity.render.shakeStop = this.gm_.tick + damage / 6;
-        entity.render.shake = 1 + damage / 2;
-      }
-      if (entity.render.shakeStop > this.gm_.tick) {
-        pos.x += Math.random() * entity.render.shake;
-        pos.y += Math.random() * entity.render.shake;
-      }
-    }
-
     // Draw health indicator
     var dmgTaken = entity.maxHealth - entity.health;
     if (entity.health <= 10) {
@@ -168,8 +158,33 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
     }
   }
 
+  // Shake afer taking damage.
+  var damage = entity.prevHealth - entity.health;
+  if (damage != entity.render.shake) {
+    entity.render.shakeStop = Math.max(entity.render.shakeStop,
+                                       damage && 4 + damage / 4);
+    entity.render.shake = Math.max(entity.render.shake,
+                                   damage && 2 + damage / 2);
+  }
+  if (entity.render.shakeStop) {
+    pos.x += (.3 + .7 * Math.random()) * entity.render.shake;
+    pos.y += (.3 + .7 * Math.random()) * entity.render.shake;
+    entity.render.shakeStop--;
+    if (entity.render.shakeStop < 0) entity.render.shakeStop = 0;
+  }
+
+  // Death animation.
+  var customStyle;
+  if (entity.dead) {
+    customStyle = {
+      globalAlpha: entity.render.deathAnimation / DEATH_ANIMATION_DURATION
+    };
+    entity.render.deathAnimation -= dt;
+    if (entity.render.deathAnimation < 0) entity.render.deathAnimation = 0;
+  }
+
   // Draw ship.
-  this.gfx_.setStyle(style[entity.style]);
+  this.gfx_.setStyle(style[entity.style], customStyle);
   this.gfx_.circle(pos.x, pos.y, entity.render.radius - 2);
 
   // DEBUG.

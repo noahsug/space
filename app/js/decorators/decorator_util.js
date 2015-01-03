@@ -87,7 +87,7 @@ EntityCooldown.prototype.set = function(cooldown) {
 
 EntityCooldown.prototype.update_ = function(obj, dt) {
   // TODO: Move stun check out into passed in function.
-  if (obj.effect.stunned || obj.effect.disabled) return;
+  if (obj.effect.disabled) return;
   if (this.cooldown_ > 0) this.cooldown_ -= dt;
   if (this.cooldown_ <= 0) {
     var newCooldown = this.act_();

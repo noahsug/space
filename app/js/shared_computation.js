@@ -54,7 +54,8 @@ SharedComputation.prototype.cooldownInfo_ = function(obj) {
   var t = obj.target;
   var lastFired = Math.max(t.primary.lastFired || -1,
                            t.secondary.lastFired || -1);
-  var shouldDodge = this.gm_.time - lastFired < .5;
+  var timeSinceLastFired = this.gm_.time - lastFired;
+  var shouldDodge = timeSinceLastFired < .5 && timeSinceLastFired > 0;
   if (shouldDodge) {
     if (!obj.c.dodge) {
       obj.c.dodge = _.clone(obj.movement.vector);

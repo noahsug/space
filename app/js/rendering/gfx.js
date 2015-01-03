@@ -31,7 +31,8 @@ Gfx.AttrNames = _.keys(Gfx.AttrMap);
 
 Gfx.AttrDefaults = {
   shadowColor: 'rgba(0, 0, 0, 0)',
-  shadowBlur: 0
+  shadowBlur: 0,
+  globalAlpha: 1
 };
 
 Gfx.prototype.init = function() {
@@ -55,7 +56,8 @@ Gfx.prototype.addStyle = function(styleAttrs) {
       id: this.nextStyleId_++,
       attrs: styleAttrs,
       sortOn: styleStr,
-      drawFns: new List()
+      drawFns: new List(),
+      customDrawFns: new List()
     };
     this.idToStyle_[style.id] = style;
     this.sortedStyles_.splice(index, 0, style);
@@ -80,28 +82,36 @@ Gfx.prototype.getStyleStr_ = function(attrs) {
   }).join('~');
 };
 
-Gfx.prototype.setStyle = function(styleId) {
+Gfx.prototype.setStyle = function(styleId, opt_customStyle) {
   this.currentStyle_ = this.idToStyle_[styleId];
+  this.customStyle_ = opt_customStyle;
 };
 
 Gfx.prototype.circle = function(x, y, radius) {
-  this.addDrawFn_([Gfx.DrawFn.CIRCLE, x, y, radius]);
+  this.addDrawFn_(Gfx.DrawFn.CIRCLE, x, y, radius);
 };
 
 Gfx.prototype.line = function(x, y, dx, dy) {
-  this.addDrawFn_([Gfx.DrawFn.LINE, x, y, dx, dy]);
+  this.addDrawFn_(Gfx.DrawFn.LINE, x, y, dx, dy);
 };
 
 Gfx.prototype.triangle = function(x1, y1, x2, y2, x3, y3) {
-  this.addDrawFn_([Gfx.DrawFn.TRIANGLE, x1, y1, x2, y2, x3, y3]);
+  this.addDrawFn_(Gfx.DrawFn.TRIANGLE, x1, y1, x2, y2, x3, y3);
 };
 
-Gfx.prototype.addDrawFn_ = function(drawFnArgs) {
+Gfx.prototype.addDrawFn_ = function(var_drawFnArgs) {
   if (this.currentStyle_.flushCount != this.flushCount_) {
     this.currentStyle_.drawFns.length = 0;
+    this.currentStyle_.customDrawFns.length = 0;
     this.currentStyle_.flushCount = this.flushCount_;
   }
-  this.currentStyle_.drawFns[this.currentStyle_.drawFns.length++] = drawFnArgs;
+  if (this.customStyle_) {
+    arguments.customStyle = this.customStyle_;
+    var len = this.currentStyle_.customDrawFns.length++;
+    this.currentStyle_.customDrawFns[len] = arguments;
+  } else {
+    this.currentStyle_.drawFns[this.currentStyle_.drawFns.length++] = arguments;
+  }
 };
 
 Gfx.prototype.flush = function() {
@@ -127,23 +137,48 @@ Gfx.prototype.flush = function() {
     // Draw every shape that has the same style.
     this.ctx_.beginPath();
     for (var i = 0; i < style.drawFns.length; i++) {
-      var args = style.drawFns[i];
       var isFirst = i == style.drawFns.length;
-      if (args[0] == Gfx.DrawFn.CIRCLE) {
-        this.drawCircle_(args[1], args[2], args[3], isFirst);
-      } else if (args[0] == Gfx.DrawFn.LINE) {
-        this.drawLine_(args[1], args[2], args[3], args[4]);
-      } else if (args[0] == Gfx.DrawFn.TRIANGLE) {
-        this.drawTriangle_(
-            args[1], args[2], args[3], args[4], args[5], args[6]);
-      } else {
-        throw 'Invalid shape id: ' +  args[0];
-      }
+      this.drawShape_(style.drawFns[i], isFirst);
     }
     if (style.attrs.fill) this.ctx_.fill();
     if (style.attrs.stroke) this.ctx_.stroke();
+
+    // Draw shapes with custom styles.
+    for (var i = 0; i < style.customDrawFns.length; i++) {
+      var args = style.customDrawFns[i];
+      this.setCustomStyles_(args.customStyle);
+      this.ctx_.beginPath();
+      this.drawShape_(args, true);
+      if (style.attrs.fill) this.ctx_.fill();
+      if (style.attrs.stroke) this.ctx_.stroke();
+      this.setCustomStyles_(args.customStyle, prevStyleAttrs);
+    }
   }
   this.flushCount_++;
+};
+
+Gfx.prototype.drawShape_ = function(args, isFirst) {
+  if (args[0] == Gfx.DrawFn.CIRCLE) {
+    this.drawCircle_(args[1], args[2], args[3], isFirst);
+  } else if (args[0] == Gfx.DrawFn.LINE) {
+    this.drawLine_(args[1], args[2], args[3], args[4]);
+  } else if (args[0] == Gfx.DrawFn.TRIANGLE) {
+    this.drawTriangle_(
+      args[1], args[2], args[3], args[4], args[5], args[6]);
+  } else {
+    throw 'Invalid shape id: ' +  args[0];
+  }
+};
+
+Gfx.prototype.setCustomStyles_ = function(customStyle, opt_restoreTo) {
+  var set = !opt_restoreTo;
+  var keys = Object.keys(customStyle);
+  for (var j = 0; j < keys.length; j++) {
+    var name = keys[j];
+    var value = set ? customStyle[name] :
+        opt_restoreTo[name] || Gfx.AttrDefaults[name];
+    this.ctx_[name] = value;
+  }
 };
 
 Gfx.prototype.drawCircle_ = function(x, y, radius, isFirst) {

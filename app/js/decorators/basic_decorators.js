@@ -78,8 +78,7 @@ BasicDecorators.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
   }.bind(this));
 };
 
-// stunned: everything stops including movement + cooldowns.
-// disabled: stunned but continues to move in current direction.
+// disabled: stops cooldowns, attacks and control of movement.
 // weaponsDisabled: no primary or secondary weapons.
 BasicDecorators.prototype.decorateEffectable_ = function(obj) {
   var effectNames = [];

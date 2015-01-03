@@ -36,11 +36,8 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
   }.bind(this));
 
   obj.update(function(dt) {
-    if (obj.effect.stunned) return;
     if (obj.dead) return;
-    if (!obj.effect.disabled) {
-      this.updateVector_(obj, dt);
-    }
+    this.updateVector_(obj, dt);
     this.move_(obj, dt);
   }.bind(this));
 };
@@ -257,6 +254,7 @@ AiMovement.prototype.getClosestPerpAngle_ = function(perpTo, closeTo) {
 };
 
 AiMovement.prototype.updateVector_ = function(obj, dt) {
+  if (obj.effect.disabled) return;
   var m = obj.movement;
   var dx = m.desiredVector.x - m.vector.x;
   var dy = m.desiredVector.y - m.vector.y;
