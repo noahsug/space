@@ -25,7 +25,7 @@ PrimaryDecorators.prototype.decorateBasicLaser_ = function(obj) {
     accuracy: _.radians(10),
     cooldown: .75,
     length: 8 + 16,
-    range: 150
+    range: 200
   };
 
   this.addDmgWeapon_(obj, this.util_.fireLaser.bind(this.util_));

@@ -7,6 +7,22 @@ SecondaryDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'secondary');
 };
 
+SecondaryDecorators.prototype.decoratePistol_ = function(obj) {
+  obj.secondary = {
+    dmg: 3,
+    speed: 300,
+    accuracy: _.radians(10),
+    cooldown: 1.25,
+    length: 6 + 16,
+    range: 300
+  };
+
+  this.util_.addWeapon(obj, obj.secondary, function() {
+    var projectile = this.util_.fireLaser(obj, obj.secondary);
+    _.decorate(projectile, this.d_.dmgCollision, obj.secondary);
+  }.bind(this));
+};
+
 SecondaryDecorators.prototype.decorateStun_ = function(obj) {
   obj.secondary = {
     dmg: 2,
