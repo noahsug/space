@@ -10,13 +10,15 @@ di.constant('gameplayFile', {
       //'grenade',
       //'razors',
       //'sniper',
-      'stun',
+      //'stun',
+      'missiles',
+      'teleport',
       //'emp',
       //'shotgun',
       'health II',
       'circle',
-      '+explosion size',
-      'baboon',
+      //'+explosion size',
+      //'baboon',
       'speed I',
     ],
 
@@ -76,6 +78,10 @@ di.constant('gameplayFile', {
       desc: 'Fires a fast, powerful shot.',
       type:'primary.sniper', spec: {},
       level: 1},
+    'missiles': {
+      desc: 'Fires seeking shots.',
+      type:'primary.missiles', spec: {},
+      level: 0},
 
     'stun': {
       desc: 'Shot that stuns the enemy on contact.',
@@ -119,9 +125,13 @@ di.constant('gameplayFile', {
       desc: 'dash.',
       type: 'utility.dash', spec: {},
       level: 1},
+    'turbo': {
+      desc: 'move faster.',
+      type: 'utility.turbo', spec: {},
+      level: 1},
     'teleport': {
-      desc: 'Teleport to a random location to avoid enemy projectiles.',
-      type: 'utility.teleport', spec: {cooldown: 6},
+      desc: 'Teleport behind the enemy.',
+      type: 'utility.teleport', spec: {},
       level: 1},
     'invisible': {
       desc: 'Become untargetable for a short period of time.',

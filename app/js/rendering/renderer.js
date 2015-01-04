@@ -109,11 +109,11 @@ Renderer.prototype.drawBtn_ = function(entity, pos) {
 
 var DEATH_ANIMATION_DURATION = .3;
 Renderer.prototype.initShip_ = function(entity) {
-  entity.render.shake = 0;
-  entity.render.shakeStop = 0;
+  entity.render.damageTaken = 0;
+  entity.render.shaking = 0;
+  entity.render.healthIndicator = 0;
   entity.render.deathAnimation = DEATH_ANIMATION_DURATION;
   entity.render.radius = entity.radius;
-  entity.render.battleOver = false;
 };
 Renderer.prototype.addShipStyle_ = function(style) {
   var baseStyle = {
@@ -126,12 +126,12 @@ Renderer.prototype.addShipStyle_ = function(style) {
     stroke: Gfx.Color.BLUE
   }, baseStyle));
   style.goodDmged = this.gfx_.addStyle({
-    lineWidth: 4,
+    lineWidth: 5,
     stroke: Gfx.Color.OPAC_RED,
     shadow: 'none'
   });
   style.badDmged = this.gfx_.addStyle({
-    lineWidth: 4,
+    lineWidth: 5,
     stroke: Gfx.Color.MORE_OPAC_RED,
     shadow: 'none'
   });
@@ -148,29 +148,37 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
         entity.render.radius += dr;
       }
     }
+  }
 
-    // Draw health indicator
-    var dmgTaken = entity.maxHealth - entity.health;
-    if (entity.health <= 10) {
-      var healthStyle = style[entity.style + 'Dmged'];
-      this.gfx_.setStyle(healthStyle);
-      this.gfx_.circle(pos.x, pos.y, entity.render.radius - 5);
-    }
+  var damage = entity.prevHealth - entity.health;
+  if (damage != entity.render.damageTaken) {
+    entity.render.damageTaken = damage;
+  } else {
+    damage = 0;
   }
 
   // Shake afer taking damage.
-  var damage = entity.prevHealth - entity.health;
-  if (damage != entity.render.shake) {
-    entity.render.shakeStop = Math.max(entity.render.shakeStop,
-                                       damage && 4 + damage / 4);
-    entity.render.shake = Math.max(entity.render.shake,
-                                   damage && 2 + damage / 2);
+  if (damage) {
+    entity.render.shaking = Math.floor(4 + damage / 4);
   }
-  if (entity.render.shakeStop) {
-    pos.x += (.3 + .7 * Math.random()) * entity.render.shake;
-    pos.y += (.3 + .7 * Math.random()) * entity.render.shake;
-    entity.render.shakeStop--;
-    if (entity.render.shakeStop < 0) entity.render.shakeStop = 0;
+  if (entity.render.shaking) {
+    var shake = 2 + entity.render.damageTaken / 2;
+    pos.x += (.3 + .7 * Math.random()) * shake;
+    pos.y += (.3 + .7 * Math.random()) * shake;
+    entity.render.shaking--;
+  }
+
+  // Draw health indicator
+  if (!entity.dead) {
+    if (entity.health <= damage) {
+      entity.render.healthIndicator = 30;
+    }
+    if (entity.render.healthIndicator) {
+      var healthStyle = style[entity.style + 'Dmged'];
+      this.gfx_.setStyle(healthStyle);
+      this.gfx_.circle(pos.x, pos.y, entity.render.radius - 5);
+      entity.render.healthIndicator--;
+    }
   }
 
   // Death animation.
@@ -188,11 +196,15 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
   this.gfx_.circle(pos.x, pos.y, entity.render.radius - 2);
 
   // DEBUG.
-  if (entity.aimPos) {
-    var dx = entity.aimPos.x - entity.x;
-    var dy = entity.aimPos.y - entity.y;
-    this.gfx_.circle(pos.x + dx, pos.y + dy, 3);
-  }
+  //var dx = pos.x - entity.x;
+  //var dy = pos.y - entity.y;
+  //if (entity.aimPos) {
+  //  this.gfx_.circle(entity.aimPos.x + dx, entity.aimPos.y + dy, 3);
+  //}
+  //if (entity.utility.teleportPos) {
+  //  this.gfx_.circle(entity.utility.teleportPos.x + dx,
+  //                   entity.utility.teleportPos.y + dy, 3);
+  //}
 };
 
 var SPEED_FUDGING = 8;
@@ -274,10 +286,6 @@ Renderer.prototype.drawBomb_ = function(entity, pos, style, dt) {
   }
 };
 
-var ROTATION_SPEED = 10;
-Renderer.prototype.initBlade_ = function(entity) {
-  entity.render.rotation = 0;
-};
 Renderer.prototype.addBladeStyle_ = function(style) {
   style.normal = this.gfx_.addStyle({
     stroke: Gfx.Color.BLUE,
@@ -289,9 +297,8 @@ Renderer.prototype.drawBlade_ = function(entity, pos, style, dt) {
     entity.remove = true;
     return;
   }
-  entity.render.rotation += dt * ROTATION_SPEED;
   var triangle = _.geometry.circumscribeTriangle(
-      pos.x, pos.y, entity.radius - 1, entity.render.rotation);
+      pos.x, pos.y, entity.radius - 1, entity.rotation);
   this.gfx_.setStyle(style.normal);
   this.gfx_.triangle(triangle.x1, triangle.y1,
                      triangle.x2, triangle.y2,

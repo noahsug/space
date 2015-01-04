@@ -1,5 +1,6 @@
 var BasicDecorators = di.service('BasicDecorators', [
-  'EntityDecorator', 'Mouse', 'Screen', 'GameModel as gm']);
+  'EntityDecorator', 'Mouse', 'Screen', 'GameModel as gm',
+  'SharedComputation as c']);
 
 BasicDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'base');
@@ -71,10 +72,7 @@ BasicDecorators.prototype.decorateCollision_ = function(obj, spec) {
 
 BasicDecorators.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
   obj.act(function() {
-    if (Math.abs(obj.x - this.screen_.x) > this.screen_.width / 2 + 50 ||
-        Math.abs(obj.y - this.screen_.y) > this.screen_.height / 2 + 50) {
-      obj.remove = true;
-    }
+    obj.remove = this.c_.hitWall(obj, 50);
   }.bind(this));
 };
 
@@ -83,18 +81,23 @@ BasicDecorators.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
 BasicDecorators.prototype.decorateEffectable_ = function(obj) {
   var effectNames = [];
   obj.effect = {};
-  obj.addEffect = function(effect, duration) {
+  obj.onEffectEnd = {};
+  obj.addEffect = function(effect, duration, opt_onEffectEnd) {
     var currentDuration = obj.effect[effect];
     if (!_.isDef(currentDuration)) effectNames.push(effect);
     obj.effect[effect] = Math.max(currentDuration || 0, duration);
+    obj.onEffectEnd[effect] = opt_onEffectEnd;
   };
 
   obj.act(function(dt) {
     for (var i = 0; i < effectNames.length; i++) {
-      if (obj.effect[effectNames[i]] <= dt) {
-        obj.effect[effectNames[i]] = 0;
+      var name = effectNames[i];
+      if (!obj.effect[name]) continue;
+      if (obj.effect[name] <= dt) {
+        obj.effect[name] = 0;
+        obj.onEffectEnd[name] && obj.onEffectEnd[name]();
       } else {
-        obj.effect[effectNames[i]] -= dt;
+        obj.effect[name] -= dt;
       }
     }
   });

@@ -15,6 +15,9 @@ ShipDecorator.prototype.decorate = function(obj) {
   obj.ability = {};
   obj.movement = {};
 
+  _.decorate(obj, this.sharedComputation_);
+  _.decorate(obj, this.d_.effectable);
+
   // Collisions.
   obj.collision = {
     dmg: 10,
@@ -29,7 +32,4 @@ ShipDecorator.prototype.decorate = function(obj) {
     obj.addEffect('disabled', obj.collision.disabledDuration);
     obj.addEffect('collided', obj.collision.disabledDuration);
   }});
-
-  _.decorate(obj, this.d_.effectable);
-  _.decorate(obj, this.sharedComputation_);
 };

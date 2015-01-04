@@ -61,10 +61,24 @@ PrimaryDecorators.prototype.decorateRazors_ = function(obj) {
   this.addDmgWeapon_(obj, this.util_.fireBlade.bind(this.util_));
 };
 
+PrimaryDecorators.prototype.decorateMissiles_ = function(obj) {
+  obj.primary = {
+    dmg: 5,
+    speed: 300,
+    seek: _.radians(60),
+    radius: 6,
+    accuracy: _.radians(10),
+    cooldown: 1.6,
+    range: 300
+  };
+
+  this.addDmgWeapon_(obj, this.util_.fireBlade.bind(this.util_));
+};
+
 PrimaryDecorators.prototype.decorateSniper_ = function(obj) {
   obj.primary = {
     dmg: 10,
-    speed: 250,
+    speed: 350,
     length: 20 + 16,
     accuracy: _.radians(5),
     cooldown: 1.2

@@ -269,19 +269,17 @@ describe('Util function:', function() {
       expect(t1).toEqual({x1: t2.x3, y1: t2.y3,
                           x2: t2.x1, y2: t2.y1,
                           x3: t2.x2, y3: t2.y2});
-      expect(t1.x1 < t1.x2 && t1.x1 > t1.x3).toBe(true);
-      expect(t1.y1 > t1.y2 && t1.y1 > t1.y3).toBe(true);
-      expect(t1.y2).toBe(t1.y3);
     });
   });
 
   describe('aimPosition', function() {
     var source, target, targetVector, targetSpeed;
-    var projectileSpeed, projectileLength;
+    var projectileSpeed, projectileLength, leadRatio;
 
     function getAimPos() {
       return _.geometry.aimPosition(source, target, targetVector, targetSpeed,
-                                    projectileSpeed, projectileLength);
+                                    projectileSpeed, projectileLength,
+                                    leadRatio);
     }
 
     beforeEach(function() {
@@ -290,6 +288,7 @@ describe('Util function:', function() {
       targetVector = {x: 0, y: 1};
       targetSpeed = projectileLength = 1;
       projectileSpeed = 2;
+      leadRatio = 1;
     });
 
     describe('returns where to aim to hit a moving target', function() {

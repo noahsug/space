@@ -43,6 +43,14 @@ SharedComputation.prototype.wallDis_ = function(obj) {
   obj.c.hitWall = obj.c.wallDis < 0;
 };
 
+SharedComputation.prototype.hitWall = function(obj, opt_distanceAllowed) {
+  var distanceAllowed = opt_distanceAllowed || 0;
+  var dx = Math.abs(obj.x - this.screen_.x);
+  var dy = Math.abs(obj.y - this.screen_.y);
+  return dx > this.screen_.width / 2 + distanceAllowed ||
+      dy > this.screen_.height / 2 + distanceAllowed;
+};
+
 SharedComputation.prototype.distawnceInfo_ = function(obj) {
   obj.c.centerDis = _.distance(obj, this.screen_);
 };

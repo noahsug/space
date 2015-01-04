@@ -1,5 +1,5 @@
 var DecoratorUtil = di.service('DecoratorUtil', [
-  'Entity', 'EntityDecorator', 'GameModel as gm']);
+  'Entity', 'EntityDecorator', 'GameModel as gm', 'Random']);
 
 DecoratorUtil.prototype.addWeapon = function(obj, spec, fire) {
   this.onCooldown(obj, function() {
@@ -8,7 +8,7 @@ DecoratorUtil.prototype.addWeapon = function(obj, spec, fire) {
     if (spec.spread) this.fireSpread_(obj, spec, fire);
     else fire(obj, spec);
     spec.lastFired = this.gm_.time;
-    return spec.cooldown;
+    return this.randomCooldown(spec.cooldown);
   }.bind(this));
 };
 
@@ -70,7 +70,11 @@ DecoratorUtil.prototype.mod = function(obj, prop, multiplier) {
   }
 };
 
-DecoratorUtil.prototype.onCooldown = function(obj, act) {
+DecoratorUtil.prototype.randomCooldown = function(cooldown) {
+  return this.random_.nextFloat(.8, 1.2) * cooldown;
+};
+
+DecoratorUtil.prototype.onCooldown = function(obj, act, opt_type) {
   return new EntityCooldown(obj, act);
 };
 

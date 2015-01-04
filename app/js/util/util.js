@@ -259,14 +259,14 @@ _.RADIANS_360 = _.radians(360);
 _.geometry = {};
 _.geometry.circumscribeTriangle = function(x, y, radius, rotation) {
   var result = {};
-  result.x1 = Math.sin(rotation) * radius + x;
-  result.y1 = Math.cos(rotation) * radius + y;
+  result.x1 = Math.cos(rotation) * radius + x;
+  result.y1 = Math.sin(rotation) * radius + y;
   rotation += _.RADIANS_120;
-  result.x2 = Math.sin(rotation) * radius + x;
-  result.y2 = Math.cos(rotation) * radius + y;
+  result.x2 = Math.cos(rotation) * radius + x;
+  result.y2 = Math.sin(rotation) * radius + y;
   rotation += _.RADIANS_120;
-  result.x3 = Math.sin(rotation) * radius + x;
-  result.y3 = Math.cos(rotation) * radius + y;
+  result.x3 = Math.cos(rotation) * radius + x;
+  result.y3 = Math.sin(rotation) * radius + y;
   return result;
 };
 
