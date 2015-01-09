@@ -1,9 +1,12 @@
 all: dev
 
+help:
+	@echo \'make prod\' - push to noahsug.github.io/space
+
 dev:
 	python scripts/gen_index.py
 
-deploy: dev
+prod: dev
 	git checkout gh-pages
 	make
 	git add .
