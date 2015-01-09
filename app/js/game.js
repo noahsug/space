@@ -1,8 +1,9 @@
 var Game = di.service('Game', [
-  'GameModel as gm', 'Scene', 'IntroScene', 'BattleScene', 'EquipScene',
+  'GameModel as gm', 'Scene', 'IntroScene', 'BattleScene', 'MainScene',
   'ResultScene', 'gameplay']);
 
 Game.UPDATE_RATE = .06;
+Game.TRANSITION_TIME = .25;
 
 Game.prototype.start = function() {
   this.nextAction_ = 0;
@@ -11,13 +12,13 @@ Game.prototype.start = function() {
     this.introScene_,
     this.battleScene_,
     this.resultScene_,
-    this.equipScene_
+    this.mainScene_
   ].map(this.scene_.create.bind(this.scene_));
 
   //this.gm_.results.won = true;
   //this.gm_.results.earned = _.value(this.gameplay_.items);
 
-  this.scenes_[1].start();
+  this.scenes_[3].start();
 };
 
 Game.prototype.setPlayerItems_ = function() {

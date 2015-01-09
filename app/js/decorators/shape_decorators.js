@@ -10,7 +10,6 @@ ShapeDecorators.prototype.decorateCircle_ = function(obj, spec) {
     radius: 10
   });
   obj.radius = obj.collideDis = spec.radius;
-  obj.resize = function(ratio) { obj.radius *= ratio; };
   obj.collides = function(target) {
     var collisionFn;
     if (target.radius) collisionFn = this.collision_.circleCircle;
@@ -28,7 +27,6 @@ ShapeDecorators.prototype.decorateLine_ = function(obj, spec) {
   });
   obj.rotation = obj.rotation || 0;
   obj.length = obj.collideDis = spec.length;
-  obj.resize = function(ratio) { obj.length *= ratio; };
   obj.collides = function(target) {
     var collisionFn;
     if (target.radius) collisionFn = this.collision_.lineCircle;
@@ -48,10 +46,12 @@ ShapeDecorators.prototype.decorateLine_ = function(obj, spec) {
 ShapeDecorators.prototype.decorateText_ = function(obj, spec) {
   spec = _.options(spec, {
     text: '',
-    size: 10
+    size: 10,
+    align: 'center'
   });
   obj.text = spec.text;
   obj.size = _.valueOrFn(spec.size);
+  obj.align = spec.align;
   obj.collides = function(target) {
     var collisionFn;
     if (target.radius) collisionFn = this.collision_.textCircle;

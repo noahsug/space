@@ -11,6 +11,10 @@ Scene.prototype.start = function() {
   this.base_.addEntities && this.base_.addEntities();
 };
 
+Scene.prototype.transition = function(entity) {
+  // TODO: Make transitions easy for all scenes.
+};
+
 Scene.prototype.update = function(dt) {
   var state = this.gm_.scenes[this.base_.name];
   if (state == 'inactive' || state == 'start') return;

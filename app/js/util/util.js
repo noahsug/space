@@ -1,3 +1,9 @@
+_.EMPTY_FN = function() {};
+
+_.pos = {
+  BOTTOM: 'bottom'
+};
+
 _.radians = function(degrees) {
   return degrees * Math.PI / 180;
 };

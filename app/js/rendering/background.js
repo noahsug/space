@@ -61,5 +61,6 @@ Background.prototype.drawSky_ = function(ctx, width, height) {
 
 Background.prototype.draw = function() {
   this.ctx_.clearRect(0, 0, this.screen_.width, this.screen_.height);
+  this.canvas_.width = this.canvas_.width;  // Clear the canvas.
   _.each(this.bgLayers_, function(bg) { bg.draw(); });
 };

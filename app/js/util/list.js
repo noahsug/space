@@ -17,6 +17,7 @@ List.prototype.clear = function() {
 List.prototype.add = function(entity, opt_name) {
   this.arr[this.length++] = entity;
   if (opt_name) this.obj[opt_name] = entity;
+  return entity;
 };
 
 List.prototype.remove = function(i) {

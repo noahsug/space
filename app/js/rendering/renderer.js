@@ -19,6 +19,7 @@ Renderer.prototype.update = function(dt) {
     this.drawEntity_(this.gm_.entities.arr[i], dt);
   }
   this.gfx_.flush();
+  this.drawTransition_(dt);
 };
 
 var INTRO_SCROLL_SPEED = 10;
@@ -29,20 +30,46 @@ Renderer.prototype.handleCamera_ = function(dt) {
   }
 };
 
+var TRANSITION_FADE = 2;
+Renderer.prototype.drawTransition_ = function(dt) {
+  var transition = this.gm_.transition;
+  if (transition) {
+    this.transitionAnimation_ += 700 * (dt / Game.TRANSITION_TIME);
+    var pos = this.getPos_(transition);
+    this.ctx_.fillStyle = "black";
+    this.ctx_.beginPath();
+    this.ctx_.arc(pos.x, pos.y, this.transitionAnimation_, 0, Math.PI * 2);
+    this.ctx_.fill();
+
+  } else if (!this.transitionAnimation_ ||
+      this.transitionAnimation_ <= dt / TRANSITION_FADE) {
+    this.transitionAnimation_ = 0;
+
+  } else {
+    if (this.transitionAnimation_ > 1) this.transitionAnimation_ = 1;
+    this.transitionAnimation_ -= dt / TRANSITION_FADE;
+    this.ctx_.fillStyle = "rgba(0, 0, 0, " + this.transitionAnimation_ + ")";
+    this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
+  }
+};
+
 Renderer.prototype.drawEntity_ = function(entity, dt) {
   this.ctx_.save();
-  var pos;
-  if (entity.staticPosition) {
-    pos = this.screen_.screenToDraw(entity.screenX, entity.screenY);
-  } else {
-    pos = this.screen_.canvasToDraw(entity.x, entity.y);
-  }
   if (!entity.render) {
     entity.render = {};
     this.initFns_[entity.type] && this.initFns_[entity.type](entity);
   }
+  var pos = this.getPos_(entity);
   this.drawFns_[entity.type](entity, pos, this.style_[entity.type], dt);
   this.ctx_.restore();
+};
+
+Renderer.prototype.getPos_ = function(entity) {
+  if (entity.staticPosition) {
+    return this.screen_.screenToDraw(entity.screenX, entity.screenY);
+  } else {
+    return this.screen_.canvasToDraw(entity.x, entity.y);
+  }
 };
 
 Renderer.prototype.drawSplash_ = function(entity, pos) {
@@ -77,7 +104,6 @@ Renderer.prototype.drawResultsSplash_ = function(entity, pos) {
   this.ctx_.fillText(title, x, y);
 
   if (this.gm_.results.won) {
-    this.ctx_.restore();
     var itemPos = {
       x: this.screen_.x + pos.x,
       y: this.screen_.y + pos.y
@@ -105,6 +131,47 @@ Renderer.prototype.drawBtn_ = function(entity, pos) {
 
   this.ctx_.strokeText(entity.text, pos.x, pos.y);
   this.ctx_.fillText(entity.text, pos.x, pos.y);
+};
+
+Renderer.prototype.drawLabel_ = function(entity, pos) {
+  this.ctx_.fillStyle = '#FFFFFF';
+  this.ctx_.font = entity.size + 'px Arial';
+  this.ctx_.textAlign = entity.align;
+  this.ctx_.textBaseline = 'top';
+  this.ctx_.fillText(entity.text, pos.x, pos.y);
+
+  this.ctx_.lineWidth = 2;
+  this.ctx_.strokeStyle = '#FFFFFF';
+  var y = pos.y + entity.size + 3;
+  this.ctx_.moveTo(pos.x, y);
+  this.ctx_.lineTo(pos.x + this.screen_.width, y);
+  this.ctx_.stroke();
+};
+
+Renderer.prototype.drawBtnSm_ = function(entity, pos) {
+  this.ctx_.fillStyle = '#000000';
+  this.ctx_.lineWidth = 2;
+  var color = '#FFFFFF';
+  if (entity.equipped) {
+    color = '#44FF77';
+  } else if (entity.locked) {
+    color = Gfx.Color.LOCKED;
+  }
+  this.ctx_.strokeStyle = color;
+
+  this.ctx_.beginPath();
+  this.ctx_.arc(pos.x, pos.y, entity.radius - 1, 0, 2 * Math.PI);
+  this.ctx_.fill();
+  this.ctx_.stroke();
+  if (entity.name) {
+    this.drawItem_(entity, pos);
+  };
+
+  //if (entity.locked) {
+  //  this.ctx_.fillStyle = 'rgba(200, 200, 200, .5)';
+  //  this.ctx_.font = (entity.radius * 2) + 'px Arial';
+  //  this.ctx_.fillText('✕', pos.x, pos.y);
+  //}
 };
 
 var DEATH_ANIMATION_DURATION = .3;
@@ -306,32 +373,18 @@ Renderer.prototype.drawBlade_ = function(entity, pos, style, dt) {
 
 };
 
-Renderer.prototype.drawInventorySlot_ = function(entity, pos) {
-  this.ctx_.fillStyle = '#000000';
-  this.ctx_.lineWidth = 4;
-  this.ctx_.shadowBlur = 0;
-
-  var color = '#FFFFFF';
-  if (entity.equipped) {
-    color = '#44FF77';
-  }
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = color;
-
-  this.ctx_.beginPath();
-  this.ctx_.arc(pos.x, pos.y, entity.radius - 2, 0, 2 * Math.PI);
-  this.ctx_.stroke();
-  this.ctx_.fill();
-
-  if (entity.item) {
-    this.drawItem_(entity.item, pos);
-  };
-};
-
 Renderer.prototype.drawItem_ = function(item, pos) {
-  var SIZE = 12;
-  this.ctx_.fillStyle = '#FFFFFF';
-  this.ctx_.font = SIZE + 'px Arial';
+  var size = item.fontSize || 12;
+  if (item.locked) {
+    this.ctx_.fillStyle = Gfx.Color.LOCKED;
+  } else {
+    this.ctx_.fillStyle = '#FFFFFF';
+  }
+  this.ctx_.font = size + 'px Arial';
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'middle';
-  this.ctx_.fillText(item.name, pos.x, pos.y);
+  var x = pos.x; var y = pos.y;
+  if (item.name == '↩') y += 3;
+  if (item.name == '◃') { x -= 1; y += 1; }
+  this.ctx_.fillText(item.name, x, y);
 };

@@ -10,7 +10,9 @@ Gfx.Color = {
   GREEN: '#00FF00',
   BLUE: '#7799FF',
   YELLOW: '#FFFF00',
-  PINK: '#FFCCEE'
+  PINK: '#FFCCEE',
+
+  LOCKED: '#666'
 };
 
 Gfx.DrawFn = {
@@ -115,6 +117,7 @@ Gfx.prototype.addDrawFn_ = function(var_drawFnArgs) {
 };
 
 Gfx.prototype.flush = function() {
+  this.ctx_.save();
   var prevStyleAttrs = _.clone(Gfx.AttrMap);
   for (var si = 0; si < this.sortedStyles_.length; si++) {
     var style = this.sortedStyles_[si];
@@ -133,6 +136,7 @@ Gfx.prototype.flush = function() {
         }
       }
     }
+    this.ctx_.closePath();
 
     // Draw every shape that has the same style.
     this.ctx_.beginPath();
@@ -153,8 +157,10 @@ Gfx.prototype.flush = function() {
       if (style.attrs.stroke) this.ctx_.stroke();
       this.setCustomStyles_(args.customStyle, prevStyleAttrs);
     }
+    this.ctx_.closePath();
   }
   this.flushCount_++;
+  this.ctx_.restore();
 };
 
 Gfx.prototype.drawShape_ = function(args, isFirst) {

@@ -31,6 +31,6 @@ IntroScene.prototype.update = function(dt, state) {
   if (this.gm_.entities.obj['newGameBtn'].clicked) {
     this.gm_.scenes[this.name] = 'inactive';
     this.removeEntities_();
-    this.gm_.scenes['battle'] = 'start';
+    this.gm_.scenes['main'] = 'start';
   }
 };
