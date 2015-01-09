@@ -1,3 +1,7 @@
+/**
+ * Movement should be listed LAST so targeting is consistant.
+ */
+
 di.constant('gameplayFile', {
   init: {
     player: [
@@ -6,39 +10,44 @@ di.constant('gameplayFile', {
       //'grenade',
       //'razors',
       //'sniper',
+      //'missiles',
+      //'shotgun',
+
       //'stun',
-      'emp',
-      'radial II',
+      //'emp',
+      'pistol',
+
+      'teleport',
+      //'baboon',
+
+      //'+explosion size',
+
       'health II',
       'circle',
-      '+explosion size',
-      'baboon'
+      'speed I',
     ],
 
     inventory: [
       'shotgun',
       'teleport',
-      'burst laser',
-      'radial II',
+      'burst laser'
     ]
   },
 
   level: [
     {
       enemy: [
-        'shotgun',
-        'teleport',
-        'radial I',
-        'health II',
+        'dash',
+        'health I',
         'circle',
-        '+health'
+        'speed II',
       ]
     },
     {
       enemy: [
         'shotgun',
         'burst laser',
-        'radial I',
+        'speed I',
         'health I',
         'circle'
       ]
@@ -52,7 +61,7 @@ di.constant('gameplayFile', {
       level: 0},
     'burst laser': {
       desc: 'Fires a rapid volley of shots every 2 seconds.',
-      type: 'primary.laser', spec: {},
+      type: 'primary.burstLaser', spec: {},
       level: 0},
     'shotgun': {
       desc: 'Fires a powerful burst of shots in an arc.',
@@ -70,58 +79,53 @@ di.constant('gameplayFile', {
       desc: 'Fires a fast, powerful shot.',
       type:'primary.sniper', spec: {},
       level: 1},
+    'missiles': {
+      desc: 'Fires seeking shots.',
+      type:'primary.missiles', spec: {},
+      level: 0},
 
     'stun': {
       desc: 'Shot that stuns the enemy on contact.',
       type:'secondary.stun', spec: {},
       level: 0},
-    'ram': {
-      desc: 'Ram your enemies for massive damage.',
-      type:'secondary.ram', spec: {},
-      level: 0},
     'emp': {
       desc: 'Grenade that disables enemy primary weapons.',
       type:'secondary.emp', spec: {},
       level: 0},
-    'repair': {
-      desc: 'Repairs damage to your ship.',
-      type:'secondary.heal', spec: {},
+    'pistol': {
+      desc: 'Basic laser.',
+      type:'secondary.pistol', spec: {},
       level: 0},
 
+    'dash': {
+      desc: 'dash.',
+      type: 'utility.dash', spec: {},
+      level: 1},
+    'turbo': {
+      desc: 'move faster.',
+      type: 'utility.turbo', spec: {},
+      level: 1},
+    'teleport': {
+      desc: 'Teleport behind the enemy.',
+      type: 'utility.teleport', spec: {},
+      level: 1},
     'baboon': {
       desc: 'Enrage when hurt, becoming larger and dealing more damage.',
-      type: 'ability.rage', spec: {},
+      type: 'utility.rage', spec: {},
       level: 1},
     'mink': {
       desc: 'Small and agile, but deal less damage.',
-      type: 'ability.mink', spec: {},
+      type: 'utility.mink', spec: {},
       level: 1},
-    'mosquito': {
-      desc: 'Low health but repair by dealing damage.',
-      type: 'ability.lifesteal', spec: {},
-      level: 1},
-    'elephant': {
-      desc: 'Move slower and take less damage.',
-      type: 'ability.armor', spec: {},
-      level: 1},
-    'spider': {
-      desc: 'Take more damage and slow the enemy on each hit.',
-      type: 'ability.slow', spec: {},
-      level: 1},
-
-    'teleport': {
-      desc: 'Teleport to a random location to avoid enemy projectiles.',
-      type: 'utility.teleport', spec: {cooldown: 4},
-      level: 1},
-    'invisible': {
+    'invisible': {  // UNIMPLEMENTED
       desc: 'Become untargetable for a short period of time.',
       type: 'utility.invisible', spec: {cooldown: 4},
       level: 1},
-    'propane': {
+    'propane': {  // UNIMPLEMENTED
       desc: 'Gain a massive boost of speed for a short period of time.',
       type: 'utility.propane', spec: {cooldown: 4},
       level: 1},
-    'zombie': {
+    'zombie': {  // UNIMPLEMENTED
       desc: 'Stay alive for a few seconds after death.',
       type: 'utility.zombie', spec: {cooldown: 4},
       level: 1},
@@ -138,18 +142,21 @@ di.constant('gameplayFile', {
     '+explosion size': {
       desc: '20% larger explosions.',
       type: 'mod.aoe', spec: {radius: 1.2}},
-    '+disable': {
+    '+disable': {  // UNIMPLEMENTED
       desc: 'Stuns, slows and disables last 20% longer.',
       type: 'mod.disable', spec: {duration: 1.2}},
 
-    'radial I': {
-      desc: 'Move in a circle around the enemy.',
-      type:'movement.radial', spec: {speed: 100},
+
+    // Non-collectables.
+
+    'speed I': {
+      desc: '135 speed',
+      type:'movement.ai', spec: {speed: 110},
       level: 0},
-    'radial II': {
-      desc: 'Move in a circle around the enemy.',
-      type:'movement.radial', spec: {speed: 135},
-      level: 1},
+    'speed II': {
+      desc: '135 speed',
+      type:'movement.ai', spec: {speed: 120},
+      level: 0},
 
     'circle': {
       desc: 'Circle',
@@ -157,7 +164,7 @@ di.constant('gameplayFile', {
 
     'health I': {
       desc: '20 health',
-      type: 'health', spec: {health: 20}},
+      type: 'health', spec: {health: 2}},
     'health II': {
       desc: '25 health',
       type: 'health', spec: {health: 25}}

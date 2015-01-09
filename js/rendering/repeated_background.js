@@ -23,7 +23,7 @@ RepeatedBackground.prototype.setBgDistance = function(distance) {
 
 RepeatedBackground.prototype.draw = function() {
   if (this.updateCount_++ % (this.distance_)) return;
-  _.assert(this.tileSize_, 'Must call setRepeatedTile() before draw()');
+  //_.assert(this.tileSize_, 'Must call setRepeatedTile() before draw()');
   this.ctx_.clearRect(0, 0, this.ctx_.canvas.width, this.ctx_.canvas.height);
   var x = (-this.screen_.x / this.distance_) % this.tileSize_;
   var y = (-this.screen_.y / this.distance_) % this.tileSize_;

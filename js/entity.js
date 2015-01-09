@@ -1,10 +1,6 @@
 var Entity = di.factory('Entity');
 
 Entity.prototype.init = function(type) {
-  this.effects = {
-    stunned: {},
-    weaponsDisabled: {}
-  };
   this.type = type;
   this.setPos(0, 0);
   _.decorate(this, _.decorator.eventEmitter);
@@ -15,12 +11,12 @@ Entity.prototype.awake = _.eventFn('awake');
 
 // Take action (e.g. shoot a laser).
 Entity.prototype.act_ = _.eventFn('act');
-Entity.prototype.act = function(opt_callbackOrArg) {
-  if (!this.awakened && !_.isFunction(opt_callbackOrArg)) {
+Entity.prototype.act = function(opt_callbackOrDt) {
+  if (!_.isFunction(opt_callbackOrDt) && !this.awakened) {
     this.awakened = true;
     this.awake();
   }
-  this.act_(opt_callbackOrArg);
+  this.act_(opt_callbackOrDt);
 };
 
 // Be affected by other entities (e.g. collide with a laser).

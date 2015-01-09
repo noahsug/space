@@ -1,15 +1,14 @@
 var MovementDecorators = di.service('MovementDecorators', [
-  'EntityDecorator', 'Random']);
+  'EntityDecorator', 'Random', 'SharedComputation']);
 
 MovementDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'movement');
 };
 
 MovementDecorators.prototype.decorateRadial_ = function(obj, spec) {
-  spec = _.options(spec, {
+  obj.movement = _.options(spec, {
     speed: 0
   });
-  obj.speed = spec.speed;
 
   var target;
   obj.act(function() {
@@ -17,14 +16,13 @@ MovementDecorators.prototype.decorateRadial_ = function(obj, spec) {
   });
 
   obj.update(function(dt) {
-    if (obj.effects.stunned.value) return;
     if (obj.dead) return;
-    var currentAngle = _.angle(target.x, target.y, obj.x, obj.y);
+    var currentAngle = _.angle(target, obj);
     var dx = obj.x - target.x;
     var dy = obj.y - target.y;
     var radius = Math.hypot(Math.abs(dx), Math.abs(dy));
     var circumference = Math.PI * radius * 2;
-    var arc = obj.speed * dt;
+    var arc = obj.movement.speed * dt;
     var additionalAngle = Math.PI * 2 * (arc / circumference);
     var nextAngle = currentAngle + additionalAngle;
 
@@ -34,35 +32,57 @@ MovementDecorators.prototype.decorateRadial_ = function(obj, spec) {
 };
 
 MovementDecorators.prototype.decorateStraight_ = function(obj, spec) {
-  spec = _.options(spec, {
+  obj.movement = _.options(spec, {
     speed: 0,
     accuracy: 0,
     dangle: 0,
-    seek: 0
+    seek: 0,
+    leadTarget: true
   });
-  obj.speed = spec.speed;
 
   var target;
   obj.awake(function() {
-    obj.rotation = _.angle(obj.x, obj.y, obj.target.x, obj.target.y);
-    var a = this.random_.next() * spec.accuracy;
-    obj.rotation += a - a / 2;
-    obj.rotation += spec.dangle;
+    var target = obj.movement.leadTarget ?
+        getExpectedTargetPos(obj) : obj.target;
+    obj.rotation = _.angle(obj, target);
+    var a = this.random_.next() * obj.movement.accuracy;
+    obj.rotation += obj.movement.accuracy / 2 - a;
+    obj.rotation += obj.movement.dangle;
   }.bind(this));
 
   obj.act(function(dt) {
-    var desiredRotation = _.angle(obj.x, obj.y, obj.target.x, obj.target.y);
+    if (!obj.movement.seek) return;
+    var desiredRotation = _.angle(obj, obj.target);
     var dr = desiredRotation - obj.rotation;
-    if (Math.abs(dr) < spec.seek * dt) {
+    if (Math.abs(dr) < obj.movement.seek * dt) {
       obj.rotation = desiredRotation;
     } else {
-      obj.rotation += spec.seek * dt * Math.sign(dr);
+      obj.rotation += obj.movement.seek * dt * Math.sign(dr);
     }
   });
 
   obj.update(function(dt) {
     if (obj.dead) return;
-    obj.x += Math.cos(obj.rotation) * obj.speed * dt;
-    obj.y += Math.sin(obj.rotation) * obj.speed * dt;
+    obj.x += Math.cos(obj.rotation) * obj.movement.speed * dt;
+    obj.y += Math.sin(obj.rotation) * obj.movement.speed * dt;
   });
+
+  var getExpectedTargetPos = function(obj) {
+    var leadRatio = 1;  //this.random_.next();
+    var aimPos = _.geometry.aimPosition(obj,
+                                        obj.target,
+                                        obj.target.movement.vector,
+                                        obj.target.movement.speed,
+                                        obj.movement.speed,
+                                        obj.collideDis,
+                                        leadRatio);
+    aimPos.collideDis = obj.target.collideDis;
+    this.sharedComputation_.wallDis(aimPos);
+    //obj.target.aimPos = aimPos;  // DEBUG.
+    if (aimPos.c.hitWall) {
+      return obj.target;
+    } else {
+      return aimPos;
+    }
+  }.bind(this);
 };

@@ -33,9 +33,6 @@ EntityDecorator.prototype.addDecoratorObj = function(obj, category) {
   }, this);
 };
 
-/**
- * Name can look like 'weapon.laser' and it will be magically parsed correctly.
- */
 EntityDecorator.prototype.addDecorator = function(category, type, fn) {
   var decorator = {name: category + '.' + type, decorate: fn};
   this.decorators_[category] = this.decorators_[category] || {};

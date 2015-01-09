@@ -10,7 +10,7 @@ ModDecorators.prototype.decorateHealth_ = function(obj, spec) {
 };
 
 ModDecorators.prototype.decorateSpeed_ = function(obj, spec) {
-  this.util_.mod(obj, 'speed', spec.speed);
+  this.util_.mod(obj, 'movement.speed', spec.speed);
 };
 
 ModDecorators.prototype.decoratePrimaryCooldown_ = function(obj, spec) {

@@ -13,7 +13,7 @@ SeededRandom.prototype.getSeed = function() {
   return this.seed_;
 };
 
-SeededRandom.prototype.trueRandom = function(enable) {
+SeededRandom.prototype.useTrueRandom = function(enable) {
   this.useTrueRandom_ = enable;
 };
 
@@ -32,6 +32,16 @@ SeededRandom.prototype.nextInt = function(minOrMax, opt_max) {
     min = 0;
   }
   return Math.floor(this.next() * (max - min + 1) + min);
+};
+
+SeededRandom.prototype.nextFloat = function(minOrMax, opt_max) {
+  var max = opt_max;
+  var min = minOrMax;
+  if (!_.isDef(max)) {
+    max = minOrMax;
+    min = 0;
+  }
+  return this.next() * (max - min) + min;
 };
 
 SeededRandom.prototype.flipCoin = function() {

@@ -2,10 +2,11 @@ var GameRunner = di.service('GameRunner', [
   'Game', 'Mouse', 'Renderer', 'requestAnimationFrame',
   'cancelAnimationFrame', 'GameModel as gm']);
 
-GameRunner.MIN_FPS = 10;
+GameRunner.MIN_FPS = 15;
 
 GameRunner.prototype.init = function() {
   this.running_ = false;
+  this.boundStep_ = this.step_.bind(this);
 };
 
 GameRunner.prototype.isRunning = function() {
@@ -28,27 +29,27 @@ GameRunner.prototype.stop = function() {
 };
 
 window.time = 0; // DEBUG
-GameRunner.prototype.step_ = function(prevStepTime) {
+var minDt = 1 / GameRunner.MIN_FPS;
+GameRunner.prototype.step_ = function() {
   var now = Date.now();
-  var dt = (now - prevStepTime) / 1000;
+  var dt = (now - this.frameRequestTime_) / 1000;
 
   // DEBUG
-  time += dt;
-  var r = time > 1 ? .1 : 10;
-  r = time > 1.5 ? 1 : 10;
-  r = 1;
-  window.debug = time > 1.5;
-  // DEBUG
+  //time += dt;
+  //var r = time > 1 ? .1 : 10;
+  //r = time > 1.5 ? 1 : 10;
+  //r = 1;
+  //window.debug = time > 1.5;
 
-  dt = Math.min(dt, 1 / GameRunner.MIN_FPS) * this.gm_.speed * r;
+  dt = Math.min(dt, minDt) * this.gm_.speed;
   this.update_(dt);
   this.requestNextStep_();
 };
 
 GameRunner.prototype.requestNextStep_ = function() {
   if (!this.running_) return;
-  var now = Date.now();
-  this.frameRequest_ = this.requestAnimationFrame_(this.step_.bind(this, now));
+  this.frameRequestTime_ = Date.now();
+  this.frameRequest_ = this.requestAnimationFrame_(this.boundStep_);
 };
 
 GameRunner.prototype.update_ = function(dt) {

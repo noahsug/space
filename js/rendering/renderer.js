@@ -19,69 +19,57 @@ Renderer.prototype.update = function(dt) {
     this.drawEntity_(this.gm_.entities.arr[i], dt);
   }
   this.gfx_.flush();
+  this.drawTransition_(dt);
 };
 
 var INTRO_SCROLL_SPEED = 10;
-var BATTLE_CAMERA_SPEED = 20;
-var BATTLE_ZOOM_SPEED = 40000;
-var TRANSITION_CAMERA_SPEED = 35;
-var TRANSITION_ZOOM_SPEED = 40000;
 Renderer.prototype.handleCamera_ = function(dt) {
   if (this.gm_.scenes['battle'] == 'inactive') {
     this.screen_.x -= INTRO_SCROLL_SPEED * dt;
     this.screen_.y -= INTRO_SCROLL_SPEED * dt;
   }
+};
 
-  if (this.gm_.scenes['battle'] == 'active') {
-    // Pan camera.
-    var e1 = this.gm_.entities.obj['player'];
-    var e2 = this.gm_.entities.obj['enemy'];
-    var target = {x: (e1.x + e2.x) / 2, y: (e1.y + e2.y) / 2};
-    _.moveTowards(this.screen_, target, dt * BATTLE_CAMERA_SPEED);
+var TRANSITION_FADE = 2;
+Renderer.prototype.drawTransition_ = function(dt) {
+  var transition = this.gm_.transition;
+  if (transition) {
+    this.transitionAnimation_ += 700 * (dt / Game.TRANSITION_TIME);
+    var pos = this.getPos_(transition);
+    this.ctx_.fillStyle = "black";
+    this.ctx_.beginPath();
+    this.ctx_.arc(pos.x, pos.y, this.transitionAnimation_, 0, Math.PI * 2);
+    this.ctx_.fill();
 
-    // Zoom camera.
-    var dx = Math.abs(e1.x - this.screen_.x) - this.screen_.width / 2;
-    var dy = Math.abs(e1.y - this.screen_.y) - this.screen_.height / 2;
-    if (dx > -60 || dy > -60) {
-      this.screen_.zoom(-BATTLE_ZOOM_SPEED * dt);
-    } else if (dx < -120 && dy < -120) {
-      this.screen_.zoom(BATTLE_ZOOM_SPEED * dt);
-    }
-  }
+  } else if (!this.transitionAnimation_ ||
+      this.transitionAnimation_ <= dt / TRANSITION_FADE) {
+    this.transitionAnimation_ = 0;
 
-  if (this.gm_.scenes['battle'] == 'transition') {
-    // Zoom camera
-    var difference =
-        this.screen_.getSurfaceArea() - Screen.DESIRED_SURFACE_AREA;
-    var zoom = Math.min(TRANSITION_ZOOM_SPEED * dt, Math.abs(difference));
-    if (difference > 0) {
-      this.screen_.zoom(zoom);
-    } else {
-      this.screen_.zoom(-zoom);
-    }
-
-    // Pan camera.
-    var e1 = this.gm_.entities.obj['player'];
-    var e2 = this.gm_.entities.obj['enemy'];
-    var target = e1.dead ? e1 : e2;
-    _.moveTowards(this.screen_, target, dt * TRANSITION_CAMERA_SPEED);
+  } else {
+    if (this.transitionAnimation_ > 1) this.transitionAnimation_ = 1;
+    this.transitionAnimation_ -= dt / TRANSITION_FADE;
+    this.ctx_.fillStyle = "rgba(0, 0, 0, " + this.transitionAnimation_ + ")";
+    this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
   }
 };
 
 Renderer.prototype.drawEntity_ = function(entity, dt) {
   this.ctx_.save();
-  var pos;
-  if (entity.staticPosition) {
-    pos = this.screen_.screenToDraw(entity.screenX, entity.screenY);
-  } else {
-    pos = this.screen_.canvasToDraw(entity.x, entity.y);
-  }
   if (!entity.render) {
     entity.render = {};
     this.initFns_[entity.type] && this.initFns_[entity.type](entity);
   }
+  var pos = this.getPos_(entity);
   this.drawFns_[entity.type](entity, pos, this.style_[entity.type], dt);
   this.ctx_.restore();
+};
+
+Renderer.prototype.getPos_ = function(entity) {
+  if (entity.staticPosition) {
+    return this.screen_.screenToDraw(entity.screenX, entity.screenY);
+  } else {
+    return this.screen_.canvasToDraw(entity.x, entity.y);
+  }
 };
 
 Renderer.prototype.drawSplash_ = function(entity, pos) {
@@ -116,7 +104,6 @@ Renderer.prototype.drawResultsSplash_ = function(entity, pos) {
   this.ctx_.fillText(title, x, y);
 
   if (this.gm_.results.won) {
-    this.ctx_.restore();
     var itemPos = {
       x: this.screen_.x + pos.x,
       y: this.screen_.y + pos.y
@@ -146,72 +133,160 @@ Renderer.prototype.drawBtn_ = function(entity, pos) {
   this.ctx_.fillText(entity.text, pos.x, pos.y);
 };
 
-var ROTATION_HEALTH_RATIO = 2;
-var BASE_ROTATION = 1;
+Renderer.prototype.drawLabel_ = function(entity, pos) {
+  this.ctx_.fillStyle = '#FFFFFF';
+  this.ctx_.font = entity.size + 'px Arial';
+  this.ctx_.textAlign = entity.align;
+  this.ctx_.textBaseline = 'top';
+  this.ctx_.fillText(entity.text, pos.x, pos.y);
+
+  this.ctx_.lineWidth = 2;
+  this.ctx_.strokeStyle = '#FFFFFF';
+  var y = pos.y + entity.size + 3;
+  this.ctx_.moveTo(pos.x, y);
+  this.ctx_.lineTo(pos.x + this.screen_.width, y);
+  this.ctx_.stroke();
+};
+
+Renderer.prototype.drawBtnSm_ = function(entity, pos) {
+  this.ctx_.fillStyle = '#000000';
+  this.ctx_.lineWidth = 2;
+  var color = '#FFFFFF';
+  if (entity.equipped) {
+    color = '#44FF77';
+  } else if (entity.locked) {
+    color = Gfx.Color.LOCKED;
+  }
+  this.ctx_.strokeStyle = color;
+
+  this.ctx_.beginPath();
+  this.ctx_.arc(pos.x, pos.y, entity.radius - 1, 0, 2 * Math.PI);
+  this.ctx_.fill();
+  this.ctx_.stroke();
+  if (entity.name) {
+    this.drawItem_(entity, pos);
+  };
+
+  //if (entity.locked) {
+  //  this.ctx_.fillStyle = 'rgba(200, 200, 200, .5)';
+  //  this.ctx_.font = (entity.radius * 2) + 'px Arial';
+  //  this.ctx_.fillText('✕', pos.x, pos.y);
+  //}
+};
+
+var DEATH_ANIMATION_DURATION = .3;
 Renderer.prototype.initShip_ = function(entity) {
-  entity.render.rotation = 0;
-  entity.render.engineSize = entity.radius;
+  entity.render.damageTaken = 0;
+  entity.render.shaking = 0;
+  entity.render.healthIndicator = 0;
+  entity.render.deathAnimation = DEATH_ANIMATION_DURATION;
+  entity.render.radius = entity.radius;
 };
 Renderer.prototype.addShipStyle_ = function(style) {
   var baseStyle = {
-    fill: Gfx.Color.BLACK,
     lineWidth: 3
   };
   style.good = this.gfx_.addStyle(_.extend({
     stroke: Gfx.Color.GREEN
   }, baseStyle));
   style.bad = this.gfx_.addStyle(_.extend({
-    stroke: Gfx.Color.RED
-  }, baseStyle));
-  style.goodEngine = this.gfx_.addStyle({
-    stroke: Gfx.Color.GREEN
-  });
-  style.badEngine = this.gfx_.addStyle({
-    stroke: Gfx.Color.RED
-  });
-  style.damagedEngine = this.gfx_.addStyle({
     stroke: Gfx.Color.BLUE
+  }, baseStyle));
+  style.goodDmged = this.gfx_.addStyle({
+    lineWidth: 5,
+    stroke: Gfx.Color.OPAC_RED,
+    shadow: 'none'
+  });
+  style.badDmged = this.gfx_.addStyle({
+    lineWidth: 5,
+    stroke: Gfx.Color.MORE_OPAC_RED,
+    shadow: 'none'
   });
 };
 Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
-  this.gfx_.setStyle(style[entity.style]);
-  this.gfx_.circle(pos.x, pos.y, entity.radius - 2);
-
   if (!entity.dead) {
-    if (!entity.effects.stunned.value) {
-      var rotationSpeed = Math.max(entity.health, 0) / ROTATION_HEALTH_RATIO +
-          BASE_ROTATION;
-      entity.render.rotation += rotationSpeed * dt;
+    // Don't resize instantly.
+    var rGap = entity.radius - entity.render.radius;
+    if (rGap) {
+      var dr = Math.sign(rGap) * 10 * dt;
+      if (Math.abs(rGap) < Math.abs(dr)) {
+        entity.render.radius = entity.radius;
+      } else {
+        entity.render.radius += dr;
+      }
     }
-    if (entity.effects.weaponsDisabled.value) {
-      this.gfx_.setStyle(style.damagedEngine);
-    } else {
-      this.gfx_.setStyle(style[entity.style + 'Engine']);
-    }
-    var sizeRatio = (entity.health / entity.maxHealth) * .75;
-
-    entity.render.engineSize = (entity.radius - 2) * sizeRatio;
-    var triangle = _.geometry.circumscribeTriangle(
-        pos.x, pos.y, entity.render.engineSize, entity.render.rotation);
-    this.gfx_.triangle(triangle.x1, triangle.y1,
-                       triangle.x2, triangle.y2,
-                       triangle.x3, triangle.y3);
   }
+
+  var damage = entity.prevHealth - entity.health;
+  if (damage != entity.render.damageTaken) {
+    entity.render.damageTaken = damage;
+  } else {
+    damage = 0;
+  }
+
+  // Shake afer taking damage.
+  if (damage) {
+    entity.render.shaking = Math.floor(4 + damage / 4);
+  }
+  if (entity.render.shaking) {
+    var shake = 2 + entity.render.damageTaken / 2;
+    pos.x += (.3 + .7 * Math.random()) * shake;
+    pos.y += (.3 + .7 * Math.random()) * shake;
+    entity.render.shaking--;
+  }
+
+  // Draw health indicator
+  if (!entity.dead) {
+    if (entity.health <= damage) {
+      entity.render.healthIndicator = 30;
+    }
+    if (entity.render.healthIndicator) {
+      var healthStyle = style[entity.style + 'Dmged'];
+      this.gfx_.setStyle(healthStyle);
+      this.gfx_.circle(pos.x, pos.y, entity.render.radius - 5);
+      entity.render.healthIndicator--;
+    }
+  }
+
+  // Death animation.
+  var customStyle;
+  if (entity.dead) {
+    customStyle = {
+      globalAlpha: entity.render.deathAnimation / DEATH_ANIMATION_DURATION
+    };
+    entity.render.deathAnimation -= dt;
+    if (entity.render.deathAnimation < 0) entity.render.deathAnimation = 0;
+  }
+
+  // Draw ship.
+  this.gfx_.setStyle(style[entity.style], customStyle);
+  this.gfx_.circle(pos.x, pos.y, entity.render.radius - 2);
+
+  // DEBUG.
+  //var dx = pos.x - entity.x;
+  //var dy = pos.y - entity.y;
+  //if (entity.aimPos) {
+  //  this.gfx_.circle(entity.aimPos.x + dx, entity.aimPos.y + dy, 3);
+  //}
+  //if (entity.utility.teleportPos) {
+  //  this.gfx_.circle(entity.utility.teleportPos.x + dx,
+  //                   entity.utility.teleportPos.y + dy, 3);
+  //}
 };
 
 var SPEED_FUDGING = 8;
 Renderer.prototype.addLaserStyle_ = function(style) {
   style.weak = this.gfx_.addStyle({
-    stroke: Gfx.Color.RED,
-    lineWidth: 4
+    stroke: Gfx.Color.YELLOW,
+    lineWidth: 2
   });
   style.strong = this.gfx_.addStyle({
-    stroke: Gfx.Color.YELLOW,
-    lineWidth: 4
+    stroke: Gfx.Color.RED,
+    lineWidth: 2
   });
   style.effect = this.gfx_.addStyle({
     stroke: Gfx.Color.PINK,
-    lineWidth: 6
+    lineWidth: 3
   });
 };
 Renderer.prototype.drawLaser_ = function(entity, pos, style) {
@@ -278,10 +353,6 @@ Renderer.prototype.drawBomb_ = function(entity, pos, style, dt) {
   }
 };
 
-var ROTATION_SPEED = 8;
-Renderer.prototype.initBlade_ = function(entity) {
-  entity.render.rotation = 0;
-};
 Renderer.prototype.addBladeStyle_ = function(style) {
   style.normal = this.gfx_.addStyle({
     stroke: Gfx.Color.BLUE,
@@ -293,9 +364,8 @@ Renderer.prototype.drawBlade_ = function(entity, pos, style, dt) {
     entity.remove = true;
     return;
   }
-  entity.render.rotation += dt * ROTATION_SPEED;
   var triangle = _.geometry.circumscribeTriangle(
-      pos.x, pos.y, entity.radius - 1, entity.render.rotation);
+      pos.x, pos.y, entity.radius - 1, entity.rotation);
   this.gfx_.setStyle(style.normal);
   this.gfx_.triangle(triangle.x1, triangle.y1,
                      triangle.x2, triangle.y2,
@@ -303,32 +373,18 @@ Renderer.prototype.drawBlade_ = function(entity, pos, style, dt) {
 
 };
 
-Renderer.prototype.drawInventorySlot_ = function(entity, pos) {
-  this.ctx_.fillStyle = '#000000';
-  this.ctx_.lineWidth = 4;
-  this.ctx_.shadowBlur = 0;
-
-  var color = '#FFFFFF';
-  if (entity.equipped) {
-    color = '#44FF77';
-  }
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = color;
-
-  this.ctx_.beginPath();
-  this.ctx_.arc(pos.x, pos.y, entity.radius - 2, 0, 2 * Math.PI);
-  this.ctx_.stroke();
-  this.ctx_.fill();
-
-  if (entity.item) {
-    this.drawItem_(entity.item, pos);
-  };
-};
-
 Renderer.prototype.drawItem_ = function(item, pos) {
-  var SIZE = 12;
-  this.ctx_.fillStyle = '#FFFFFF';
-  this.ctx_.font = SIZE + 'px Arial';
+  var size = item.fontSize || 12;
+  if (item.locked) {
+    this.ctx_.fillStyle = Gfx.Color.LOCKED;
+  } else {
+    this.ctx_.fillStyle = '#FFFFFF';
+  }
+  this.ctx_.font = size + 'px Arial';
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'middle';
-  this.ctx_.fillText(item.name, pos.x, pos.y);
+  var x = pos.x; var y = pos.y;
+  if (item.name == '↩') y += 3;
+  if (item.name == '◃') { x -= 1; y += 1; }
+  this.ctx_.fillText(item.name, x, y);
 };

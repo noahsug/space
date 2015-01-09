@@ -5,10 +5,14 @@ Gfx.Color = {
   BLACK: '#000000',
   WHITE: '#FFFFFF',
   RED: '#FF0000',
+  OPAC_RED: 'rgba(255, 0, 0, .4)',
+  MORE_OPAC_RED: 'rgba(255, 0, 0, .3)',
   GREEN: '#00FF00',
   BLUE: '#7799FF',
   YELLOW: '#FFFF00',
-  PINK: '#FFCCEE'
+  PINK: '#FFCCEE',
+
+  LOCKED: '#666'
 };
 
 Gfx.DrawFn = {
@@ -19,11 +23,19 @@ Gfx.DrawFn = {
 
 Gfx.AttrMap = {
   layer: '',
+  shadow: 'shadowColor',
+  shadowBlur: 'shadowBlur',
   fill: 'fillStyle',
   stroke: 'strokeStyle',
   lineWidth: 'lineWidth'
 };
 Gfx.AttrNames = _.keys(Gfx.AttrMap);
+
+Gfx.AttrDefaults = {
+  shadowColor: 'rgba(0, 0, 0, 0)',
+  shadowBlur: 0,
+  globalAlpha: 1
+};
 
 Gfx.prototype.init = function() {
   this.nextStyleId_ = 0;
@@ -33,6 +45,7 @@ Gfx.prototype.init = function() {
 };
 
 Gfx.prototype.addStyle = function(styleAttrs) {
+  this.setDefaults_(styleAttrs);
   var styleStr = this.getStyleStr_(styleAttrs);
 
   var index = _.sortedIndex(this.sortedStyles_, {sortOn: styleStr}, 'sortOn');
@@ -45,11 +58,21 @@ Gfx.prototype.addStyle = function(styleAttrs) {
       id: this.nextStyleId_++,
       attrs: styleAttrs,
       sortOn: styleStr,
-      drawFns: new List()
+      drawFns: new List(),
+      customDrawFns: new List()
     };
     this.idToStyle_[style.id] = style;
     this.sortedStyles_.splice(index, 0, style);
     return style.id;
+  }
+};
+
+Gfx.prototype.setDefaults_ = function(attrs) {
+  if (attrs['shadow'] == 'none') return;
+  var stroke = attrs['stroke'];
+  if (stroke) {
+    if (!attrs['shadow']) attrs['shadow'] = stroke;
+    if (!attrs['shadowBlur']) attrs['shadowBlur'] = 6;
   }
 };
 
@@ -61,31 +84,40 @@ Gfx.prototype.getStyleStr_ = function(attrs) {
   }).join('~');
 };
 
-Gfx.prototype.setStyle = function(styleId) {
+Gfx.prototype.setStyle = function(styleId, opt_customStyle) {
   this.currentStyle_ = this.idToStyle_[styleId];
+  this.customStyle_ = opt_customStyle;
 };
 
 Gfx.prototype.circle = function(x, y, radius) {
-  this.addDrawFn_([Gfx.DrawFn.CIRCLE, x, y, radius]);
+  this.addDrawFn_(Gfx.DrawFn.CIRCLE, x, y, radius);
 };
 
 Gfx.prototype.line = function(x, y, dx, dy) {
-  this.addDrawFn_([Gfx.DrawFn.LINE, x, y, dx, dy]);
+  this.addDrawFn_(Gfx.DrawFn.LINE, x, y, dx, dy);
 };
 
 Gfx.prototype.triangle = function(x1, y1, x2, y2, x3, y3) {
-  this.addDrawFn_([Gfx.DrawFn.TRIANGLE, x1, y1, x2, y2, x3, y3]);
+  this.addDrawFn_(Gfx.DrawFn.TRIANGLE, x1, y1, x2, y2, x3, y3);
 };
 
-Gfx.prototype.addDrawFn_ = function(drawFnArgs) {
+Gfx.prototype.addDrawFn_ = function(var_drawFnArgs) {
   if (this.currentStyle_.flushCount != this.flushCount_) {
     this.currentStyle_.drawFns.length = 0;
+    this.currentStyle_.customDrawFns.length = 0;
     this.currentStyle_.flushCount = this.flushCount_;
   }
-  this.currentStyle_.drawFns[this.currentStyle_.drawFns.length++] = drawFnArgs;
+  if (this.customStyle_) {
+    arguments.customStyle = this.customStyle_;
+    var len = this.currentStyle_.customDrawFns.length++;
+    this.currentStyle_.customDrawFns[len] = arguments;
+  } else {
+    this.currentStyle_.drawFns[this.currentStyle_.drawFns.length++] = arguments;
+  }
 };
 
 Gfx.prototype.flush = function() {
+  this.ctx_.save();
   var prevStyleAttrs = _.clone(Gfx.AttrMap);
   for (var si = 0; si < this.sortedStyles_.length; si++) {
     var style = this.sortedStyles_[si];
@@ -95,32 +127,64 @@ Gfx.prototype.flush = function() {
     for (var i = 1; i < Gfx.AttrNames.length; i++) {
       var name = Gfx.AttrNames[i];
       var value = style.attrs[name];
-      if (_.isDef(value) && prevStyleAttrs[name] != value) {
+      if (prevStyleAttrs[name] != value) {
         prevStyleAttrs[name] = value;
-        this.ctx_[Gfx.AttrMap[name]] = value;
+        if (_.isDef(value)) {
+          this.ctx_[Gfx.AttrMap[name]] = value;
+        } else if (_.isDef(Gfx.AttrDefaults[name])) {
+          this.ctx_[Gfx.AttrMap[name]] = Gfx.AttrDefaults[name];
+        }
       }
     }
+    this.ctx_.closePath();
 
     // Draw every shape that has the same style.
     this.ctx_.beginPath();
     for (var i = 0; i < style.drawFns.length; i++) {
-      var args = style.drawFns[i];
       var isFirst = i == style.drawFns.length;
-      if (args[0] == Gfx.DrawFn.CIRCLE) {
-        this.drawCircle_(args[1], args[2], args[3], isFirst);
-      } else if (args[0] == Gfx.DrawFn.LINE) {
-        this.drawLine_(args[1], args[2], args[3], args[4]);
-      } else if (args[0] == Gfx.DrawFn.TRIANGLE) {
-        this.drawTriangle_(
-            args[1], args[2], args[3], args[4], args[5], args[6]);
-      } else {
-        throw 'Invalid shape id: ' +  args[0];
-      }
+      this.drawShape_(style.drawFns[i], isFirst);
     }
     if (style.attrs.fill) this.ctx_.fill();
     if (style.attrs.stroke) this.ctx_.stroke();
+
+    // Draw shapes with custom styles.
+    for (var i = 0; i < style.customDrawFns.length; i++) {
+      var args = style.customDrawFns[i];
+      this.setCustomStyles_(args.customStyle);
+      this.ctx_.beginPath();
+      this.drawShape_(args, true);
+      if (style.attrs.fill) this.ctx_.fill();
+      if (style.attrs.stroke) this.ctx_.stroke();
+      this.setCustomStyles_(args.customStyle, prevStyleAttrs);
+    }
+    this.ctx_.closePath();
   }
   this.flushCount_++;
+  this.ctx_.restore();
+};
+
+Gfx.prototype.drawShape_ = function(args, isFirst) {
+  if (args[0] == Gfx.DrawFn.CIRCLE) {
+    this.drawCircle_(args[1], args[2], args[3], isFirst);
+  } else if (args[0] == Gfx.DrawFn.LINE) {
+    this.drawLine_(args[1], args[2], args[3], args[4]);
+  } else if (args[0] == Gfx.DrawFn.TRIANGLE) {
+    this.drawTriangle_(
+      args[1], args[2], args[3], args[4], args[5], args[6]);
+  } else {
+    throw 'Invalid shape id: ' +  args[0];
+  }
+};
+
+Gfx.prototype.setCustomStyles_ = function(customStyle, opt_restoreTo) {
+  var set = !opt_restoreTo;
+  var keys = Object.keys(customStyle);
+  for (var j = 0; j < keys.length; j++) {
+    var name = keys[j];
+    var value = set ? customStyle[name] :
+        opt_restoreTo[name] || Gfx.AttrDefaults[name];
+    this.ctx_[name] = value;
+  }
 };
 
 Gfx.prototype.drawCircle_ = function(x, y, radius, isFirst) {

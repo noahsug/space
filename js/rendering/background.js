@@ -1,5 +1,6 @@
 var Background = di.service('Background', [
-  'GameModel as gm', 'Screen', 'ctx', 'bgCtxList', 'RepeatedBackground']);
+  'GameModel as gm', 'Screen', 'canvas', 'ctx', 'bgCtxList',
+  'RepeatedBackground']);
 
 // Screen should never have a width or height larger than 2x this value.
 var BG_TILE_SIZE = 600;
@@ -18,7 +19,7 @@ Background.prototype.createBgLayers_ = function() {
     bg.setBgDistance(Math.pow(2, i + 1));
     return bg;
   }, this.bgCtxList_.length, this);
-}
+};
 
 Background.prototype.createStarTile_ = function(bgColor) {
   var starTile = document.createElement('canvas');
@@ -37,7 +38,7 @@ Background.prototype.createStarTile_ = function(bgColor) {
 };
 
 Background.prototype.drawSky_ = function(ctx, width, height) {
-  var GRID_SIZE = 30;
+  var GRID_SIZE = 33;
   var NUM_COLS = (width / GRID_SIZE);
   var NUM_ROWS = (height / GRID_SIZE);
   var COLOR_RANGE = .4;
@@ -60,6 +61,6 @@ Background.prototype.drawSky_ = function(ctx, width, height) {
 
 Background.prototype.draw = function() {
   this.ctx_.clearRect(0, 0, this.screen_.width, this.screen_.height);
-  this.bgLayers_[0].draw();
+  this.canvas_.width = this.canvas_.width;  // Clear the canvas.
   _.each(this.bgLayers_, function(bg) { bg.draw(); });
 };
