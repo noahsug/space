@@ -47,7 +47,8 @@ ShapeDecorators.prototype.decorateText_ = function(obj, spec) {
   spec = _.options(spec, {
     text: '',
     size: 10,
-    align: 'center'
+    align: 'left',
+    baseline: 'top'
   });
   obj.text = spec.text;
   obj.size = _.valueOrFn(spec.size);

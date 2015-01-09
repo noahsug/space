@@ -22,7 +22,7 @@ Renderer.prototype.update = function(dt) {
   this.drawTransition_(dt);
 };
 
-var INTRO_SCROLL_SPEED = 10;
+var INTRO_SCROLL_SPEED = 20;
 Renderer.prototype.handleCamera_ = function(dt) {
   if (this.gm_.scenes['battle'] == 'inactive') {
     this.screen_.x -= INTRO_SCROLL_SPEED * dt;
@@ -140,12 +140,13 @@ Renderer.prototype.drawLabel_ = function(entity, pos) {
   this.ctx_.textBaseline = 'top';
   this.ctx_.fillText(entity.text, pos.x, pos.y);
 
-  this.ctx_.lineWidth = 2;
-  this.ctx_.strokeStyle = '#FFFFFF';
-  var y = pos.y + entity.size + 3;
-  this.ctx_.moveTo(pos.x, y);
-  this.ctx_.lineTo(pos.x + this.screen_.width, y);
-  this.ctx_.stroke();
+  // Draw line under the label.
+  //this.ctx_.lineWidth = 2;
+  //this.ctx_.strokeStyle = '#FFFFFF';
+  //var y = pos.y + entity.size + 3;
+  //this.ctx_.moveTo(pos.x, y);
+  //this.ctx_.lineTo(pos.x + this.screen_.width, y);
+  //this.ctx_.stroke();
 };
 
 Renderer.prototype.drawBtnSm_ = function(entity, pos) {

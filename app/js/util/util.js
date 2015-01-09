@@ -352,8 +352,8 @@ _.vector.isEmpty = function(v) {
 
 _.class = {};
 _.class.extend = function(destination, source) {
-  _.functions(source).forEach(function(fnName) {
-    destination[fnName] = source[fnName].bind(source);
-  });
-  return destination;
+  for (var key in source) {
+    destination[key] = destination[key] || source[key];
+  }
+  destination.base_ = source;
 };
