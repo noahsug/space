@@ -22,7 +22,7 @@ Renderer.prototype.update = function(dt) {
   this.drawTransition_(dt);
 };
 
-var INTRO_SCROLL_SPEED = 20;
+var INTRO_SCROLL_SPEED = 16;
 Renderer.prototype.handleCamera_ = function(dt) {
   if (this.gm_.scenes['battle'] == 'inactive') {
     this.screen_.x -= INTRO_SCROLL_SPEED * dt;
@@ -137,7 +137,7 @@ Renderer.prototype.drawLabel_ = function(entity, pos) {
   this.ctx_.fillStyle = '#FFFFFF';
   this.ctx_.font = entity.size + 'px Arial';
   this.ctx_.textAlign = entity.align;
-  this.ctx_.textBaseline = 'top';
+  this.ctx_.textBaseline = entity.baseline;
   this.ctx_.fillText(entity.text, pos.x, pos.y);
 
   // Draw line under the label.

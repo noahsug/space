@@ -10,13 +10,9 @@ Label.prototype.setText = function(spec) {
   _.decorate(entity, this.d_.shape.text,
              {text: spec.text, size: spec.size, align: spec.align,
               baseline: spec.baseline});
-  this.resize();
 };
 
-Label.prototype.calcChildWidth_ = function() {
+Label.prototype.calcChildWidthHeight_ = function() {
   this.childWidth_ = this.font_.width(this.entity_.text, this.entity_.size);
-};
-
-Label.prototype.calcChildHeight_ = function() {
   this.childHeight_ = this.entity_.size;
 };

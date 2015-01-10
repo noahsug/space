@@ -21,7 +21,7 @@ EntityContainer.prototype.onClick = function(fn) {
   this.onClick_ = fn;
 };
 
-EntityContainer.prototype.update = function() {
+EntityContainer.prototype.update_ = function() {
   if (this.entity_.clicked && !this.entity_.locked) {
     this.onClick_(this);
   }

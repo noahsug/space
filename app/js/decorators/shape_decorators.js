@@ -53,6 +53,7 @@ ShapeDecorators.prototype.decorateText_ = function(obj, spec) {
   obj.text = spec.text;
   obj.size = _.valueOrFn(spec.size);
   obj.align = spec.align;
+  obj.baseline = spec.baseline;
   obj.collides = function(target) {
     var collisionFn;
     if (target.radius) collisionFn = this.collision_.textCircle;
