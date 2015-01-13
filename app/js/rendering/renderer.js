@@ -24,30 +24,34 @@ Renderer.prototype.update = function(dt) {
 
 var INTRO_SCROLL_SPEED = 16;
 Renderer.prototype.handleCamera_ = function(dt) {
-  //if (this.gm_.scenes['battle'] == 'inactive') {
-    this.screen_.x -= INTRO_SCROLL_SPEED * dt;
-    this.screen_.y -= INTRO_SCROLL_SPEED * dt;
-//  }
+  if (this.gm_.scenes['battle'] != 'inactive' ||
+      this.gm_.scenes['loading'] != 'inactive') {
+    return;
+  }
+  this.screen_.x -= INTRO_SCROLL_SPEED * dt;
+  this.screen_.y -= INTRO_SCROLL_SPEED * dt;
 };
 
-var TRANSITION_FADE = 1;
+var TRANSITION_SPEED = 1;
 Renderer.prototype.drawTransition_ = function(dt) {
   var transition = this.gm_.transition;
   if (transition) {
-    this.transitionAnimation_ += 700 * (dt / Scene.TRANSITION_TIME);
-    var pos = this.getPos_(transition);
+    this.transitionAnimation_ += 700 * (dt / TRANSITION_SPEED);
+    var pos = this.getPos_(transition.pos);
     this.ctx_.fillStyle = "black";
     this.ctx_.beginPath();
     this.ctx_.arc(pos.x, pos.y, this.transitionAnimation_, 0, Math.PI * 2);
     this.ctx_.fill();
 
   } else if (!this.transitionAnimation_ ||
-      this.transitionAnimation_ <= dt / TRANSITION_FADE) {
+      this.transitionAnimation_ <= dt / TRANSITION_SPEED) {
     this.transitionAnimation_ = 0;
 
   } else {
     if (this.transitionAnimation_ > 1) this.transitionAnimation_ = 1;
-    this.transitionAnimation_ -= dt / TRANSITION_FADE;
+    var fade = this.gm_.scenes.intro == 'active' ? 4 : 1;
+    var ease = (1.05 - this.transitionAnimation_) * 8;
+    this.transitionAnimation_ -= ease * dt / fade;
     this.ctx_.fillStyle = "rgba(0, 0, 0, " + this.transitionAnimation_ + ")";
     this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
   }
@@ -72,14 +76,34 @@ Renderer.prototype.getPos_ = function(entity) {
   }
 };
 
+Renderer.prototype.drawLoadingSplash_ = function(entity) {
+  this.ctx_.font = 10 + 'px ' + Gfx.Font.TITLE;
+  this.ctx_.fillText('.', 0, 0);
+  this.ctx_.font = 10 + 'px ' + Gfx.Font.TEXT;
+  this.ctx_.fillText('.', 0, 0);
+
+  this.ctx_.fillStyle = 'black';
+  this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
+
+  var x = this.screen_.width / 2;
+  var y = this.screen_.height / 2;
+  this.ctx_.shadowBlur = 8;
+  this.ctx_.lineWidth = 2;
+  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
+  this.ctx_.beginPath();
+  this.ctx_.arc(x, y, x / 2, -Math.PI / 2,
+                -Math.PI / 2 + 2 * Math.PI * entity.loading);
+  this.ctx_.stroke();
+};
+
 Renderer.prototype.drawTitleSplash_ = function(entity) {
   var title = 'COSMAL';
-  var fontSize = Math.min(this.screen_.width / 5, this.screen_.height / 2);
+  var fontSize = Math.min(this.screen_.width / 4, this.screen_.height / 2);
   this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
   this.ctx_.fillStyle = '#FFFFFF';
-  this.ctx_.shadowBlur = fontSize / 8;
+  this.ctx_.shadowBlur = fontSize / 4;
   this.ctx_.lineWidth = 2;
-  this.ctx_.font = 'bold ' + fontSize + 'px Arial';
+  this.ctx_.font = fontSize + 'px ' + Gfx.Font.TITLE;
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'alphabetic';
 
@@ -93,8 +117,7 @@ Renderer.prototype.drawBtn_ = function(entity) {
   this.underlineText_(entity, entity.render.pos);
 
   this.ctx_.fillStyle = this.ctx_.shadowColor = 'white';
-  this.ctx_.shadowBlur = entity.size / 8;
-  this.ctx_.shadowBlur = 0;
+  this.ctx_.shadowBlur = entity.size / 4;
   this.ctx_.lineWidth = 2;
   this.drawText_(entity, entity.render.pos);
 };
@@ -383,17 +406,16 @@ Renderer.prototype.drawBlade_ = function(entity, style, dt) {
 };
 
 Renderer.prototype.drawText_ = function(entity) {
-  this.ctx_.font = entity.size + 'px Arial';
+  this.ctx_.font = entity.size + 'px ' + Gfx.Font.TEXT;
   this.ctx_.textAlign = entity.align;
   this.ctx_.textBaseline = entity.baseline;
   this.ctx_.fillText(entity.text, entity.render.pos.x, entity.render.pos.y);
 };
 
 Renderer.prototype.underlineText_ = function(entity) {
-  var y = entity.render.pos.y + entity.size + 6;
+  var y = entity.render.pos.y + entity.size + 5;
   this.ctx_.lineWidth = 1;
   this.ctx_.shadowBlur = 2;
-  this.ctx_.shadowColor = "rgba(0, 0, 0, 0)";
   this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
   this.ctx_.beginPath();
   this.ctx_.moveTo(entity.render.pos.x, y);

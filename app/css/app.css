@@ -19,3 +19,13 @@ canvas#bg2 {
 canvas#bg3 {
   z-index: 0;
 }
+
+@font-face {
+  font-family: Penna;
+  src: url(../font/penna.otf);
+}
+
+@font-face {
+  font-family: Trench;
+  src: url(../font/trench.otf);
+}

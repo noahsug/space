@@ -38,10 +38,10 @@ Scene.prototype.update = function(dt) {
 };
 
 Scene.prototype.resolve = function(dt) {
-  var state = this.gm_.scenes[this.base_.name];
+  var state = this.getState_();
   if (state == 'inactive') return;
   if (state == 'start') {
-    this.start_();
+    this.start();
     this.update_();
   }
 };
@@ -50,7 +50,7 @@ Scene.prototype.update_ = _.emptyFn;
 
 Scene.prototype.transition_ = function(entity, to) {
   this.setState_('transition');
-  this.gm_.transition = entity;
+  this.gm_.transition = {pos: entity};
   this.transitionTime_ = Scene.TRANSITION_TIME;
   this.transitionTo_ = to;
 };

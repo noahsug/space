@@ -1,5 +1,5 @@
 var Game = di.service('Game', [
-  'GameModel as gm', 'IntroScene', 'BattleScene', 'MainScene',
+  'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene', 'MainScene',
   'ResultScene', 'gameplay']);
 
 Game.UPDATE_RATE = .06;
@@ -8,6 +8,7 @@ Game.prototype.start = function() {
   this.nextAction_ = 0;
   this.setPlayerItems_();
   this.scenes_ = [
+    this.loadingScene_,
     this.introScene_
   ];
 

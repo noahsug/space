@@ -10,6 +10,10 @@ EntityElement.prototype.init = function(type) {
   this.gm_.entities.add(this.entity_);
 };
 
+EntityElement.prototype.getEntity = function() {
+  return this.entity_;
+};
+
 EntityElement.prototype.setStyle = function(style) {
   this.entity_.style = style;
 };
