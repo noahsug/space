@@ -3,7 +3,7 @@ var BtnSm = di.factory('BtnSm', [
 
 BtnSm.prototype.init = function(name) {
   this.d_ = this.entityDecorator_.getDecorators();
-  this.onClick_ = _.EMPTY_FN;
+  this.onClick_ = _.emptyFn;
 
   this.base = this.entity_.create('btnSm');
   this.base.name = name;

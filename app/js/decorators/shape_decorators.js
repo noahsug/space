@@ -47,11 +47,11 @@ ShapeDecorators.prototype.decorateText_ = function(obj, spec) {
   spec = _.options(spec, {
     text: '',
     size: 10,
-    align: 'left',
-    baseline: 'top'
+    align: 'center',
+    baseline: 'middle'
   });
   obj.text = spec.text;
-  obj.size = _.valueOrFn(spec.size);
+  obj.size = spec.size;
   obj.align = spec.align;
   obj.baseline = spec.baseline;
   obj.collides = function(target) {

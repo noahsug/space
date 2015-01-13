@@ -52,12 +52,34 @@ Collision.prototype.circleLine = function(a, b) {
 Collision.prototype.circleText = _.unimplemented;
 
 // Text collisions.
+var rect = {};
 Collision.prototype.textPoint = function(a, b) {
-  if (Math.abs(b.y - a.y) > a.size / 2) {
-    return false;
+  rect.width = this.font_.width(a.text, a.size);
+  rect.height = a.size;
+  if (a.align == 'center') {
+    rect.x = a.x - rect.width / 2;
+  } else if (a.align == 'right') {
+    rect.x = a.x - rect.width;
+  } else if (a.align == 'left') {
+    rect.x = a.x;
+  } else {
+    _.fail('text align not supported: ' + a.align);
   }
-  var width = this.font_.width(a.text, a.size);
-  return Math.abs(b.x - a.x) <= width / 2;
+  if (a.baseline == 'middle') {
+    rect.y = a.y - rect.height / 2;
+  } else if (a.baseline == 'bottom') {
+    rect.y = a.y - rect.height;
+  } else if (a.baseline == 'top') {
+    rect.y = a.y;
+  } else {
+    _.fail('text baseline not supported: ' + a.baseline);
+  }
+  return this.rectPoint(rect, b);
+};
+
+Collision.prototype.rectPoint = function(a, b) {
+  return b.y > a.y && b.y < a.y + a.height &&
+      b.x > a.x && b.x < a.x + a.width;
 };
 
 Collision.prototype.textLine = _.unimplemented;
