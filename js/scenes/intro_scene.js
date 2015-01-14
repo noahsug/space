@@ -9,13 +9,13 @@ IntroScene.prototype.addEntities_ = function() {
   this.entityElement_.create('titleSplash');
 
   var newGameBtn = this.btnElement_.create();
-  newGameBtn.setText('new game', {size: 26});
+  newGameBtn.setText('new game', {size: 30});
   newGameBtn.onClick(function(btn) {
     this.transition_(btn, 'main');
   }.bind(this));
 
   var continueBtn = this.btnElement_.create();
-  continueBtn.setText('continue', {size: 26});
+  continueBtn.setText('continue', {size: 30});
 
   this.layout_ = this.layoutElement_.create({direction: 'vertical'});
   this.layout_.padding.left = .65;
