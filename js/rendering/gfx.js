@@ -3,7 +3,7 @@ var Gfx = di.service('Gfx', [
 
 Gfx.Font = {
   TITLE: 'Penna',
-  TEXT: 'Penna',
+  TEXT: 'DroidSans',
   BASIC: 'Arial'
 };
 

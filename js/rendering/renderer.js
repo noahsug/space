@@ -117,7 +117,7 @@ Renderer.prototype.drawBtn_ = function(entity) {
   this.underlineText_(entity, entity.render.pos);
 
   this.ctx_.fillStyle = this.ctx_.shadowColor = 'white';
-  this.ctx_.shadowBlur = 0;entity.size / 8;
+  this.ctx_.shadowBlur = entity.size / 8;
   this.drawText_(entity, entity.render.pos);
 };
 
