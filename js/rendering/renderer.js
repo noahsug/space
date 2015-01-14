@@ -408,9 +408,9 @@ Renderer.prototype.drawEntityText_ = function(entity) {
 Renderer.prototype.drawText_ = function(text, size, x, y) {
   this.ctx_.fillStyle = this.ctx_.strokeStyle = '#FFFFFF';
   this.ctx_.shadowBlur = 0;
-  this.ctx_.lineWidth = 1;
+  //this.ctx_.lineWidth = 1;
   this.ctx_.font = size + 'px ' + Gfx.Font.TEXT;
-  this.ctx_.strokeText(text, x, y);
+  //this.ctx_.strokeText(text, x, y);
   this.ctx_.fillText(text, x, y);
 };
 
