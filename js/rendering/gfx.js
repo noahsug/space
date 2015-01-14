@@ -2,8 +2,8 @@ var Gfx = di.service('Gfx', [
   'Screen', 'ctx']);
 
 Gfx.Font = {
-  TITLE: 'SlimJoe',
-  TEXT: 'SlimJoe',
+  TITLE: 'ElegantLux',
+  TEXT: 'DroidSans',
   BASIC: 'Arial'
 };
 
