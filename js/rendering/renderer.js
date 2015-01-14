@@ -101,7 +101,7 @@ Renderer.prototype.drawTitleSplash_ = function(entity) {
   var fontSize = Math.min(this.screen_.width / 4, this.screen_.height / 2);
   this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
   this.ctx_.fillStyle = '#FFFFFF';
-  this.ctx_.shadowBlur = fontSize / 4;
+  this.ctx_.shadowBlur = fontSize / 8;
   this.ctx_.lineWidth = 2;
   this.ctx_.font = fontSize + 'px ' + Gfx.Font.TITLE;
   this.ctx_.textAlign = 'center';
@@ -117,8 +117,7 @@ Renderer.prototype.drawBtn_ = function(entity) {
   this.underlineText_(entity, entity.render.pos);
 
   this.ctx_.fillStyle = this.ctx_.shadowColor = 'white';
-  this.ctx_.shadowBlur = entity.size / 4;
-  this.ctx_.lineWidth = 2;
+  this.ctx_.shadowBlur = entity.size / 8;
   this.drawText_(entity, entity.render.pos);
 };
 

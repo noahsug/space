@@ -21,7 +21,7 @@ Game.prototype.start = function() {
   //this.gm_.results.won = true;
   //this.gm_.results.earned = _.value(this.gameplay_.items);
 
-  this.scenes_[0].start();
+  this.scenes_[1].start();
 };
 
 Game.prototype.setPlayerItems_ = function() {
