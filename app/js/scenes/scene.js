@@ -1,4 +1,4 @@
-var Scene = di.factory('Scene', ['GameModel as gm']);
+var Scene = di.factory('Scene', ['GameModel as gm', 'Mouse']);
 
 Scene.TRANSITION_TIME = .25;
 
@@ -17,8 +17,11 @@ Scene.prototype.getState_ = function(state) {
 
 Scene.prototype.start = function() {
   this.setState_('active');
+  this.reset_();
   this.addEntities_();
 };
+
+Scene.prototype.reset_ = _.emptyFn;
 
 Scene.prototype.addEntities_ = _.emptyFn;
 
@@ -48,9 +51,10 @@ Scene.prototype.resolve = function(dt) {
 
 Scene.prototype.update_ = _.emptyFn;
 
-Scene.prototype.transition_ = function(entity, to) {
+Scene.prototype.transition_ = function(to) {
   this.setState_('transition');
-  this.gm_.transition = {pos: entity};
+  var pos = {screenX: this.mouse_.screenX, screenY: this.mouse_.screenY};
+  this.gm_.transition = {pos: pos};
   this.transitionTime_ = Scene.TRANSITION_TIME;
   this.transitionTo_ = to;
 };

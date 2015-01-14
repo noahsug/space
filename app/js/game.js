@@ -9,7 +9,9 @@ Game.prototype.start = function() {
   this.setPlayerItems_();
   this.scenes_ = [
     this.loadingScene_,
-    this.introScene_
+    this.introScene_,
+    this.mainScene_,
+    this.battleScene_
   ];
 
   //  this.introScene_,
@@ -21,12 +23,12 @@ Game.prototype.start = function() {
   //this.gm_.results.won = true;
   //this.gm_.results.earned = _.value(this.gameplay_.items);
 
-  this.scenes_[0].start();
+  this.scenes_[2].start();
 };
 
 Game.prototype.setPlayerItems_ = function() {
-  this.gm_.player.inventory = this.gameplay_.init.inventory;
-  this.gm_.player.spec = this.gameplay_.init.player;
+  this.gm_.inventory = this.gameplay_.inventory;
+  this.gm_.player = this.gameplay_.player;
 };
 
 Game.prototype.update = function(dt) {

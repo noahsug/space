@@ -30,6 +30,6 @@ EntityElement.prototype.onClick = function(fn) {
 
 EntityElement.prototype.update_ = function() {
   if (this.entity_.clicked && !this.entity_.locked) {
-    this.onClickFn_(this);
+    this.onClickFn_(this.entity_);
   }
 };

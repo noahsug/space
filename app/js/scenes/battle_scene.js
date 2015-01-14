@@ -1,66 +1,50 @@
 var BattleScene = di.service('BattleScene', [
-  'GameModel as gm', 'Screen', 'Entity', 'EntityDecorator', 'gameplay',
-  'ShipDecorator']);
+  'Scene', 'GameModel as gm', 'gameplay', 'ShipFactory', 'EntityDecorator']);
 
-var TRANSITION_TIME = 2;
+var SLOWDOWN_TIME = 2;
 
 BattleScene.prototype.init = function() {
-  this.name = 'battle';
+  _.class.extend(this, this.scene_.create('battle'));
+  this.d_ = this.entityDecorator_.getDecorators();
 };
 
-BattleScene.prototype.addEntities = function() {
-  var ed = this.entityDecorator_;
-
-  var player = this.entity_.create('ship');
-  _.decorate(player, this.shipDecorator_);
-  ed.decorate(player, this.gm_.player.spec);
-  player.style = 'good';
-  this.gm_.entities.add(player, 'player');
-
-  var enemy = this.entity_.create('ship');
-  _.decorate(enemy, this.shipDecorator_);
-  var enemySpec = this.gameplay_.level[this.gm_.level].enemy;
-  ed.decorate(enemy, enemySpec);
-  enemy.style = 'bad';
-  this.gm_.entities.add(enemy, 'enemy');
-
-  player.y = this.screen_.y + 100;
-  player.x = this.screen_.x;
-  enemy.y = this.screen_.y - 100;
-  enemy.x = this.screen_.x;
-
-  player.target = enemy;
-  enemy.target = player;
+BattleScene.prototype.reset_ = function() {
+  this.battleEnding_ = 0;
 };
 
-BattleScene.prototype.removeEntities_ = function() {
-  this.gm_.entities.clear();
+BattleScene.prototype.addEntities_ = function() {
+  _.assert(!_.isEmpty(this.gm_.enemy), 'must have an enemy specified');
+  this.enemy_ = this.shipFactory_.createBoss(this.gm_.enemy.boss);
+  this.player_ = this.shipFactory_.createPlayer();
+  this.shipFactory_.setTargets(this.player_, this.enemy_);
 };
 
-BattleScene.prototype.update = function(dt, state) {
-  if (state == 'active') {
-    var player = this.gm_.entities.obj['player'];
-    var enemy = this.gm_.entities.obj['enemy'];
-    if (player.dead || enemy.dead) {
-      if (!player.dead) {
-        this.gm_.results.won = true;
-        this.rewardPlayer_();
-      }
-      this.gm_.scenes[this.name] = 'transition';
-      this.transitionTime_ = TRANSITION_TIME;
+BattleScene.prototype.update_ = function(dt) {
+  if (this.battleEnding_) {
+    this.battleEnding_ -= dt / this.gm_.gameSpeed;
+    if (this.battleEnding_ <= 0) {
+      this.transition_('result');
+      this.gm_.gameSpeed = 1;
+      this.freezeEntities_();
+    } else {
+      this.gm_.gameSpeed =
+          Math.max(.01, .25 * this.battleEnding_ / SLOWDOWN_TIME);
     }
-  } else if (state == 'transition') {
-    this.transitionTime_ -= dt / this.gm_.speed;
-    if (this.transitionTime_ <= 0) {
-      this.gm_.scenes[this.name] = 'transitionOver';
+  }
+
+  else if (this.player_.dead || this.enemy_.dead) {
+    if (!this.player_.dead) {
+      this.gm_.results.won = true;
+      this.rewardPlayer_();
     }
-    this.gm_.speed =
-        Math.max(.01, .25 * this.transitionTime_ / TRANSITION_TIME);
-  } else if (state == 'transitionOver') {
-    this.gm_.speed = 1;
-    this.gm_.scenes[this.name] = 'inactive';
-    this.removeEntities_();
-    this.gm_.scenes['result'] = 'start';
+    this.battleEnding_ = SLOWDOWN_TIME;
+  }
+};
+
+BattleScene.prototype.freezeEntities_ = function() {
+  for (var i = 0; i < this.gm_.entities.length; i++) {
+    var entity = this.gm_.entities.arr[i];
+    _.decorate(entity, this.d_.freeze);
   }
 };
 
@@ -69,7 +53,7 @@ BattleScene.prototype.rewardPlayer_ = function() {
   if (Math.random() < .25 && level) level--;
   if (Math.random() < .25 && level) level--;
   this.gm_.results.earned = this.getRandomItem_(level);
-  this.gm_.player.inventory.push(this.gm_.results.earned);
+  this.gm_.inventory.push(this.gm_.results.earned);
 };
 
 BattleScene.prototype.getRandomItem_ = function(level) {

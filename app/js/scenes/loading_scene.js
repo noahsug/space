@@ -14,11 +14,7 @@ LoadingScene.prototype.addEntities_ = function() {
 LoadingScene.prototype.update_ = function(dt) {
   this.entity_.loading += dt * 1.15;
   if (this.entity_.loading > 1) {
-    this.transition_({x: 0, y: 0}, 'intro');
+    this.transition_('intro');
+    this.transitionTime_ = 0;
   }
-};
-
-LoadingScene.prototype.transition_ = function(entity, to) {
-  this.base_.transition_.call(this, entity, to);
-  this.transitionTime_ = 0;
 };

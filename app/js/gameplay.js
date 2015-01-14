@@ -3,55 +3,46 @@
  */
 
 di.constant('gameplayFile', {
-  init: {
-    player: [
-      //'basic laser',
-      //'burst laser',
-      //'grenade',
-      //'razors',
-      //'sniper',
-      //'missiles',
-      //'shotgun',
+  player: [
+    //'basic laser',
+    //'burst laser',
+    //'grenade',
+    //'razors',
+    //'sniper',
+    //'missiles',
+    //'shotgun',
 
-      //'stun',
-      //'emp',
-      'pistol',
+    //'stun',
+    //'emp',
+    'pistol',
 
-      'teleport',
-      //'baboon',
+    //'teleport',
+    //'baboon',
 
-      //'+explosion size',
+    //'+explosion size',
 
-      'health II',
+    'health II',
+    'circle',
+    'speed I',
+  ],
+
+  inventory: [
+  ],
+
+  bosses: [
+    [
+      'dash',
+      'health I',
       'circle',
-      'speed I',
+      'speed II',
     ],
-
-    inventory: [
+    [
       'shotgun',
-      'teleport',
-      'burst laser'
+      'burst laser',
+      'speed I',
+      'health I',
+      'circle'
     ]
-  },
-
-  level: [
-    {
-      enemy: [
-        'dash',
-        'health I',
-        'circle',
-        'speed II',
-      ]
-    },
-    {
-      enemy: [
-        'shotgun',
-        'burst laser',
-        'speed I',
-        'health I',
-        'circle'
-      ]
-    }
   ],
 
   items: {
@@ -167,6 +158,6 @@ di.constant('gameplayFile', {
       type: 'health', spec: {health: 2}},
     'health II': {
       desc: '25 health',
-      type: 'health', spec: {health: 25}}
+      type: 'health', spec: {health: 2}}
   }
 });

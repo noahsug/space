@@ -73,6 +73,9 @@ LayoutElement.prototype.add = function(element, opt_options) {
 };
 
 LayoutElement.prototype.positionChild_ = function(x, y) {
+  if (this.align_ == 'top') this.align_ = 'left';
+  if (this.align_ == 'bottom') this.align_ = 'right';
+
   var o = this.oriented_;
   if (this.direction_ == LayoutElement.Direction.VERTICAL) {
     var temp = x;

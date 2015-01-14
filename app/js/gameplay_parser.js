@@ -10,21 +10,15 @@ GameplayParser.prototype.init = function() {
     this.gameplay_.items[name] = this.parseItem_(name);
   }, this);
 
-  // Parse initial inventory and equipment.
-  this.parseItemObj_(this.gameplayFile_.init, this.gameplay_.init);
+  this.gameplay_.player = this.parseItemList_(this.gameplayFile_.player);
+  this.gameplay_.inventory = this.parseItemList_(this.gameplayFile_.inventory);
 
   // Parse enemies for each level.
-  this.gameplay_.level = [];
-  for (var i = 0; i < this.gameplayFile_.level.length; i++) {
-    this.gameplay_.level.push({});
-    this.parseItemObj_(this.gameplayFile_.level[i], this.gameplay_.level[i]);
+  this.gameplay_.bosses = [];
+  for (var i = 0; i < this.gameplayFile_.bosses.length; i++) {
+    this.gameplay_.bosses[i] =
+        this.parseItemList_(this.gameplayFile_.bosses[i]);
   }
-};
-
-GameplayParser.prototype.parseItemObj_ = function(itemObj, destination) {
-  _.each(itemObj, function(itemList, key) {
-    destination[key] = this.parseItemList_(itemList);
-  }, this);
 };
 
 GameplayParser.prototype.parseItemList_ = function(itemList) {

@@ -26,6 +26,11 @@ canvas#bg3 {
 }
 
 @font-face {
-  font-family: Trench;
-  src: url(../font/trench.otf);
+  font-family: DroidSans;
+  src: url(../font/DroidSans.ttf);
+}
+
+@font-face {
+  font-family: ElegantLux;
+  src: url(../font/ElegantLux.otf);
 }

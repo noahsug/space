@@ -103,6 +103,12 @@ BasicDecorators.prototype.decorateEffectable_ = function(obj) {
   });
 };
 
+BasicDecorators.prototype.decorateFreeze_ = function(obj) {
+  _.each(['act', 'affect', 'resolve', 'update'], function(fn) {
+    obj[fn] = _.emptyFn;
+  });
+};
+
 BasicDecorators.prototype.decorateSlow_ = function(obj) {
   var prevFns = _.pick(obj, 'act', 'affect', 'resolve', 'update');
 

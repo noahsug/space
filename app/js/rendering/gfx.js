@@ -2,9 +2,8 @@ var Gfx = di.service('Gfx', [
   'Screen', 'ctx']);
 
 Gfx.Font = {
-  TITLE: 'Penna',
-  TEXT: 'Trench',
-  BASIC: 'Arial'
+  TITLE: 'ElegantLux',
+  TEXT: 'Arial'
 };
 
 Gfx.Color = {
