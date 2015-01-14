@@ -6,7 +6,7 @@ IntroScene.prototype.init = function() {
 };
 
 IntroScene.prototype.addEntities_ = function() {
-  this.entityElement_.create('titleSplash');
+  this.entityElement_.create('introSplash');
 
   var newGameBtn = this.btnElement_.create();
   newGameBtn.setText('new game', {size: 16});

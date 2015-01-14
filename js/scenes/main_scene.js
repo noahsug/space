@@ -1,15 +1,12 @@
 var MainScene = di.service('MainScene', [
-  'Select', 'BtnSm', 'GameModel as gm']);
+  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement']);
 
 MainScene.prototype.init = function() {
-  this.name = 'main';
+  _.class.extend(this, this.scene_.create('main'));
 };
 
-MainScene.prototype.addEntities = function() {
-  this.addSelects_();
-  this.backBtn_ = this.btnSm_.create('◃');
-  this.backBtn_.navButton();
-  this.backBtn_.onClick(this.goBack_.bind(this));
+MainScene.prototype.addEntities_ = function() {
+  this.entityElement_.create('mainSplash');
 };
 
 MainScene.prototype.addSelects_ = function() {

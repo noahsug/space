@@ -29,3 +29,8 @@ canvas#bg3 {
   font-family: DroidSans;
   src: url(../font/DroidSans.ttf);
 }
+
+@font-face {
+  font-family: SlimJoe;
+  src: url(../font/ElegantLux.otf);
+}

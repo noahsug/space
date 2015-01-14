@@ -96,29 +96,23 @@ Renderer.prototype.drawLoadingSplash_ = function(entity) {
   this.ctx_.stroke();
 };
 
-Renderer.prototype.drawTitleSplash_ = function(entity) {
-  var title = 'COSMAL';
-  var fontSize = Math.min(this.screen_.width / 4, this.screen_.height / 2);
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
-  this.ctx_.fillStyle = '#FFFFFF';
-  this.ctx_.shadowBlur = fontSize / 8;
-  this.ctx_.lineWidth = 2;
-  this.ctx_.font = fontSize + 'px ' + Gfx.Font.TITLE;
+Renderer.prototype.drawIntroSplash_ = function(entity) {
+  var fontSize = 70;
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'alphabetic';
+  this.drawTitle_('COSM 1', fontSize,
+                  this.screen_.width / 2, this.screen_.height / 2);
+};
 
-  var x = this.screen_.width / 2;
-  var y = this.screen_.height / 2;
-  this.ctx_.strokeText(title, x, y);
-  this.ctx_.fillText(title, x, y);
+Renderer.prototype.drawMainSplash_ = function(entity) {
+  this.ctx_.textAlign = 'left';
+  this.ctx_.textBaseline = 'top';
+  this.drawText_('Day 4', 60, 10, 10);
 };
 
 Renderer.prototype.drawBtn_ = function(entity) {
-  this.underlineText_(entity, entity.render.pos);
-
-  this.ctx_.fillStyle = this.ctx_.shadowColor = 'white';
-  this.ctx_.shadowBlur = 0;//entity.size / 8;
-  this.drawText_(entity, entity.render.pos);
+  this.underlineText_(entity);
+  this.drawEntityText_(entity);
 };
 
 Renderer.prototype.drawLabel_ = function(entity) {
@@ -404,11 +398,28 @@ Renderer.prototype.drawBlade_ = function(entity, style, dt) {
 
 };
 
-Renderer.prototype.drawText_ = function(entity) {
-  this.ctx_.font = entity.size + 'px ' + Gfx.Font.TEXT;
+Renderer.prototype.drawEntityText_ = function(entity) {
   this.ctx_.textAlign = entity.align;
   this.ctx_.textBaseline = entity.baseline;
-  this.ctx_.fillText(entity.text, entity.render.pos.x, entity.render.pos.y);
+  this.drawText_(entity.text, entity.size,
+                 entity.render.pos.x, entity.render.pos.y);
+};
+
+Renderer.prototype.drawText_ = function(text, size, x, y) {
+  this.ctx_.fillStyle = '#FFFFFF';
+  this.ctx_.shadowBlur = 0;
+  this.ctx_.font = size + 'px ' + Gfx.Font.TEXT;
+  this.ctx_.fillText(text, x, y);
+};
+
+Renderer.prototype.drawTitle_ = function(text, size, x, y) {
+  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
+  this.ctx_.fillStyle = '#FFFFFF';
+  this.ctx_.shadowBlur = size / 8;
+  this.ctx_.lineWidth = 2;
+  this.ctx_.font = size + 'px ' + Gfx.Font.TITLE;
+  this.ctx_.strokeText(text, x, y);
+  this.ctx_.fillText(text, x, y);
 };
 
 Renderer.prototype.underlineText_ = function(entity) {
