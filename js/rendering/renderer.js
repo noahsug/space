@@ -107,7 +107,7 @@ Renderer.prototype.drawIntroSplash_ = function(entity) {
 Renderer.prototype.drawIntroSplash_ = function(entity) {
   this.ctx_.textAlign = 'left';
   this.ctx_.textBaseline = 'top';
-  this.drawSubTitle_('DAY 1', 40, 15, 0);
+  this.drawHeading_('DAY 1', 40, 15, 0);
 };
 
 Renderer.prototype.drawBtn_ = function(entity) {
@@ -408,7 +408,9 @@ Renderer.prototype.drawEntityText_ = function(entity) {
 Renderer.prototype.drawText_ = function(text, size, x, y) {
   this.ctx_.fillStyle = this.ctx_.strokeStyle = '#FFFFFF';
   this.ctx_.shadowBlur = 0;
+  this.ctx_.lineWidth = 1;
   this.ctx_.font = size + 'px ' + Gfx.Font.TEXT;
+  this.ctx_.strokeText(text, x, y);
   this.ctx_.fillText(text, x, y);
 };
 
@@ -422,7 +424,7 @@ Renderer.prototype.drawTitle_ = function(text, size, x, y) {
   this.ctx_.fillText(text, x, y);
 };
 
-Renderer.prototype.drawSubTitle_ = function(text, size, x, y) {
+Renderer.prototype.drawHeading_ = function(text, size, x, y) {
   this.ctx_.strokeStyle = '#FFFFFF';
   this.ctx_.fillStyle = '#FFFFFF';
   this.ctx_.shadowBlur = 0;
