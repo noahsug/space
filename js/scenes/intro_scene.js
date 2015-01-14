@@ -1,36 +1,30 @@
 var IntroScene = di.service('IntroScene', [
-  'GameModel as gm', 'Screen', 'Entity', 'EntityDecorator']);
+  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement']);
 
 IntroScene.prototype.init = function() {
-  this.name = 'intro';
+  _.class.extend(this, this.scene_.create('intro'));
 };
 
-IntroScene.prototype.addEntities = function() {
-  var d = this.entityDecorator_.getDecorators();
+IntroScene.prototype.addEntities_ = function() {
+  this.entityElement_.create('titleSplash');
 
-  var splash = this.entity_.create('splash');
-  this.gm_.entities.add(splash, 'splash');
+  var newGameBtn = this.btnElement_.create();
+  newGameBtn.setText('new game', {size: 16});
+  newGameBtn.onClick(function(btn) {
+    this.transition_(btn, 'main');
+  }.bind(this));
 
-  var newGameBtn = this.entity_.create('btn');
-  _.decorate(newGameBtn, d.shape.text, {text: 'START', size: function() {
-    return Math.min(this.screen_.width / 16, this.screen_.height / 8);
-  }.bind(this)});
-  _.decorate(newGameBtn, d.clickable);
-  _.decorate(newGameBtn, d.staticPosition);
-  this.gm_.entities.add(newGameBtn, 'newGameBtn');
+  var continueBtn = this.btnElement_.create();
+  continueBtn.setText('continue', {size: 16});
+
+  this.layout_ = this.layoutElement_.create({direction: 'vertical'});
+  this.layout_.padding.left = .65;
+  this.layout_.padding.top = .3;
+  this.layout_.add(continueBtn);
+  continueBtn.padding.bottom = 25;
+  this.layout_.add(newGameBtn);
 };
 
-IntroScene.prototype.removeEntities_ = function() {
-  this.gm_.entities.clear();
-};
-
-IntroScene.prototype.update = function(dt, state) {
-  var newGameBtn = this.gm_.entities.obj['newGameBtn'];
-  newGameBtn.setPos(0, this.screen_.pixelHeight / 4);
-
-  if (this.gm_.entities.obj['newGameBtn'].clicked) {
-    this.gm_.scenes[this.name] = 'inactive';
-    this.removeEntities_();
-    this.gm_.scenes['main'] = 'start';
-  }
+IntroScene.prototype.update_ = function(dt) {
+  this.layout_.update();
 };

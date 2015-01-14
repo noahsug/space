@@ -1,4 +1,4 @@
-_.EMPTY_FN = function() {};
+_.emptyFn = function() {};
 
 _.pos = {
   BOTTOM: 'bottom'
@@ -69,6 +69,10 @@ _.assert = function(truth, msg) {
   if (!truth) {
     throw 'Assert failed: ' + msg;
   }
+};
+
+_.fail = function(msg) {
+  _.assert(false, msg);
 };
 
 _.quadratic = function(a, b, c) {
@@ -352,8 +356,8 @@ _.vector.isEmpty = function(v) {
 
 _.class = {};
 _.class.extend = function(destination, source) {
-  _.functions(source).forEach(function(fnName) {
-    destination[fnName] = source[fnName].bind(source);
-  });
-  return destination;
+  for (var key in source) {
+    destination[key] = destination[key] || source[key];
+  }
+  destination.base_ = source;
 };

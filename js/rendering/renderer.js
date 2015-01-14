@@ -1,5 +1,5 @@
 var Renderer = di.service('Renderer', [
-  'GameModel as gm', 'Screen', 'ctx', 'Gfx', 'Background']);
+  'GameModel as gm', 'Screen', 'ctx', 'Gfx', 'Background', 'Font']);
 
 Renderer.prototype.init = function() {
   this.initFns_ = _.pickFunctions(this, {prefix: 'init', suffix: '_'});
@@ -22,32 +22,36 @@ Renderer.prototype.update = function(dt) {
   this.drawTransition_(dt);
 };
 
-var INTRO_SCROLL_SPEED = 10;
+var INTRO_SCROLL_SPEED = 16;
 Renderer.prototype.handleCamera_ = function(dt) {
-  if (this.gm_.scenes['battle'] == 'inactive') {
-    this.screen_.x -= INTRO_SCROLL_SPEED * dt;
-    this.screen_.y -= INTRO_SCROLL_SPEED * dt;
+  if (this.gm_.scenes['battle'] != 'inactive' ||
+      this.gm_.scenes['loading'] != 'inactive') {
+    return;
   }
+  this.screen_.x -= INTRO_SCROLL_SPEED * dt;
+  this.screen_.y -= INTRO_SCROLL_SPEED * dt;
 };
 
-var TRANSITION_FADE = 2;
+var TRANSITION_SPEED = 1;
 Renderer.prototype.drawTransition_ = function(dt) {
   var transition = this.gm_.transition;
   if (transition) {
-    this.transitionAnimation_ += 700 * (dt / Game.TRANSITION_TIME);
-    var pos = this.getPos_(transition);
+    this.transitionAnimation_ += 700 * (dt / TRANSITION_SPEED);
+    var pos = this.getPos_(transition.pos);
     this.ctx_.fillStyle = "black";
     this.ctx_.beginPath();
     this.ctx_.arc(pos.x, pos.y, this.transitionAnimation_, 0, Math.PI * 2);
     this.ctx_.fill();
 
   } else if (!this.transitionAnimation_ ||
-      this.transitionAnimation_ <= dt / TRANSITION_FADE) {
+      this.transitionAnimation_ <= dt / TRANSITION_SPEED) {
     this.transitionAnimation_ = 0;
 
   } else {
     if (this.transitionAnimation_ > 1) this.transitionAnimation_ = 1;
-    this.transitionAnimation_ -= dt / TRANSITION_FADE;
+    var fade = this.gm_.scenes.intro == 'active' ? 4 : 1;
+    var ease = (1.05 - this.transitionAnimation_) * 8;
+    this.transitionAnimation_ -= ease * dt / fade;
     this.ctx_.fillStyle = "rgba(0, 0, 0, " + this.transitionAnimation_ + ")";
     this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
   }
@@ -59,8 +63,8 @@ Renderer.prototype.drawEntity_ = function(entity, dt) {
     entity.render = {};
     this.initFns_[entity.type] && this.initFns_[entity.type](entity);
   }
-  var pos = this.getPos_(entity);
-  this.drawFns_[entity.type](entity, pos, this.style_[entity.type], dt);
+  entity.render.pos = this.getPos_(entity);
+  this.drawFns_[entity.type](entity, this.style_[entity.type], dt);
   this.ctx_.restore();
 };
 
@@ -72,22 +76,61 @@ Renderer.prototype.getPos_ = function(entity) {
   }
 };
 
-Renderer.prototype.drawSplash_ = function(entity, pos) {
-  var title = 'COSMAL'; // TODO: Use triangle/square/circle for the A, C and O.
-  var fontSize = Math.min(this.screen_.width / 5, this.screen_.height / 2);
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
+Renderer.prototype.drawLoadingSplash_ = function(entity) {
+  this.ctx_.font = 10 + 'px ' + Gfx.Font.TITLE;
+  this.ctx_.fillText('.', 0, 0);
+  this.ctx_.font = 10 + 'px ' + Gfx.Font.TEXT;
+  this.ctx_.fillText('.', 0, 0);
+
+  this.ctx_.fillStyle = 'black';
+  this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
+
+  var x = this.screen_.width / 2;
+  var y = this.screen_.height / 2;
+  this.ctx_.shadowBlur = 8;
   this.ctx_.lineWidth = 2;
+  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
+  this.ctx_.beginPath();
+  this.ctx_.arc(x, y, x / 2, -Math.PI / 2,
+                -Math.PI / 2 + 2 * Math.PI * entity.loading);
+  this.ctx_.stroke();
+};
+
+Renderer.prototype.drawTitleSplash_ = function(entity) {
+  var title = 'COSMAL';
+  var fontSize = Math.min(this.screen_.width / 4, this.screen_.height / 2);
+  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
   this.ctx_.fillStyle = '#FFFFFF';
-  this.ctx_.shadowBlur = fontSize / 8;
-  this.ctx_.font = 'bold ' + fontSize + 'px Arial';
+  this.ctx_.shadowBlur = fontSize / 4;
+  this.ctx_.lineWidth = 2;
+  this.ctx_.font = fontSize + 'px ' + Gfx.Font.TITLE;
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'alphabetic';
 
-  this.ctx_.strokeText(title, this.screen_.x + pos.x, this.screen_.y + pos.y);
-  this.ctx_.fillText(title, this.screen_.x + pos.x, this.screen_.y + pos.y);
+  var x = this.screen_.width / 2;
+  var y = this.screen_.height / 2;
+  this.ctx_.strokeText(title, x, y);
+  this.ctx_.fillText(title, x, y);
 };
 
-Renderer.prototype.drawResultsSplash_ = function(entity, pos) {
+Renderer.prototype.drawBtn_ = function(entity) {
+  this.underlineText_(entity, entity.render.pos);
+
+  this.ctx_.fillStyle = this.ctx_.shadowColor = 'white';
+  this.ctx_.shadowBlur = entity.size / 4;
+  this.ctx_.lineWidth = 2;
+  this.drawText_(entity, entity.render.pos);
+};
+
+Renderer.prototype.drawLabel_ = function(entity) {
+  this.ctx_.fillStyle = '#FFFFFF';
+  this.ctx_.font = entity.size + 'px Arial';
+  this.ctx_.textAlign = entity.align;
+  this.ctx_.textBaseline = entity.baseline;
+  this.ctx_.fillText(entity.text, entity.render.pos.x, entity.render.pos. y);
+};
+
+Renderer.prototype.drawResultsSplash_ = function(entity) {
   var title = this.gm_.results.won ? 'Victory' : 'Defeat';
   var fontSize = Math.min(this.screen_.width / 5, this.screen_.height / 2);
   this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
@@ -98,15 +141,15 @@ Renderer.prototype.drawResultsSplash_ = function(entity, pos) {
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'alphabetic';
 
-  var x = this.screen_.x + pos.x;
-  var y = this.screen_.y + pos.y - this.screen_.height / 2 + 100;
+  var x = this.screen_.x + entity.render.pos.x;
+  var y = this.screen_.y + entity.render.pos.y - this.screen_.height / 2 + 100;
   this.ctx_.strokeText(title, x, y);
   this.ctx_.fillText(title, x, y);
 
   if (this.gm_.results.won) {
     var itemPos = {
-      x: this.screen_.x + pos.x,
-      y: this.screen_.y + pos.y
+      x: this.screen_.x + entity.render.pos.x,
+      y: this.screen_.y + entity.render.pos.y
     };
     this.drawItem_(this.gm_.results.earned, itemPos);
     title = 'aquired:';
@@ -115,40 +158,7 @@ Renderer.prototype.drawResultsSplash_ = function(entity, pos) {
   }
 };
 
-Renderer.prototype.drawBtn_ = function(entity, pos) {
-  this.ctx_.lineWidth = 2;
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
-  this.ctx_.fillStyle = '#000000';
-  this.ctx_.shadowBlur = entity.size / 8;
-  this.ctx_.font = 'bold ' + entity.size + 'px Arial';
-  this.ctx_.textAlign = 'center';
-  this.ctx_.textBaseline = 'middle';
-
-  if (entity.mouseOver) {
-    this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFF00';
-    this.ctx_.lineWidth = 4;
-  }
-
-  this.ctx_.strokeText(entity.text, pos.x, pos.y);
-  this.ctx_.fillText(entity.text, pos.x, pos.y);
-};
-
-Renderer.prototype.drawLabel_ = function(entity, pos) {
-  this.ctx_.fillStyle = '#FFFFFF';
-  this.ctx_.font = entity.size + 'px Arial';
-  this.ctx_.textAlign = entity.align;
-  this.ctx_.textBaseline = 'top';
-  this.ctx_.fillText(entity.text, pos.x, pos.y);
-
-  this.ctx_.lineWidth = 2;
-  this.ctx_.strokeStyle = '#FFFFFF';
-  var y = pos.y + entity.size + 3;
-  this.ctx_.moveTo(pos.x, y);
-  this.ctx_.lineTo(pos.x + this.screen_.width, y);
-  this.ctx_.stroke();
-};
-
-Renderer.prototype.drawBtnSm_ = function(entity, pos) {
+Renderer.prototype.drawBtnSm_ = function(entity) {
   this.ctx_.fillStyle = '#000000';
   this.ctx_.lineWidth = 2;
   var color = '#FFFFFF';
@@ -160,18 +170,35 @@ Renderer.prototype.drawBtnSm_ = function(entity, pos) {
   this.ctx_.strokeStyle = color;
 
   this.ctx_.beginPath();
-  this.ctx_.arc(pos.x, pos.y, entity.radius - 1, 0, 2 * Math.PI);
+  this.ctx_.arc(entity.render.pos.x, entity.render.pos.y,
+                entity.radius - 1, 0, 2 * Math.PI);
   this.ctx_.fill();
   this.ctx_.stroke();
   if (entity.name) {
-    this.drawItem_(entity, pos);
+    this.drawItem_(entity, entity.render.pos);
   };
 
   //if (entity.locked) {
   //  this.ctx_.fillStyle = 'rgba(200, 200, 200, .5)';
   //  this.ctx_.font = (entity.radius * 2) + 'px Arial';
-  //  this.ctx_.fillText('✕', pos.x, pos.y);
+  //  this.ctx_.fillText('✕', entity.render.pos.x, entity.render.pos.y);
   //}
+};
+
+Renderer.prototype.drawItem_ = function(item, pos) {
+  var size = item.fontSize || 12;
+  if (item.locked) {
+    this.ctx_.fillStyle = Gfx.Color.LOCKED;
+  } else {
+    this.ctx_.fillStyle = '#FFFFFF';
+  }
+  this.ctx_.font = size + 'px Arial';
+  this.ctx_.textAlign = 'center';
+  this.ctx_.textBaseline = 'middle';
+  var x = pos.x; var y = pos.y;
+  if (item.name == '↩') y += 3;
+  if (item.name == '◃') { x -= 1; y += 1; }
+  this.ctx_.fillText(item.name, x, y);
 };
 
 var DEATH_ANIMATION_DURATION = .3;
@@ -203,7 +230,7 @@ Renderer.prototype.addShipStyle_ = function(style) {
     shadow: 'none'
   });
 };
-Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
+Renderer.prototype.drawShip_ = function(entity, style, dt) {
   if (!entity.dead) {
     // Don't resize instantly.
     var rGap = entity.radius - entity.render.radius;
@@ -230,8 +257,8 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
   }
   if (entity.render.shaking) {
     var shake = 2 + entity.render.damageTaken / 2;
-    pos.x += (.3 + .7 * Math.random()) * shake;
-    pos.y += (.3 + .7 * Math.random()) * shake;
+    entity.render.pos.x += (.3 + .7 * Math.random()) * shake;
+    entity.render.pos.y += (.3 + .7 * Math.random()) * shake;
     entity.render.shaking--;
   }
 
@@ -243,7 +270,8 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
     if (entity.render.healthIndicator) {
       var healthStyle = style[entity.style + 'Dmged'];
       this.gfx_.setStyle(healthStyle);
-      this.gfx_.circle(pos.x, pos.y, entity.render.radius - 5);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                       entity.render.radius - 5);
       entity.render.healthIndicator--;
     }
   }
@@ -260,11 +288,12 @@ Renderer.prototype.drawShip_ = function(entity, pos, style, dt) {
 
   // Draw ship.
   this.gfx_.setStyle(style[entity.style], customStyle);
-  this.gfx_.circle(pos.x, pos.y, entity.render.radius - 2);
+  this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                   entity.render.radius - 2);
 
   // DEBUG.
-  //var dx = pos.x - entity.x;
-  //var dy = pos.y - entity.y;
+  //var dx = entity.render.pos.x - entity.x;
+  //var dy = entity.render.pos.y - entity.y;
   //if (entity.aimPos) {
   //  this.gfx_.circle(entity.aimPos.x + dx, entity.aimPos.y + dy, 3);
   //}
@@ -289,7 +318,7 @@ Renderer.prototype.addLaserStyle_ = function(style) {
     lineWidth: 3
   });
 };
-Renderer.prototype.drawLaser_ = function(entity, pos, style) {
+Renderer.prototype.drawLaser_ = function(entity, style) {
   if (entity.dead) {
     entity.remove = true;
     return;
@@ -304,7 +333,7 @@ Renderer.prototype.drawLaser_ = function(entity, pos, style) {
   }
   var dx = Math.cos(entity.rotation) * SPEED_FUDGING;
   var dy = Math.sin(entity.rotation) * SPEED_FUDGING;
-  this.gfx_.line(pos.x + dx, pos.y + dy,
+  this.gfx_.line(entity.render.pos.x + dx, entity.render.pos.y + dy,
                  entity.dx - dx * 2, entity.dy - dy * 2);
 };
 
@@ -326,7 +355,7 @@ Renderer.prototype.addBombStyle_ = function(style) {
     fill: Gfx.Color.BLUE
   });
 };
-Renderer.prototype.drawBomb_ = function(entity, pos, style, dt) {
+Renderer.prototype.drawBomb_ = function(entity, style, dt) {
   if (entity.dead) {
     // Draw explosion.
     if (!_.isDef(entity.render.explodeTime)) {
@@ -340,7 +369,8 @@ Renderer.prototype.drawBomb_ = function(entity, pos, style, dt) {
     } else {
       this.gfx_.setStyle(style.explode);
     }
-    this.gfx_.circle(pos.x, pos.y, Math.pow(ratio, 2) * entity.radius);
+    this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                     Math.pow(ratio, 2) * entity.radius);
 
     if (ratio == 1) entity.remove = true;
   } else {
@@ -349,7 +379,8 @@ Renderer.prototype.drawBomb_ = function(entity, pos, style, dt) {
     } else {
       this.gfx_.setStyle(style.normal);
     }
-    this.gfx_.circle(pos.x, pos.y, entity.radius * NORMAL_SIZE);
+    this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                     entity.radius * NORMAL_SIZE);
   }
 };
 
@@ -359,13 +390,14 @@ Renderer.prototype.addBladeStyle_ = function(style) {
     lineWidth: 2
   });
 };
-Renderer.prototype.drawBlade_ = function(entity, pos, style, dt) {
+Renderer.prototype.drawBlade_ = function(entity, style, dt) {
   if (entity.dead) {
     entity.remove = true;
     return;
   }
   var triangle = _.geometry.circumscribeTriangle(
-      pos.x, pos.y, entity.radius - 1, entity.rotation);
+      entity.render.pos.x, entity.render.pos.y,
+      entity.radius - 1, entity.rotation);
   this.gfx_.setStyle(style.normal);
   this.gfx_.triangle(triangle.x1, triangle.y1,
                      triangle.x2, triangle.y2,
@@ -373,18 +405,43 @@ Renderer.prototype.drawBlade_ = function(entity, pos, style, dt) {
 
 };
 
-Renderer.prototype.drawItem_ = function(item, pos) {
-  var size = item.fontSize || 12;
-  if (item.locked) {
-    this.ctx_.fillStyle = Gfx.Color.LOCKED;
-  } else {
-    this.ctx_.fillStyle = '#FFFFFF';
-  }
-  this.ctx_.font = size + 'px Arial';
-  this.ctx_.textAlign = 'center';
-  this.ctx_.textBaseline = 'middle';
-  var x = pos.x; var y = pos.y;
-  if (item.name == '↩') y += 3;
-  if (item.name == '◃') { x -= 1; y += 1; }
-  this.ctx_.fillText(item.name, x, y);
+Renderer.prototype.drawText_ = function(entity) {
+  this.ctx_.font = entity.size + 'px ' + Gfx.Font.TEXT;
+  this.ctx_.textAlign = entity.align;
+  this.ctx_.textBaseline = entity.baseline;
+  this.ctx_.fillText(entity.text, entity.render.pos.x, entity.render.pos.y);
+};
+
+Renderer.prototype.underlineText_ = function(entity) {
+  var y = entity.render.pos.y + entity.size + 5;
+  this.ctx_.lineWidth = 1;
+  this.ctx_.shadowBlur = 2;
+  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
+  this.ctx_.beginPath();
+  this.ctx_.moveTo(entity.render.pos.x, y);
+  this.ctx_.lineTo(entity.render.pos.x + this.screen_.width, y);
+  this.ctx_.stroke();
+};
+
+Renderer.prototype.circleText_ = function(entity) {
+  // TODO: This is currently dependant on text length.
+  this.ctx_.shadowBlur = 2;
+  this.ctx_.lineWidth = 2;
+  this.ctx_.strokeStyle = this.ctx_.shadowColor = 'white';
+  this.ctx_.fillStyle = 'black';
+  var width = this.font_.width(entity.text, entity.size);
+  var endPadding = entity.size * 1.4;
+  var topPadding = entity.size * 1;
+  var y = entity.render.pos.y + entity.size / 10;
+  var x = entity.render.pos.x - width / 2 - endPadding;
+  var x2 = x + width + endPadding * 2;
+
+  this.ctx_.beginPath();
+  this.ctx_.arc(x, y, topPadding, Math.PI / 2, -Math.PI / 2);
+  this.ctx_.lineTo(x2, y - topPadding);
+  this.ctx_.arc(x2, y, topPadding, -Math.PI / 2, Math.PI / 2);
+  this.ctx_.lineTo(x, y + topPadding);
+
+  this.ctx_.fill();
+  this.ctx_.stroke();
 };
