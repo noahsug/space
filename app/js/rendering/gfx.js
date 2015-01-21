@@ -17,6 +17,7 @@ Gfx.Color = {
   YELLOW: '#FFFF00',
   PINK: '#FFCCEE',
 
+  EQUIPPED: '#99FF99',
   LOCKED: '#666'
 };
 

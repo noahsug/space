@@ -10,16 +10,17 @@ di.constant('gameplayFile', {
     //'razors',
     //'sniper',
     //'missiles',
-    //'shotgun',
+    'shotgun',
 
     //'stun',
     //'emp',
     'pistol',
 
     //'teleport',
-    //'baboon',
 
-    //'+explosion size',
+    'mink',
+
+    '+explosions',
 
     'health II',
     'circle',
@@ -27,6 +28,11 @@ di.constant('gameplayFile', {
   ],
 
   inventory: [
+    'shotgun',
+    'pistol',
+    'grenade',
+    '+explosions',
+    'mink'
   ],
 
   bosses: [
@@ -100,25 +106,22 @@ di.constant('gameplayFile', {
       desc: 'Teleport behind the enemy.',
       type: 'utility.teleport', spec: {},
       level: 1},
-    'baboon': {
-      desc: 'Enrage when hurt, becoming larger and dealing more damage.',
-      type: 'utility.rage', spec: {},
-      level: 1},
-    'mink': {
-      desc: 'Small and agile, but deal less damage.',
-      type: 'utility.mink', spec: {},
-      level: 1},
     'invisible': {  // UNIMPLEMENTED
       desc: 'Become untargetable for a short period of time.',
       type: 'utility.invisible', spec: {cooldown: 4},
       level: 1},
-    'propane': {  // UNIMPLEMENTED
-      desc: 'Gain a massive boost of speed for a short period of time.',
-      type: 'utility.propane', spec: {cooldown: 4},
+
+    'baboon': {
+      desc: 'Enrage when hurt, becoming larger and dealing more damage.',
+      type: 'ability.rage', spec: {},
+      level: 1},
+    'mink': {
+      desc: 'Small and agile, but deal less damage.',
+      type: 'ability.mink', spec: {},
       level: 1},
     'zombie': {  // UNIMPLEMENTED
       desc: 'Stay alive for a few seconds after death.',
-      type: 'utility.zombie', spec: {cooldown: 4},
+      type: 'ability.zombie', spec: {cooldown: 4},
       level: 1},
 
     '+health': {
@@ -130,7 +133,7 @@ di.constant('gameplayFile', {
     '+attack rate': {
       desc: 'Attack 20% faster.',
       type: 'mod.primaryCooldown', spec: {cooldown: 5 / 6}},
-    '+explosion size': {
+    '+explosions': {
       desc: '20% larger explosions.',
       type: 'mod.aoe', spec: {radius: 1.2}},
     '+disable': {  // UNIMPLEMENTED

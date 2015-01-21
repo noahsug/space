@@ -33,7 +33,7 @@ Scene.prototype.update = function(dt) {
     this.transitionTime_ -= dt;
     if (this.transitionTime_ <= 0) {
       this.transitionOver_();
-      this.gm_.transition = null;
+      this.gm_.transition.done = true;
       this.setState_('inactive');
       this.gm_.scenes[this.transitionTo_] = 'start';
     }
@@ -51,12 +51,22 @@ Scene.prototype.resolve = function(dt) {
 
 Scene.prototype.update_ = _.emptyFn;
 
-Scene.prototype.transition_ = function(to) {
+Scene.prototype.transition_ = function(to, opt_time) {
+  this.transitionTime_ = opt_time || Scene.TRANSITION_TIME;
   this.setState_('transition');
   var pos = {screenX: this.mouse_.screenX, screenY: this.mouse_.screenY};
-  this.gm_.transition = {pos: pos};
-  this.transitionTime_ = Scene.TRANSITION_TIME;
+  this.gm_.transition.pos = pos;
+  this.gm_.transition.time = this.transitionTime_;
+  this.gm_.transition.done = false;
   this.transitionTo_ = to;
+};
+
+Scene.prototype.transitionFast_ = function(to) {
+  this.transition_(to, Scene.TRANSITION_TIME / 2);
+};
+
+Scene.prototype.transitionInstantly_ = function(to) {
+  this.transition_(to, 0);
 };
 
 Scene.prototype.transitionOver_ = function() {

@@ -254,6 +254,10 @@ _.pad = function(num, padding) {
   return _.repeat('0', padding - numAsStr.length) + numAsStr;
 };
 
+_.callForEach = function(list, obj, fnName) {
+  _.each(list, obj[fnName].bind(obj));
+};
+
 _.unimplemented = function() {
   throw 'This function has not been implemented!';
 };

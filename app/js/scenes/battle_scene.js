@@ -33,10 +33,7 @@ BattleScene.prototype.update_ = function(dt) {
   }
 
   else if (this.player_.dead || this.enemy_.dead) {
-    if (!this.player_.dead) {
-      this.gm_.results.won = true;
-      this.rewardPlayer_();
-    }
+    this.handleBattleOver_(!this.player_.dead);
     this.battleEnding_ = SLOWDOWN_TIME;
   }
 };
@@ -48,12 +45,20 @@ BattleScene.prototype.freezeEntities_ = function() {
   }
 };
 
-BattleScene.prototype.rewardPlayer_ = function() {
-  var level = this.gm_.level;
-  if (Math.random() < .25 && level) level--;
-  if (Math.random() < .25 && level) level--;
-  this.gm_.results.earned = this.getRandomItem_(level);
-  this.gm_.inventory.push(this.gm_.results.earned);
+BattleScene.prototype.handleBattleOver_ = function(won) {
+  this.gm_.results.won = won;
+  this.gm_.results.earned = won ? this.getReward_() : null;
+  if (this.gm_.results.earned) {
+    this.gm_.inventory.push(this.gm_.results.earned);
+  }
+  this.gm_.day++;
+};
+
+BattleScene.prototype.getReward_ = function() {
+  var level = 0;
+  if (level && Math.random() < .25) level--;
+  if (level && Math.random() < .25) level--;
+  return this.getRandomItem_(level);
 };
 
 BattleScene.prototype.getRandomItem_ = function(level) {

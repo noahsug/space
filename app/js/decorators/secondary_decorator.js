@@ -59,21 +59,6 @@ SecondaryDecorators.prototype.decorateEmp_ = function(obj) {
   this.addEffectWeapon_(obj, this.util_.fireBomb.bind(this.util_));
 };
 
-// TODO: Implement.
-SecondaryDecorators.prototype.decorateCharge_ = function(obj) {
-  obj.secondary = {
-    dmg: 2,
-    speed: 300,
-    accuracy: _.radians(40),
-    cooldown: 1.5,
-    radius: 20,
-    duration: 1.5,
-    effect: 'weaponsDisabled'
-  };
-
-  this.addEffectWeapon_(obj, this.util_.fireBomb.bind(this.util_));
-};
-
 SecondaryDecorators.prototype.addEffectWeapon_ = function(
     obj, fire, opt_onCollide) {
   this.util_.addWeapon(obj, obj.secondary, function() {

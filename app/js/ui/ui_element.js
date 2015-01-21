@@ -1,7 +1,7 @@
 var UiElement = di.factory('UiElement', [
   'Entity', 'EntityDecorator', 'Screen']);
 
-UiElement.prototype.init = function(opt_options) {
+UiElement.prototype.init = function() {
   this.layout = {};
   this.padding = {};
   this.setPadding(0);
@@ -11,6 +11,7 @@ UiElement.prototype.init = function(opt_options) {
   this.height = 0;
   this.childWidth_ = 0;
   this.childHeight_ = 0;
+  this.units_ = {};
 
   this.calc_ = {};  // Store calculated values.
   this.calc_.padding = {};
@@ -33,6 +34,11 @@ UiElement.prototype.setPadding = function(top, right, bottom, left) {
   this.padding.bottom = bottom;
 };
 
+UiElement.prototype.addUnit_ = function(type, unit, value) {
+  this.units_[type] = this.units_[type] || {};
+  this.units_[type][unit] = value;
+};
+
 UiElement.prototype.setPos = function(x, y) {
   this.x = x;
   this.y = y;
@@ -52,14 +58,20 @@ UiElement.prototype.calcSize_ = function() {
 };
 
 UiElement.prototype.calcPadding_ = function() {
-  this.calc_.padding.left = this.measure_(this.padding.left, 'width');
-  this.calc_.padding.right = this.measure_(this.padding.right, 'width');
-  this.calc_.padding.top = this.measure_(this.padding.top, 'height');
-  this.calc_.padding.bottom = this.measure_(this.padding.bottom, 'height');
+  this.calc_.padding.left = this.measure_('pad-left', this.padding.left);
+  this.calc_.padding.right = this.measure_('pad-right', this.padding.right);
+  this.calc_.padding.top = this.measure_('pad-top', this.padding.top);
+  this.calc_.padding.bottom = this.measure_('pad-bot', this.padding.bottom);
 };
 
-UiElement.prototype.measure_ = function(value, dimension) {
-  if (value < 1) return value * this.screen_[dimension];
+UiElement.prototype.measure_ = function(type, value) {
+  value = (this.units_[type] && this.units_[type][value]) || value;
+  if (value < 1) {
+    var dimension = ((type == 'pad-left' || type == 'pad-right') && 'width') ||
+        'height';
+    return value * this.screen_[dimension];
+  }
+  _.assert(!isNaN(value), 'invalid ' + type + ': ' + value);
   return value;
 };
 
