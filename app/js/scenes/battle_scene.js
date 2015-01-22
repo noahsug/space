@@ -14,9 +14,16 @@ BattleScene.prototype.reset_ = function() {
 
 BattleScene.prototype.addEntities_ = function() {
   _.assert(!_.isEmpty(this.gm_.enemy), 'must have an enemy specified');
-  this.enemy_ = this.shipFactory_.createBoss(this.gm_.enemy.boss);
+  this.enemey_ = this.createEnemey_();
   this.player_ = this.shipFactory_.createPlayer();
   this.shipFactory_.setTargets(this.player_, this.enemy_);
+};
+
+BattleScene.prototype.createEnemey_ = function() {
+  if (this.gm_.enemy == 'boss') {
+    return this.shipFactory_.createBoss(this.gm_.level);
+  }
+  return this.shipFactory_.createRandomShip(this.gm_.level);
 };
 
 BattleScene.prototype.update_ = function(dt) {
@@ -51,7 +58,13 @@ BattleScene.prototype.handleBattleOver_ = function(won) {
   if (this.gm_.results.earned) {
     this.gm_.inventory.push(this.gm_.results.earned);
   }
-  this.gm_.day++;
+  this.gm_.day--;
+  this.gm_.daysOnLevel++;
+  if (this.gm_.enemy == 'boss') {
+    this.gm_.level++;
+    this.gm_.day += 6;
+    this.gm_.daysOnLevel = 0;
+  }
 };
 
 BattleScene.prototype.getReward_ = function() {

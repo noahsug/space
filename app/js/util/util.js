@@ -8,6 +8,10 @@ _.radians = function(degrees) {
   return degrees * Math.PI / 180;
 };
 
+_.plural = function(string, num) {
+  return num == 1 ? string : string + 's';
+};
+
 _.isDef = function(value) {
   return !_.isUndefined(value);
 };

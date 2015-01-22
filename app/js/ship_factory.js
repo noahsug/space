@@ -13,7 +13,7 @@ ShipFactory.prototype.createPlayer = function() {
   return player;
 };
 
-ShipFactory.prototype.createRandomShip = function() {
+ShipFactory.prototype.createRandomShip = function(level) {
   _.fail('implement this!');
 };
 

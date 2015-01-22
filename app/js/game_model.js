@@ -3,7 +3,9 @@ var GameModel = di.service('GameModel');
 GameModel.prototype.init = function() {
   this.player = {};
   this.inventory = {};
-  this.day = 1;
+  this.daysLeft = 1;
+  this.daysOnLevel = 10;
+  this.level = 0;
 
   this.entities = new List();
   this.scenes = {};

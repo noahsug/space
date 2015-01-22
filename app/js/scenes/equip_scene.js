@@ -52,6 +52,10 @@ EquipScene.prototype.onItemBtnClick_ = function(btn) {
   if (this.equippedBtn_) {
     this.inventory_.unequip(this.equippedBtn_.item);
     this.equippedBtn_.setStyle('unequipped');
+    if (this.equippedBtn_.item.name == btn.item.name) {
+      this.equippedBtn_ = null;
+      return;
+    }
   }
   this.inventory_.equip(btn.item);
   btn.setStyle('equipped');

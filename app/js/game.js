@@ -17,16 +17,13 @@ Game.prototype.start = function() {
     this.equipScene_
   ];
 
-  //  this.introScene_,
-  //  this.battleScene_,
-  //  this.resultScene_,
-  //  this.mainScene_
-  //].map(this.scene_.create.bind(this.scene_));
-
   this.gm_.results.won = true;
   this.gm_.results.earned = _.value(this.gameplay_.items);
 
-  this.scenes_[5].start();
+  this.gm_.daysOnLevel = 2;
+  this.gm_.daysLeft = 10 - this.gm_.daysOnLevel;
+
+  this.scenes_[2].start();
 };
 
 Game.prototype.setPlayerItems_ = function() {

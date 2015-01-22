@@ -115,7 +115,13 @@ Renderer.prototype.drawIntroSplash_ = function() {
 };
 
 Renderer.prototype.drawMainSplash_ = function() {
-  this.topLeftHeading_('day ' + + this.gm_.day);
+  this.topLeftHeading_(Strings.Level[this.gm_.level]);
+  if (this.gm_.daysLeft) {
+    var color = (this.gm_.daysLeft == 1) && Gfx.Color.WARN;
+    var msg = this.gm_.daysLeft + ' ' + _.plural('day', this.gm_.daysLeft) +
+        ' left';
+    this.topLeftSubHeading_(msg, color);
+  }
 };
 
 Renderer.prototype.drawResultSplash_ = function() {
@@ -148,6 +154,12 @@ Renderer.prototype.topLeftHeading_ = function(text) {
   this.drawHeading_(text, 40, 20, 20 - 16);
 };
 
+Renderer.prototype.topLeftSubHeading_ = function(text, opt_color) {
+  this.ctx_.textAlign = 'left';
+  this.ctx_.textBaseline = 'top';
+  this.drawHeading_(text, 30, 20, 70 - 16, opt_color);
+};
+
 Renderer.prototype.drawBtn_ = function(entity) {
   this.underlineLabel_(entity);
   this.drawLabel_(entity);
@@ -156,7 +168,7 @@ Renderer.prototype.drawBtn_ = function(entity) {
 Renderer.prototype.drawLabel_ = function(entity) {
   var color = null;
   if (entity.style == 'equipped') {
-    color = Gfx.Color.EQUIPPED;
+    color = Gfx.Color.SUCCESS;
   }
   this.ctx_.textAlign = entity.align;
   this.ctx_.textBaseline = entity.baseline;
@@ -439,9 +451,9 @@ Renderer.prototype.drawTitle_ = function(text, size, x, y) {
   this.ctx_.fillText(text, x, y);
 };
 
-Renderer.prototype.drawHeading_ = function(text, size, x, y) {
-  this.ctx_.strokeStyle = '#FFFFFF';
-  this.ctx_.fillStyle = '#FFFFFF';
+Renderer.prototype.drawHeading_ = function(text, size, x, y, opt_color) {
+  var color = opt_color || '#FFFFFF';
+  this.ctx_.fillStyle = this.ctx_.strokeStyle = color;
   this.ctx_.shadowBlur = 0;
   this.ctx_.lineWidth = 1;
   this.ctx_.font = size + 'px ' + Gfx.Font.TITLE;
@@ -452,7 +464,7 @@ Renderer.prototype.drawHeading_ = function(text, size, x, y) {
 Renderer.prototype.underlineLabel_ = function(entity) {
   var color = null;
   if (entity.style == 'equipped') {
-    color = Gfx.Color.EQUIPPED;
+    color = Gfx.Color.SUCCESS;
   }
   this.underlineText_(entity.size, entity.render.pos.x, entity.render.pos.y,
                       color);
