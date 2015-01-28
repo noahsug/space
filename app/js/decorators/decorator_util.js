@@ -61,6 +61,13 @@ DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
   return this.gm_.entities.arr[this.gm_.entities.length++] = projectile;
 };
 
+DecoratorUtil.prototype.set = function(obj, prop, add) {
+  obj.awake(function() {
+    var value = _.parse(obj, prop);
+    _.set(obj, prop, value + add);
+  });
+};
+
 DecoratorUtil.prototype.mod = function(obj, prop, multiplier) {
   if (obj.awakened) {
     var value = _.parse(obj, prop);

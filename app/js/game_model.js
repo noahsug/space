@@ -2,9 +2,15 @@ var GameModel = di.service('GameModel');
 
 GameModel.prototype.init = function() {
   this.player = {};
+  this.playerStats = {
+    dmg: 0,
+    speed: 0,
+    health: 0,
+    def: 0
+  };
   this.inventory = {};
-  this.daysLeft = 1;
-  this.daysOnLevel = 10;
+  this.daysLeft = 10;
+  this.daysOnLevel = 0;
   this.level = 0;
 
   this.entities = new List();

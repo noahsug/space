@@ -116,12 +116,10 @@ Renderer.prototype.drawIntroSplash_ = function() {
 
 Renderer.prototype.drawMainSplash_ = function() {
   this.topLeftHeading_(Strings.Level[this.gm_.level]);
-  if (this.gm_.daysLeft) {
-    var color = (this.gm_.daysLeft == 1) && Gfx.Color.WARN;
-    var msg = this.gm_.daysLeft + ' ' + _.plural('day', this.gm_.daysLeft) +
-        ' left';
-    this.topLeftSubHeading_(msg, color);
-  }
+  var color = (this.gm_.daysLeft <= 1) && Gfx.Color.WARN;
+  var msg = this.gm_.daysLeft + ' ' + _.plural('day', this.gm_.daysLeft) +
+      ' left';
+  this.topLeftSubHeading_(msg, color);
 };
 
 Renderer.prototype.drawResultSplash_ = function() {
@@ -134,9 +132,22 @@ Renderer.prototype.drawResultSplash_ = function() {
     var y = this.screen_.height / 2 - 20;
     var x = this.screen_.width / 2;
     this.ctx_.textAlign = 'right';
-    this.drawText_('aquired:', 16, x - 10, y);
+    var msg = this.gm_.results.earned.item ? 'aquired:' : 'gained:';
+    this.drawText_(msg, 16, x, y);
+
+    y += 30;
     this.ctx_.textAlign = 'left';
-    this.drawText_(this.gm_.results.earned.name, 16, x, y, true);
+    if (this.gm_.results.earned.item) {
+      var item = this.gm_.results.earned.item;
+      this.drawText_(item.name, 16, x, y, true);
+      msg = '(' + Strings.ItemType[item.category] + ')';
+      this.drawText_(msg, 16, x, y + 20);
+    }
+    if (this.gm_.results.earned.stat) {
+      var stat = this.gm_.results.earned.stat;
+      msg = '+ ' + stat.value + ' ' + Strings.Stat[stat.name];
+      this.drawText_(msg, 16, x, y, true);
+    }
   }
 };
 
@@ -148,6 +159,22 @@ Renderer.prototype.drawEquipSplash_ = function() {
   this.topLeftHeading_(Strings.ItemType[this.gm_.equipping]);
 };
 
+Renderer.prototype.drawWonSplash_ = function() {
+  var fontSize = 50;
+  this.ctx_.textAlign = 'center';
+  this.ctx_.textBaseline = 'alphabetic';
+  this.drawTitle_('YOU WIN', fontSize,
+                  this.screen_.width / 2, this.screen_.height / 2);
+};
+
+Renderer.prototype.drawLostSplash_ = function() {
+  var fontSize = 50;
+  this.ctx_.textAlign = 'center';
+  this.ctx_.textBaseline = 'alphabetic';
+  this.drawTitle_('YOU LOSE', fontSize,
+                  this.screen_.width / 2, this.screen_.height / 2);
+};
+
 Renderer.prototype.topLeftHeading_ = function(text) {
   this.ctx_.textAlign = 'left';
   this.ctx_.textBaseline = 'top';
@@ -157,7 +184,7 @@ Renderer.prototype.topLeftHeading_ = function(text) {
 Renderer.prototype.topLeftSubHeading_ = function(text, opt_color) {
   this.ctx_.textAlign = 'left';
   this.ctx_.textBaseline = 'top';
-  this.drawHeading_(text, 30, 20, 70 - 16, opt_color);
+  this.drawHeading_(text, 24, 20, 70 - 16, opt_color);
 };
 
 Renderer.prototype.drawBtn_ = function(entity) {

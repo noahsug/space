@@ -9,7 +9,7 @@ AbilityDecorators.prototype.decorateMink_ = function(obj) {
   var spec = {
     radius: .8,
     speed: 1.25,
-    dmg: .8
+    dmg: .9
   };
 
   this.util_.mod(obj, 'radius', spec.radius);

@@ -76,3 +76,13 @@ Scene.prototype.transitionOver_ = function() {
 Scene.prototype.removeEntities_ = function() {
   this.gm_.entities.clear();
 };
+
+Scene.prototype.restartGame_ = function() {
+  var scenes = this.gm_.scenes;
+  var player = this.gm_.player;
+  var inventory = this.gm_.inventory;
+  this.gm_.init();
+  this.gm_.scenes = scenes;
+  this.gm_.player = player;
+  this.gm_.inventory = inventory;
+};

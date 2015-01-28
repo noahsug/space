@@ -17,11 +17,18 @@ Strings = {
     'nemesis'
   ],
 
-  itemType: {
+  ItemType: {
     primary: 'attack',
     secondary: 'attack II',
     ability: 'ability',
     utility: 'movement',
     mod: 'boost'
+  },
+
+  Stat: {
+    health: 'health',
+    dmg: 'damage',
+    speed: 'speed',
+    def: 'defence'
   }
 };

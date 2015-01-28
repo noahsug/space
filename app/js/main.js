@@ -28,6 +28,7 @@ Main.prototype.start = function() {
   }, {running:true});
 
   //this.random_.seed(.02);
+  //this.random_.useTrueRandom();
   this.screen_.setSurfaceArea(Screen.DESIRED_SURFACE_AREA);
   this.gameRunner_.start();
 };

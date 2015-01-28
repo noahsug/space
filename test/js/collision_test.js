@@ -86,7 +86,8 @@ describe('Collision detection', function() {
   });
 
   it('textPoint', function() {
-    var t = {x: 0, y: 4, text: 'hi', size: '10'};
+    var t = {x: 0, y: 4, text: 'hi', size: '10', align: 'center',
+             baseline: 'middle'};
     var p = {x: 0, y: 10};
     expect(collision.textPoint(t, p)).toBe(false);
 
@@ -99,7 +100,7 @@ describe('Collision detection', function() {
     t.x = 5;
     expect(collision.textPoint(t, p)).toBe(false);
 
-    t.x = 4;
+    t.x = 3.5;
     expect(collision.textPoint(t, p)).toBe(true);
   });
 });

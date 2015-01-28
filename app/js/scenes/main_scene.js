@@ -9,6 +9,15 @@ MainScene.prototype.init = function() {
 MainScene.prototype.addEntities_ = function() {
   this.entityElement_.create('mainSplash');
 
+  var finalBossBtn = this.btnElement_.create();
+  finalBossBtn.setText('vs ' + Strings.Boss[Game.NUM_LEVELS - 1],
+                       {size: 'btn-lg'});
+  finalBossBtn.onClick(function() {
+    this.gm_.level = Game.NUM_LEVELS - 1;
+    this.gm_.enemy = 'boss';
+    this.transition_('battle');
+  }.bind(this));
+
   var bossBtn = this.btnElement_.create();
   bossBtn.setText('vs ' + Strings.Boss[this.gm_.level], {size: 'btn-lg'});
   bossBtn.onClick(function() {
@@ -31,13 +40,17 @@ MainScene.prototype.addEntities_ = function() {
   }.bind(this));
 
   var btns = [];
-  if (this.gm_.daysOnLevel > 1) {
+  if (this.gm_.daysLeft == 0) {
+    btns.push(finalBossBtn);
+  } else if (this.gm_.daysLeft == 1) {
     btns.push(bossBtn);
-  }
-  if (this.gm_.daysLeft > 0) {
+  } else {
     btns.push(battleBtn);
+    if (this.gm_.daysOnLevel >= 2) {
+      btns.push(bossBtn);
+    }
   }
-  if (this.gm_.daysOnLevel > 0) {
+  if (this.gm_.level || this.gm_.daysOnLevel) {
     btns.push(equipBtn);
   }
 

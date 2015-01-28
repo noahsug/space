@@ -1,5 +1,6 @@
 var BattleScene = di.service('BattleScene', [
-  'Scene', 'GameModel as gm', 'gameplay', 'ShipFactory', 'EntityDecorator']);
+  'Scene', 'GameModel as gm', 'BattleRewards', 'ShipFactory',
+  'EntityDecorator']);
 
 var SLOWDOWN_TIME = 2;
 
@@ -14,9 +15,12 @@ BattleScene.prototype.reset_ = function() {
 
 BattleScene.prototype.addEntities_ = function() {
   _.assert(!_.isEmpty(this.gm_.enemy), 'must have an enemy specified');
-  this.enemey_ = this.createEnemey_();
+  this.enemy_ = this.createEnemey_();
   this.player_ = this.shipFactory_.createPlayer();
   this.shipFactory_.setTargets(this.player_, this.enemy_);
+
+  //DEBUG.
+  //this.enemy_.dead = true;
 };
 
 BattleScene.prototype.createEnemey_ = function() {
@@ -40,7 +44,6 @@ BattleScene.prototype.update_ = function(dt) {
   }
 
   else if (this.player_.dead || this.enemy_.dead) {
-    this.handleBattleOver_(!this.player_.dead);
     this.battleEnding_ = SLOWDOWN_TIME;
   }
 };
@@ -52,28 +55,39 @@ BattleScene.prototype.freezeEntities_ = function() {
   }
 };
 
-BattleScene.prototype.handleBattleOver_ = function(won) {
+BattleScene.prototype.transitionOver_ = function() {
+  var won = !this.player_.dead;
+  this.removeEntities_();
   this.gm_.results.won = won;
-  this.gm_.results.earned = won ? this.getReward_() : null;
-  if (this.gm_.results.earned) {
-    this.gm_.inventory.push(this.gm_.results.earned);
+  this.rewardPlayer_(won);
+  this.goToNextDay_(won);
+};
+
+BattleScene.prototype.rewardPlayer_ = function(won) {
+  this.gm_.results.earned = this.battleRewards_.getReward(won);
+  if (this.gm_.results.earned.item) {
+    this.gm_.inventory.push(this.gm_.results.earned.item);
+  } else if (this.gm_.results.earned.stat) {
+    var stat = this.gm_.results.earned.stat;
+    this.gm_.playerStats[stat.name] += stat.value;
   }
-  this.gm_.day--;
+};
+
+BattleScene.prototype.goToNextDay_ = function(won) {
+  if (!won && !this.gm_.daysLeft) {
+    this.transition_('lost');
+    return;
+  }
+
+  this.gm_.daysLeft--;
   this.gm_.daysOnLevel++;
-  if (this.gm_.enemy == 'boss') {
-    this.gm_.level++;
-    this.gm_.day += 6;
-    this.gm_.daysOnLevel = 0;
+  if (this.gm_.enemy == 'boss' && won) {
+    if (this.gm_.level == Game.NUM_LEVELS - 1) {
+      this.transition_('won');
+    } else {
+      this.gm_.level++;
+      this.gm_.daysLeft += 6;
+      this.gm_.daysOnLevel = 0;
+    }
   }
-};
-
-BattleScene.prototype.getReward_ = function() {
-  var level = 0;
-  if (level && Math.random() < .25) level--;
-  if (level && Math.random() < .25) level--;
-  return this.getRandomItem_(level);
-};
-
-BattleScene.prototype.getRandomItem_ = function(level) {
-  return _.sample(_.where(this.gameplay_.items, {level: level}));
 };

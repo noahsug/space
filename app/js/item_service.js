@@ -1,14 +1,22 @@
 var ItemService = di.service('ItemService', [
-  'GameModel as gm']);
+  'Gameplay']);
 
-ItemService.prototype.get = function(type) {
-  return this.getFrom(this.gm_.items, type);
+ItemService.prototype.getByName = function(name) {
+  return _.findWhere(this.gameplay_.items, {name: name});
 };
 
-ItemService.prototype.getFrom = function(list, type) {
+ItemService.prototype.getByLevel = function(level) {
+  return _.where(this.gameplay_.items, {level: level});
+};
+
+ItemService.prototype.getByType = function(type) {
+  return this.getByTypeFrom(this.gameplay_.items, type);
+};
+
+ItemService.prototype.getByTypeFrom = function(list, type) {
   return _.where(list, {category: type});
 };
 
-ItemService.prototype.getIndexFrom = function(list, item) {
+ItemService.prototype.getIndexByTypeFrom = function(list, item) {
   return _.findIndexWhere(list, {name: item.name});
 };

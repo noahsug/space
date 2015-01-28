@@ -163,6 +163,10 @@ _.value = function(obj) {
   return _.values(obj)[0];
 };
 
+_.sampleKey = function(obj) {
+  return _.sample(_.keys(obj));
+};
+
 _.swap = function(obj, a, b) {
   var temp = obj[a];
   obj[a] = obj[b];
@@ -235,6 +239,15 @@ _.generate = function(generator, length, opt_thisObj) {
     list[i] = generator.call(opt_thisObj, i);
   }
   return list;
+};
+
+_.newList = function(list, generator, opt_thisObj) {
+  var result = new Array();
+  for (var i = 0; i < list.length; i++) {
+    var value = generator.call(opt_thisObj, list[i], i);
+    if (value !== undefined) result.push(value);
+  }
+  return result;
 };
 
 _.min = function(list) {

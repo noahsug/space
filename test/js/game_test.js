@@ -1,6 +1,6 @@
-xdescribe('A game', function() {
+describe('A game', function() {
   initTestEnvironment(this);
-  var game, gm, r;
+  var game, gm, r, shipFactory, gameplay, renderer, screen, watch, items;
 
   beforeEach(function() {
     inject(function() {
@@ -9,49 +9,127 @@ xdescribe('A game', function() {
     game = di.get('Game');
     r = di.get('Random');
     gm = di.get('GameModel');
+    gameplay = di.get('Gameplay');
+    renderer = di.get('Renderer');
+    screen = di.get('Screen');
+    shipFactory = di.get('ShipFactory');
+    watch = false;
+
+    items = [];
+    _.each(['primary', 'secondary', 'ability', 'utility', 'mod'],
+           function(type) {
+             items.push(_.pluck(
+                 _.where(gameplay.items, {category: type}),
+                 'name'));
+           });
   });
 
-  it('can have its results analyzed for different random seeds', function() {
-    var playerWon = 0;
-    var enemyWon = 0;
-    var tie = 0;
-    var bestSeed = 0;
-    var longestGame = 0;
-    var worstSeed = 0;
-    var shortestGame = 1000000;
-    for (var i = 0; i < 1; i++) {
-      var gameOver = false;
-      var gameLength = 0;
-      var seed = r.seed(i / 10);
-      gm.init();
-      game.start();
-      var updateTime = Game.UPDATE_RATE;
+  it('watch', function() {
+    document.getElementById('hide-canvas').style.display = "";
+    var spec1 = [];
+    var spec2 = [];
+    var seed = 0;
 
-      while (!gameOver) {
-        game.update(updateTime);
-        gameLength += updateTime;
-        gameOver = gm.entities['player'].dead || gm.entities['enemy'].dead;
-        if (gameOver) {
-          var pWin = gm.entities['player'].dead;
-          var eWin = gm.entities['enemy'].dead;
-          if (pWin && eWin) tie++;
-          else if (pWin) playerWon++;
-          else enemyWon++;
+    r.seed(seed);
+    watch = true;
+    battle(spec1.names, spec2.names);
+  });
 
-          console.log('seed:', seed, 'length:', gameLength);
-          if (gameLength > longestGame) {
-            bestSeed = seed;
-            longestGame = gameLength;
-          }
-          if (gameLength < shortestGame) {
-            worstSeed = seed;
-            shortestGame = gameLength;
-          }
-        }
+  xit('analyze', function() {
+    var data = gatherData(10000);
+    console.log(JSON.stringify(data));
+    _.each(items, function(names, i) {
+      var stats = getStats(data, i);
+      console.log('-----', i, '-----');
+      _.each(stats, function(stat, rank) {
+        console.log(rank + ')', stat);
+      });
+    });
+  });
+
+  function getStats(data, i) {
+    var stats = [];
+    _.each(data, function(sample) {
+      var record = stats[sample[i]] = stats[sample[i]] ||
+          {name: items[i][sample[i]], ratio: 0, total: 0, wins: 0, losses: 0};
+      var won = sample[sample.length - 1];
+      record.wins += won;
+      record.losses += !won;
+      record.ratio = record.wins / record.losses;
+      record.total = record.wins + record.losses;
+    });
+    return _.sortBy(stats, function(stat) {
+      return -stat.ratio;
+    });
+  };
+
+  function gatherData(numSamples) {
+    var data = new Array(numSamples * 2);
+    screen.setSurfaceArea(Screen.DESIRED_SURFACE_AREA);
+    for (var i = 0; i < numSamples; i++) {
+      var spec1 = getRandomSpec();
+      var spec2 = getRandomSpec();
+      var result = battle(spec1.names, spec2.names);
+      if (i % 10 == 0) console.log(i);
+      data[i * 2] = spec1.id.concat(spec2.id).concat(result.r);
+      data[i * 2 + 1] = spec2.id.concat(spec1.id).concat(!result.r);
+
+      continue;
+      if (result.r) {
+        r.seed(result.seed);
+        watch = true;
+      } else {
+        watch = false;
       }
     }
-    console.log('best seed:', bestSeed, 'best length:', longestGame);
-    console.log('worst seed:', worstSeed, 'shortest length:', shortestGame);
-    console.log('player:', playerWon, 'enemy:', enemyWon, 'tie:', tie);
-  });
+    return data;
+  };
+
+  function getRandomSpec() {
+    var id = new Array(items.length);
+    var names = _.newList(items, function(names, i) {
+      var itemInfo = pickRandomItem(names);
+      id[i] = itemInfo.index;
+      return itemInfo.item || undefined;
+    });
+    return {names: names, id: id};
+  };
+
+  function pickRandomItem(names) {
+    var index = Math.floor(Math.random() * (names.length + 1));
+    return {
+      index: index,
+      item: names[index]
+    };
+  };
+
+  function battle(spec1, spec2) {
+    gm.init();
+    game.nextAction_ = 0;
+    var ship1 = createShip(spec1, 'good');
+    var ship2 = createShip(spec2, 'bad');
+    shipFactory.setTargets(ship1, ship2);
+    var seed = r.getSeed();
+
+    for (var i = 0; i < 1500; i++) {
+      game.updateEntities_(Game.UPDATE_RATE);
+
+      if (watch) {
+        renderer.update(Game.UPDATE_RATE);
+        debugger;
+      }
+      if (ship1.dead || ship2.dead) break;
+    }
+    return {r: ship1.dead ? 0 : 1, seed: seed};
+  };
+
+  function createShip(spec, style) {
+    var items = new Array(spec.length);
+    for (var i = 0; i < spec.length; i++) {
+      var name = spec[i];
+      items[i] = gameplay.items[name];
+    }
+    items[spec.length] = gameplay.items['circle'];
+    return shipFactory.createShip_(items, style);
+  };
 });

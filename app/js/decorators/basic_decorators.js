@@ -1,6 +1,6 @@
 var BasicDecorators = di.service('BasicDecorators', [
   'EntityDecorator', 'Mouse', 'Screen', 'GameModel as gm',
-  'SharedComputation as c']);
+  'SharedComputation as c', 'DecoratorUtil as util']);
 
 BasicDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'base');
@@ -15,20 +15,29 @@ BasicDecorators.prototype.decorateClickable_ = function(obj) {
 
 BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
   spec = _.options(spec, {
-    health: 0
+    health: 30
   });
   obj.health = obj.maxHealth = obj.prevHealth = spec.health;
   obj.dmg = function(dmg) {
-    obj.health -= dmg;
+    obj.health -= dmg / obj.def;
   };
   obj.act(function() {
     obj.prevHealth = obj.health;
   });
   obj.resolve(function() {
     if (obj.health <= 0) {
-      obj.dead = this.gm_.tick;
+      obj.dead = true;
     }
   }.bind(this));
+};
+
+BasicDecorators.prototype.decorateStats_ = function(obj, stats) {
+  stats = stats || {};
+  if (stats.dmg) this.util_.mod(obj, 'primary.dmg', 1 + stats.dmg / 100);
+  if (stats.dmg) this.util_.mod(obj, 'secondary.dmg', 1 + stats.dmg / 100);
+  if (stats.health) this.util_.mod(obj, 'health', 1 + stats.health / 100);
+  if (stats.speed) this.util_.mod(obj, 'movement.speed', 1 + stats.speed / 100);
+  if (stats.def) this.util_.mod(obj, 'def', 1 + stats.def / 100);
 };
 
 // Requires obj.movement.speed.
@@ -42,7 +51,7 @@ BasicDecorators.prototype.decorateRange_ = function(obj, spec) {
   });
   obj.resolve(function(dt) {
     if (obj.remainingDistance <= 0) {
-      obj.dead = true;;
+      obj.dead = true;
     }
   });
 };
@@ -72,7 +81,7 @@ BasicDecorators.prototype.decorateCollision_ = function(obj, spec) {
 
 BasicDecorators.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
   obj.act(function() {
-    obj.remove = this.c_.hitWall(obj, 50);
+    if (this.c_.hitWall(obj, 50)) obj.remove = true;
   }.bind(this));
 };
 

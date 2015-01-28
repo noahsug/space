@@ -6,7 +6,7 @@ Inventory.prototype.has = function(type) {
 };
 
 Inventory.prototype.get = function(type) {
-  return this.itemService_.getFrom(this.gm_.inventory, type);
+  return this.itemService_.getByTypeFrom(this.gm_.inventory, type);
 };
 
 Inventory.prototype.isEquipped = function(item) {
@@ -23,5 +23,5 @@ Inventory.prototype.unequip = function(item) {
 };
 
 Inventory.prototype.getEquippedIndex_ = function(item) {
-  return this.itemService_.getIndexFrom(this.gm_.player, item);
+  return this.itemService_.getIndexByTypeFrom(this.gm_.player, item);
 };
