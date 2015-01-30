@@ -8,11 +8,18 @@ UtilityDecorators.prototype.init = function() {
 
 UtilityDecorators.prototype.decorateDash_ = function(obj, spec) {
   obj.utility = _.options(spec, {
-    cooldown: 2,
+    cooldown: 1.5,
     duration: .1,
     accel: .05,
     speed: 4
   });
+
+  switch(spec.power) {
+  case 2:
+    obj.utility.duration *= 2;
+  case 1:
+    obj.utility.cooldown *= .7;
+  }
 
   obj.addEffect('dashCooldown', obj.utility.cooldown, function() {
     obj.utility.dashReady = true;
@@ -44,10 +51,15 @@ UtilityDecorators.prototype.decorateTurbo_ = function(obj, spec) {
 UtilityDecorators.prototype.decorateTeleport_ = function(obj, spec) {
   obj.utility = _.options(spec, {
     cooldown: 2,
-    range: 400,
-    distance: 20,
-    disabledDuration: .1
+    range: 300,
+    disabledDuration: .05
   });
+
+  switch(spec.power) {
+  case 1:
+    obj.utility.cooldown *= .75;
+    obj.utility.range *= 1.5;
+  }
 
   obj.addEffect('teleportCooldown', obj.utility.cooldown);
   obj.act(function(dt) {

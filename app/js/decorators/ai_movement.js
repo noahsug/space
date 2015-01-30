@@ -71,7 +71,7 @@ AiMovement.prototype.getDesiredDistance_ = function(obj) {
   if (!obj.movement.maxDis || maxDis < obj.movement.maxDis ||
       obj.movement.maxDisTime < this.gm_.time) {
     obj.movement.maxDis = maxDis;
-    obj.movement.maxDisTime = this.gm_.time + 10;
+    obj.movement.maxDisTime = this.gm_.time + 12;
   }
 
   for (var i = 0; i < obj.c.ranges.length; i++) {

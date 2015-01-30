@@ -23,13 +23,12 @@ describe('Util function:', function() {
 
     it('creates a new value if needed', function() {
       var obj = {};
-      _.parse(obj, 'name');
-      expect(_.parse(obj, 'name')).toBe(obj.name);
+      expect(_.parse(obj, 'name', true)).toBe(obj.name);
     });
 
     it('creates multiple new values if needed', function() {
       var obj = {};
-      expect(_.parse(obj, 'name.firstName')).toBe(obj.name.firstName);
+      expect(_.parse(obj, 'name.firstName', true)).toBe(obj.name.firstName);
     });
   });
 

@@ -7,15 +7,22 @@ SecondaryDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'secondary');
 };
 
-SecondaryDecorators.prototype.decoratePistol_ = function(obj) {
-  obj.secondary = {
+SecondaryDecorators.prototype.decoratePistol_ = function(obj, spec) {
+  obj.secondary = _.options(spec, {
     dmg: 3,
     speed: 300,
     accuracy: _.radians(10),
     cooldown: 1.25,
     length: 6 + 16,
     range: 300
-  };
+  });
+
+  switch(spec.power) {
+  case 2:
+    obj.secondary.cooldown *= .75;
+  case 1:
+    obj.secondary.dmg *= 1.5;
+  }
 
   this.util_.addWeapon(obj, obj.secondary, function() {
     var projectile = this.util_.fireLaser(obj, obj.secondary);
@@ -23,18 +30,24 @@ SecondaryDecorators.prototype.decoratePistol_ = function(obj) {
   }.bind(this));
 };
 
-SecondaryDecorators.prototype.decorateStun_ = function(obj) {
-  obj.secondary = {
+SecondaryDecorators.prototype.decorateStun_ = function(obj, spec) {
+  obj.secondary = _.options(spec, {
     dmg: 1,
     speed: 300,
     accuracy: _.radians(10),
     cooldown: 1.5,
     length: 4 + 16,
-    duration: 1,
+    duration: .9,
     style: 'effect',
     effect: 'disabled',
-    range: 150
-  };
+    range: 150,
+    power: 0
+  });
+
+  switch(spec.power) {
+  case 1:
+    obj.secondary.duration *= 1.5;
+  }
 
   var stopMovement = function(obj) {
     obj.target.movement.vector.x = 0;
@@ -44,18 +57,25 @@ SecondaryDecorators.prototype.decorateStun_ = function(obj) {
       obj, this.util_.fireLaser.bind(this.util_), stopMovement);
 };
 
-SecondaryDecorators.prototype.decorateEmp_ = function(obj) {
-  obj.secondary = {
-    dmg: 1,
-    speed: 300,
+SecondaryDecorators.prototype.decorateEmp_ = function(obj, spec) {
+  obj.secondary = _.options(spec, {
+    dmg: 3,
+    speed: 200,
     accuracy: _.radians(10),
     cooldown: 1.5,
-    radius: 20,
+    radius: 18,
     duration: 1.5,
     style: 'effect',
     effect: 'weaponsDisabled',
-    range: 150
-  };
+    range: 150,
+    power: 0
+  });
+
+  switch(spec.power) {
+  case 1:
+    obj.secondary.duration *= 1.5;
+    obj.secondary.radius *= .85;
+  }
 
   this.addEffectWeapon_(obj, this.util_.fireBomb.bind(this.util_));
 };

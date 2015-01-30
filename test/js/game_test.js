@@ -1,6 +1,7 @@
 describe('A game', function() {
   initTestEnvironment(this);
-  var game, gm, r, shipFactory, gameplay, renderer, screen, watch, items;
+  var game, gm, r, shipFactory, gameplay, renderer, screen;
+  var watch, items;
 
   beforeEach(function() {
     inject(function() {
@@ -24,28 +25,45 @@ describe('A game', function() {
            });
   });
 
-  it('watch', function() {
+  xit('watch', function() {
     document.getElementById('hide-canvas').style.display = "";
-    var spec1 = [];
-    var spec2 = [];
-    var seed = 0;
+    var spec1 = ["razors", "emp", "mink", "teleport", "+speed"];
+    var spec2 = ["razors", "stun", "dash", "+attack rate"];
+    var seed = 92482230.84417963;
 
     r.seed(seed);
     watch = true;
-    battle(spec1.names, spec2.names);
+    battle(spec1, spec2);
   });
 
   xit('analyze', function() {
     var data = gatherData(10000);
-    console.log(JSON.stringify(data));
+    analyzeItems(data);
+    analyzeReplays(data);
+  });
+
+  function analyzeReplays(data) {
+    console.log('\nShorest replays:');
+    var replayData = _.sortBy(data.misc, function(replayData) {
+      return replayData.result.duration;
+    });
+    _.each(replayData.slice(0, 10), function(replayData, i) {
+      console.log(i + ')',
+                  replayData.result.duration, replayData.result.seed,
+                  replayData.spec1, replayData.spec2);
+    });
+  };
+
+  function analyzeItems(data) {
+    console.log('\nItems:');
     _.each(items, function(names, i) {
-      var stats = getStats(data, i);
+      var stats = getStats(data.data, i);
       console.log('-----', i, '-----');
       _.each(stats, function(stat, rank) {
         console.log(rank + ')', stat);
       });
     });
-  });
+  }
 
   function getStats(data, i) {
     var stats = [];
@@ -65,6 +83,7 @@ describe('A game', function() {
 
   function gatherData(numSamples) {
     var data = new Array(numSamples * 2);
+    var misc = [];
     screen.setSurfaceArea(Screen.DESIRED_SURFACE_AREA);
     for (var i = 0; i < numSamples; i++) {
       var spec1 = getRandomSpec();
@@ -73,6 +92,7 @@ describe('A game', function() {
       if (i % 10 == 0) console.log(i);
       data[i * 2] = spec1.id.concat(spec2.id).concat(result.r);
       data[i * 2 + 1] = spec2.id.concat(spec1.id).concat(!result.r);
+      misc.push({spec1: spec1.names, spec2: spec2.names, result: result});
 
       continue;
       if (result.r) {
@@ -82,7 +102,7 @@ describe('A game', function() {
         watch = false;
       }
     }
-    return data;
+    return {data: data, misc: misc};
   };
 
   function getRandomSpec() {
@@ -111,16 +131,20 @@ describe('A game', function() {
     shipFactory.setTargets(ship1, ship2);
     var seed = r.getSeed();
 
-    for (var i = 0; i < 1500; i++) {
+    var i;
+    for (i = 0; i < 1500; i++) {
       game.updateEntities_(Game.UPDATE_RATE);
-
       if (watch) {
         renderer.update(Game.UPDATE_RATE);
         debugger;
       }
       if (ship1.dead || ship2.dead) break;
     }
-    return {r: ship1.dead ? 0 : 1, seed: seed};
+    return {
+      r: ship1.dead ? 0 : 1,
+      seed: seed,
+      duration: i * Game.UPDATE_RATE
+    };
   };
 
   function createShip(spec, style) {

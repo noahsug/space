@@ -86,7 +86,7 @@ BattleScene.prototype.goToNextDay_ = function(won) {
       this.transition_('won');
     } else {
       this.gm_.level++;
-      this.gm_.daysLeft += 6;
+      this.gm_.daysLeft += 11;
       this.gm_.daysOnLevel = 0;
     }
   }

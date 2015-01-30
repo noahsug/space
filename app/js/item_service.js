@@ -1,6 +1,10 @@
 var ItemService = di.service('ItemService', [
   'Gameplay']);
 
+ItemService.prototype.get = function() {
+  return this.gameplay_.items;
+};
+
 ItemService.prototype.getByName = function(name) {
   return _.findWhere(this.gameplay_.items, {name: name});
 };

@@ -121,12 +121,17 @@ _.uncapitalize = function(str) {
   return str.charAt(0).toLowerCase() + str.slice(1);
 };
 
-_.parse = function(context, str) {
+_.parse = function(context, str, opt_createNew) {
   var obj = context;
-  _.each(str.split('.'), function(name) {
-    obj[name] = _.isDef(obj[name]) ? obj[name] : {};
+  var names = str.split('.');
+  for (var i = 0; i < names.length; i++) {
+    var name = names[i];
+    if (!_.isDef(obj[name])) {
+      if (opt_createNew) obj[name] = {};
+      else return undefined;
+    }
     obj = obj[name];
-  });
+  }
   return obj;
 };
 

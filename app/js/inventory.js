@@ -25,3 +25,7 @@ Inventory.prototype.unequip = function(item) {
 Inventory.prototype.getEquippedIndex_ = function(item) {
   return this.itemService_.getIndexByTypeFrom(this.gm_.player, item);
 };
+
+Inventory.prototype.hasItemToEquip = function() {
+  return this.gm_player.length < this.gm_inventory.length;
+};

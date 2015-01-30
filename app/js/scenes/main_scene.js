@@ -1,6 +1,6 @@
 var MainScene = di.service('MainScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'BtnElement', 'EntityElement',
-  'ShipFactory']);
+  'ShipFactory', 'Inventory']);
 
 MainScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('main'));
@@ -35,7 +35,6 @@ MainScene.prototype.addEntities_ = function() {
   var equipBtn = this.btnElement_.create();
   equipBtn.setText('customize', {size: 'btn-lg'});
   equipBtn.onClick(function() {
-    // TODO: select enemy, etc.
     this.transition_('equipOptions');
   }.bind(this));
 
@@ -50,7 +49,7 @@ MainScene.prototype.addEntities_ = function() {
       btns.push(bossBtn);
     }
   }
-  if (this.gm_.level || this.gm_.daysOnLevel) {
+  if (this.inventory_.hasItemToEquip()) {
     btns.push(equipBtn);
   }
 
