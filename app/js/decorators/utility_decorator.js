@@ -41,13 +41,6 @@ UtilityDecorators.prototype.decorateDash_ = function(obj, spec) {
   };
 };
 
-UtilityDecorators.prototype.decorateTurbo_ = function(obj, spec) {
-  obj.utility = _.options(spec, {
-    speed: 1.25
-  });
-  this.util_.mod(obj, 'movement.speed', obj.utility.speed);
-};
-
 UtilityDecorators.prototype.decorateTeleport_ = function(obj, spec) {
   obj.utility = _.options(spec, {
     cooldown: 2,

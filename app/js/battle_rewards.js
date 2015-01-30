@@ -1,5 +1,5 @@
 var BattleRewards = di.service('BattleRewards', [
-  'GameModel as gm', 'ItemService']);
+  'GameModel as gm', 'Inventory']);
 
 BattleRewards.prototype.getReward = function(won) {
   if (!won) {
@@ -25,7 +25,7 @@ BattleRewards.prototype.getRandomItem_ = function(level) {
   if (level && r < .52) level--;
   if (level && r < .25) level--;
   if (level && r < .11) level--;
-  return _.sample(this.itemService_.getByLevel(level));
+  return _.sample(this.inventory_.getUnequippedByLevel(level));
 };
 
 BattleRewards.prototype.getRandomStat_ = function(level) {

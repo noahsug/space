@@ -7,19 +7,33 @@ ShipFactory.prototype.createPlayer = function() {
 };
 
 ShipFactory.prototype.createRandomShip = function(level) {
-  var primary = _.sample(this.itemService_.getByType('primary'));
-  var secondary = _.sample(this.itemService_.getByType('secondary'));
-  var utility = _.sample(this.itemService_.getByType('utility'));
-  var ability = _.sample(this.itemService_.getByType('ability'));
-  var mod = _.sample(this.itemService_.getByType('mod'));
+  var primary = _.sample(this.itemService_.getByTypeAndLevel(
+      'primary', this.getLevel_(level)));
+  var secondary = _.sample(this.itemService_.getByTypeAndLevel(
+      'secondary', this.getLevel_(level)));
+  var utility = _.sample(this.itemService_.getByTypeAndLevel(
+      'utility', this.getLevel_(level)));
+  var ability = _.sample(this.itemService_.getByTypeAndLevel(
+      'ability', this.getLevel_(level)));
+  var mod = _.sample(this.itemService_.getByTypeAndLevel(
+      'mod', this.getLevel_(level)));
   var circle = this.itemService_.getByName('circle');
 
   var spec = [primary, circle];
-  if (Math.random() < .5) spec.secondary = secondary;
-  if (Math.random() < .5) spec.ability = ability;
-  if (Math.random() < .5) spec.utility = utility;
-  if (Math.random() < .5) spec.mod = mod;
+  var chance = .05 + .7 * level / Game.NUM_LEVELS;
+  if (Math.random() < chance) spec.push(secondary);
+  if (Math.random() < chance) spec.push(ability);
+  if (Math.random() < chance) spec.push(utility);
+  if (Math.random() < chance) spec.push(mod);
   return this.createEnemy_(spec);
+};
+
+ShipFactory.prototype.getLevel_ = function(level) {
+  var r = Math.random();
+  if (level && r < .52) level--;
+  if (level && r < .25) level--;
+  if (level && r < .11) level--;
+  return level;
 };
 
 ShipFactory.prototype.createBoss = function(level) {

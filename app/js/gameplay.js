@@ -110,7 +110,7 @@ di.constant('gameplayFile', {
     'grenade': {
       desc: 'Travels a short distance before exploding in a large area.',
       type:'primary.grenade', spec: {},
-      level: 1},
+      level: 0},
     'razors': {
       desc: 'Fires three powerful shots in three directions.',
       type:'primary.razors', spec: {},
@@ -259,18 +259,18 @@ di.constant('gameplayFile', {
       type: 'shape.circle', spec: {radius: 12}},
 
     'boss1': {
-      type: 'stats', spec: {health: 3}},
+      type: 'stats', spec: {health: 10}},
 
     'boss2': {
-      type: 'stats', spec: {health: 9}},
+      type: 'stats', spec: {health: 16}},
 
     'boss3': {
-      type: 'stats', spec: {health: 18}},
+      type: 'stats', spec: {health: 24}},
 
     'boss4': {
-      type: 'stats', spec: {health: 30}},
+      type: 'stats', spec: {health: 36}},
 
     'boss5': {
-      type: 'stats', spec: {health: 45}}
+      type: 'stats', spec: {health: 50}}
   }
 });

@@ -35,9 +35,11 @@ AbilityDecorators.prototype.decorateRage_ = function(obj, spec) {
   switch(spec.power) {
   case 2:
     obj.ability.enrageHealth *= .5;
+    obj.ability.radius *= 1.1;
+    obj.ability.dmg *= 1.2;
   case 1:
-    obj.ability.radius *= 1.25;
-    obj.ability.dmg *= 1.25;
+    obj.ability.radius *= 1.1;
+    obj.ability.dmg *= 1.2;
   }
 
   obj.resolve(function() {

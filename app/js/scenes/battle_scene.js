@@ -44,6 +44,7 @@ BattleScene.prototype.update_ = function(dt) {
   }
 
   else if (this.player_.dead || this.enemy_.dead) {
+    this.gm_.results.won = !this.player_.dead;
     this.battleEnding_ = SLOWDOWN_TIME;
   }
 };
@@ -56,15 +57,13 @@ BattleScene.prototype.freezeEntities_ = function() {
 };
 
 BattleScene.prototype.transitionOver_ = function() {
-  var won = !this.player_.dead;
   this.removeEntities_();
-  this.gm_.results.won = won;
-  this.rewardPlayer_(won);
-  this.goToNextDay_(won);
+  this.rewardPlayer_();
+  this.goToNextDay_();
 };
 
-BattleScene.prototype.rewardPlayer_ = function(won) {
-  this.gm_.results.earned = this.battleRewards_.getReward(won);
+BattleScene.prototype.rewardPlayer_ = function() {
+  this.gm_.results.earned = this.battleRewards_.getReward(this.gm_.results.won);
   if (this.gm_.results.earned.item) {
     this.gm_.inventory.push(this.gm_.results.earned.item);
   } else if (this.gm_.results.earned.stat) {
@@ -73,15 +72,15 @@ BattleScene.prototype.rewardPlayer_ = function(won) {
   }
 };
 
-BattleScene.prototype.goToNextDay_ = function(won) {
-  if (!won && !this.gm_.daysLeft) {
+BattleScene.prototype.goToNextDay_ = function() {
+  if (!this.gm_.results.won && !this.gm_.daysLeft) {
     this.transition_('lost');
     return;
   }
 
   this.gm_.daysLeft--;
   this.gm_.daysOnLevel++;
-  if (this.gm_.enemy == 'boss' && won) {
+  if (this.gm_.enemy == 'boss' && this.gm_.results.won) {
     if (this.gm_.level == Game.NUM_LEVELS - 1) {
       this.transition_('won');
     } else {
