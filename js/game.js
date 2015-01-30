@@ -1,32 +1,45 @@
 var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene', 'MainScene',
-  'ResultScene', 'gameplay']);
+  'EquipOptionsScene', 'EquipScene', 'ResultScene', 'WonScene', 'LostScene',
+  'Gameplay']);
 
 Game.UPDATE_RATE = .06;
+
+Game.prototype.init = function() {
+  Game.NUM_LEVELS = this.gameplay_.bosses.length;
+};
 
 Game.prototype.start = function() {
   this.nextAction_ = 0;
   this.setPlayerItems_();
   this.scenes_ = [
-    this.loadingScene_,
-    this.introScene_
+    /* 0 */ this.loadingScene_,
+    /* 1 */ this.introScene_,
+    /* 2 */ this.mainScene_,
+    /* 3 */ this.battleScene_,
+    /* 4 */ this.resultScene_,
+    /* 5 */ this.equipOptionsScene_,
+    /* 6 */ this.equipScene_,
+    /* 7 */ this.wonScene_,
+    /* 8 */ this.lostScene_
   ];
 
-  //  this.introScene_,
-  //  this.battleScene_,
-  //  this.resultScene_,
-  //  this.mainScene_
-  //].map(this.scene_.create.bind(this.scene_));
-
   //this.gm_.results.won = true;
-  //this.gm_.results.earned = _.value(this.gameplay_.items);
+  //this.gm_.results.earned = {item: _.value(this.gameplay_.items)};
+  //this.gm_.results.earned = {stat: {name: 'health', value: 3}};
 
-  this.scenes_[1].start();
+  //this.gm_.daysOnLevel = 10;
+  //this.gm_.daysLeft = 10 - this.gm_.daysOnLevel;
+
+  //this.gm_.enemy = 'boss';
+  this.gm_.enemy = 'random';
+
+  this.scenes_[3].start();
 };
 
 Game.prototype.setPlayerItems_ = function() {
-  this.gm_.player.inventory = this.gameplay_.init.inventory;
-  this.gm_.player.spec = this.gameplay_.init.player;
+  this.gm_.inventory = this.gameplay_.inventory;
+  this.gm_.player = this.gameplay_.player;
 };
 
 Game.prototype.update = function(dt) {

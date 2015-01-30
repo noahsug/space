@@ -10,10 +10,12 @@ Renderer.prototype.init = function() {
     this.style_[name] = {};
     fn.call(this, this.style_[name]);
   }, this);
+
+  this.transitionAnimation_ = 0;
 };
 
 Renderer.prototype.update = function(dt) {
-  this.handleCamera_(dt / this.gm_.speed);
+  this.handleCamera_(dt / this.gm_.gameSpeed);
   this.background_.draw();
   for (var i = 0; i < this.gm_.entities.length; i++) {
     this.drawEntity_(this.gm_.entities.arr[i], dt);
@@ -32,26 +34,34 @@ Renderer.prototype.handleCamera_ = function(dt) {
   this.screen_.y -= INTRO_SCROLL_SPEED * dt;
 };
 
-var TRANSITION_SPEED = 1;
 Renderer.prototype.drawTransition_ = function(dt) {
-  var transition = this.gm_.transition;
-  if (transition) {
-    this.transitionAnimation_ += 700 * (dt / TRANSITION_SPEED);
-    var pos = this.getPos_(transition.pos);
-    this.ctx_.fillStyle = "black";
-    this.ctx_.beginPath();
-    this.ctx_.arc(pos.x, pos.y, this.transitionAnimation_, 0, Math.PI * 2);
-    this.ctx_.fill();
+  if (!this.gm_.transition.done) {
+    this.transitionOut_(dt);
+  } else if (this.transitionAnimation_) {
+    this.transitionIn_(dt);
+  }
+};
 
-  } else if (!this.transitionAnimation_ ||
-      this.transitionAnimation_ <= dt / TRANSITION_SPEED) {
+Renderer.prototype.transitionOut_ = function(dt) {
+  var x = this.gm_.transition.pos.screenX;
+  var y = this.gm_.transition.pos.screenY;
+  this.transitionAnimation_ += 450 * (dt / this.gm_.transition.time);
+  this.ctx_.fillStyle = '#000000';
+  this.ctx_.beginPath();
+  this.ctx_.arc(x, y, this.transitionAnimation_, 0, Math.PI * 2);
+  this.ctx_.fill();
+};
+
+Renderer.prototype.transitionIn_ = function(dt) {
+  if (this.transitionAnimation_ > 1) this.transitionAnimation_ = 1;
+  var fade = this.gm_.scenes.intro == 'active' ? 4 :
+      this.gm_.transition.time * 2;
+  var ease = (1.1 - this.transitionAnimation_) * 8;
+  this.transitionAnimation_ -= ease * dt / fade;
+
+  if (this.transitionAnimation_ < 0) {
     this.transitionAnimation_ = 0;
-
   } else {
-    if (this.transitionAnimation_ > 1) this.transitionAnimation_ = 1;
-    var fade = this.gm_.scenes.intro == 'active' ? 4 : 1;
-    var ease = (1.05 - this.transitionAnimation_) * 8;
-    this.transitionAnimation_ -= ease * dt / fade;
     this.ctx_.fillStyle = "rgba(0, 0, 0, " + this.transitionAnimation_ + ")";
     this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
   }
@@ -82,7 +92,7 @@ Renderer.prototype.drawLoadingSplash_ = function(entity) {
   this.ctx_.font = 10 + 'px ' + Gfx.Font.TEXT;
   this.ctx_.fillText('.', 0, 0);
 
-  this.ctx_.fillStyle = 'black';
+  this.ctx_.fillStyle = '#000000';
   this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
 
   var x = this.screen_.width / 2;
@@ -96,7 +106,7 @@ Renderer.prototype.drawLoadingSplash_ = function(entity) {
   this.ctx_.stroke();
 };
 
-Renderer.prototype.drawIntroSplash_ = function(entity) {
+Renderer.prototype.drawIntroSplash_ = function() {
   var fontSize = 70;
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'alphabetic';
@@ -104,53 +114,104 @@ Renderer.prototype.drawIntroSplash_ = function(entity) {
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
-Renderer.prototype.drawIntroSplash_ = function(entity) {
-  this.ctx_.textAlign = 'left';
-  this.ctx_.textBaseline = 'top';
-  this.drawHeading_('DAY 1', 40, 15, 0);
+Renderer.prototype.drawMainSplash_ = function() {
+  this.topLeftHeading_(Strings.Level[this.gm_.level]);
+  var color = (this.gm_.daysLeft <= 1) && Gfx.Color.WARN;
+  var msg = this.gm_.daysLeft + ' ' + _.plural('day', this.gm_.daysLeft) +
+      ' left';
+  this.topLeftSubHeading_(msg, color);
 };
 
-Renderer.prototype.drawBtn_ = function(entity) {
-  this.underlineText_(entity);
-  this.drawEntityText_(entity);
-};
-
-Renderer.prototype.drawLabel_ = function(entity) {
-  this.ctx_.fillStyle = '#FFFFFF';
-  this.ctx_.font = entity.size + 'px Arial';
-  this.ctx_.textAlign = entity.align;
-  this.ctx_.textBaseline = entity.baseline;
-  this.ctx_.fillText(entity.text, entity.render.pos.x, entity.render.pos. y);
-};
-
-Renderer.prototype.drawResultsSplash_ = function(entity) {
-  var title = this.gm_.results.won ? 'Victory' : 'Defeat';
-  var fontSize = Math.min(this.screen_.width / 5, this.screen_.height / 2);
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
-  this.ctx_.lineWidth = 2;
-  this.ctx_.fillStyle = '#FFFFFF';
-  this.ctx_.shadowBlur = fontSize / 8;
-  this.ctx_.font = 'bold ' + fontSize + 'px Arial';
+Renderer.prototype.drawResultSplash_ = function() {
   this.ctx_.textAlign = 'center';
-  this.ctx_.textBaseline = 'alphabetic';
+  this.ctx_.textBaseline = 'top';
+  var result = this.gm_.results.won ? 'victory' : 'defeat';
+  this.drawHeading_(result, 70, this.screen_.width / 2, 30 - 12);
 
-  var x = this.screen_.x + entity.render.pos.x;
-  var y = this.screen_.y + entity.render.pos.y - this.screen_.height / 2 + 100;
-  this.ctx_.strokeText(title, x, y);
-  this.ctx_.fillText(title, x, y);
+  if (this.gm_.results.earned) {
+    var y = this.screen_.height / 2 - 20;
+    var x = this.screen_.width / 2;
+    this.ctx_.textAlign = 'right';
+    var msg = this.gm_.results.earned.item ? 'aquired:' : 'gained:';
+    this.drawText_(msg, 16, x, y);
 
-  if (this.gm_.results.won) {
-    var itemPos = {
-      x: this.screen_.x + entity.render.pos.x,
-      y: this.screen_.y + entity.render.pos.y
-    };
-    this.drawItem_(this.gm_.results.earned, itemPos);
-    title = 'aquired:';
-    y = itemPos.y - 20;
-    this.ctx_.fillText(title, x, y);
+    y += 30;
+    this.ctx_.textAlign = 'left';
+    if (this.gm_.results.earned.item) {
+      var item = this.gm_.results.earned.item;
+      this.drawText_(item.name, 16, x, y, true);
+      msg = '(' + Strings.ItemType[item.category] + ')';
+      this.drawText_(msg, 16, x, y + 20);
+    }
+    if (this.gm_.results.earned.stat) {
+      var stat = this.gm_.results.earned.stat;
+      msg = '+ ' + stat.value + ' ' + Strings.Stat[stat.name];
+      this.drawText_(msg, 16, x, y, true);
+    }
   }
 };
 
+Renderer.prototype.drawEquipOptionsSplash_ = function() {
+  this.topLeftHeading_('customize');
+};
+
+Renderer.prototype.drawEquipSplash_ = function() {
+  this.topLeftHeading_(Strings.ItemType[this.gm_.equipping]);
+};
+
+Renderer.prototype.drawWonSplash_ = function() {
+  var fontSize = 50;
+  this.ctx_.textAlign = 'center';
+  this.ctx_.textBaseline = 'alphabetic';
+  this.drawTitle_('YOU WIN', fontSize,
+                  this.screen_.width / 2, this.screen_.height / 2);
+};
+
+Renderer.prototype.drawLostSplash_ = function() {
+  var fontSize = 50;
+  this.ctx_.textAlign = 'center';
+  this.ctx_.textBaseline = 'alphabetic';
+  this.drawTitle_('YOU LOSE', fontSize,
+                  this.screen_.width / 2, this.screen_.height / 2);
+};
+
+Renderer.prototype.topLeftHeading_ = function(text) {
+  this.ctx_.textAlign = 'left';
+  this.ctx_.textBaseline = 'top';
+  this.drawHeading_(text, 40, 20, 20 - 16);
+};
+
+Renderer.prototype.topLeftSubHeading_ = function(text, opt_color) {
+  this.ctx_.textAlign = 'left';
+  this.ctx_.textBaseline = 'top';
+  this.drawHeading_(text, 24, 20, 70 - 16, opt_color);
+};
+
+Renderer.prototype.drawBtn_ = function(entity) {
+  this.underlineLabel_(entity);
+  this.drawLabel_(entity);
+};
+
+Renderer.prototype.drawLabel_ = function(entity) {
+  var color = null;
+  if (entity.style == 'equipped') {
+    color = Gfx.Color.SUCCESS;
+  }
+  this.ctx_.textAlign = entity.align;
+  this.ctx_.textBaseline = entity.baseline;
+  this.drawText_(entity.text, entity.size,
+                 entity.render.pos.x, entity.render.pos.y,
+                 false, color);
+};
+
+Renderer.prototype.drawHitbox_ = function(entity) {
+  // DEBUG.
+  //this.ctx_.fillStyle = 'red';
+  //this.ctx_.fillRect(entity.render.pos.x, entity.render.pos.y,
+  //                   entity.width, entity.height);
+};
+
+// NOT USED.
 Renderer.prototype.drawBtnSm_ = function(entity) {
   this.ctx_.fillStyle = '#000000';
   this.ctx_.lineWidth = 2;
@@ -178,6 +239,7 @@ Renderer.prototype.drawBtnSm_ = function(entity) {
   //}
 };
 
+// NOT USED.
 Renderer.prototype.drawItem_ = function(item, pos) {
   var size = item.fontSize || 12;
   if (item.locked) {
@@ -398,19 +460,11 @@ Renderer.prototype.drawBlade_ = function(entity, style, dt) {
 
 };
 
-Renderer.prototype.drawEntityText_ = function(entity) {
-  this.ctx_.textAlign = entity.align;
-  this.ctx_.textBaseline = entity.baseline;
-  this.drawText_(entity.text, entity.size,
-                 entity.render.pos.x, entity.render.pos.y);
-};
-
-Renderer.prototype.drawText_ = function(text, size, x, y) {
-  this.ctx_.fillStyle = this.ctx_.strokeStyle = '#FFFFFF';
+Renderer.prototype.drawText_ = function(text, size, x, y, opt_bold, opt_color) {
+  var color = opt_color || '#FFFFFF';
+  this.ctx_.fillStyle = color;
   this.ctx_.shadowBlur = 0;
-  //this.ctx_.lineWidth = 1;
-  this.ctx_.font = size + 'px ' + Gfx.Font.TEXT;
-  //this.ctx_.strokeText(text, x, y);
+  this.ctx_.font = (opt_bold ? 'bold ' : '') + size + 'px ' + Gfx.Font.TEXT;
   this.ctx_.fillText(text, x, y);
 };
 
@@ -424,9 +478,9 @@ Renderer.prototype.drawTitle_ = function(text, size, x, y) {
   this.ctx_.fillText(text, x, y);
 };
 
-Renderer.prototype.drawHeading_ = function(text, size, x, y) {
-  this.ctx_.strokeStyle = '#FFFFFF';
-  this.ctx_.fillStyle = '#FFFFFF';
+Renderer.prototype.drawHeading_ = function(text, size, x, y, opt_color) {
+  var color = opt_color || '#FFFFFF';
+  this.ctx_.fillStyle = this.ctx_.strokeStyle = color;
   this.ctx_.shadowBlur = 0;
   this.ctx_.lineWidth = 1;
   this.ctx_.font = size + 'px ' + Gfx.Font.TITLE;
@@ -434,23 +488,34 @@ Renderer.prototype.drawHeading_ = function(text, size, x, y) {
   this.ctx_.fillText(text, x, y);
 };
 
-Renderer.prototype.underlineText_ = function(entity) {
-  var y = entity.render.pos.y + entity.size + 5;
+Renderer.prototype.underlineLabel_ = function(entity) {
+  var color = null;
+  if (entity.style == 'equipped') {
+    color = Gfx.Color.SUCCESS;
+  }
+  this.underlineText_(entity.size, entity.render.pos.x, entity.render.pos.y,
+                      color);
+};
+
+Renderer.prototype.underlineText_ = function(size, x, y, opt_color) {
+  var color = opt_color || '#FFFFFF';
+  y += size + 5;
   this.ctx_.lineWidth = 1;
   this.ctx_.shadowBlur = 2;
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
+  this.ctx_.strokeStyle = this.ctx_.shadowColor = color;
   this.ctx_.beginPath();
-  this.ctx_.moveTo(entity.render.pos.x, y);
-  this.ctx_.lineTo(entity.render.pos.x + this.screen_.width, y);
+  this.ctx_.moveTo(x, y);
+  this.ctx_.lineTo(x + this.screen_.width, y);
   this.ctx_.stroke();
 };
 
+// NOT USED.
 Renderer.prototype.circleText_ = function(entity) {
   // TODO: This is currently dependant on text length.
   this.ctx_.shadowBlur = 2;
   this.ctx_.lineWidth = 2;
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = 'white';
-  this.ctx_.fillStyle = 'black';
+  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
+  this.ctx_.fillStyle = '#000000';
   var width = this.font_.width(entity.text, entity.size);
   var endPadding = entity.size * 1.4;
   var topPadding = entity.size * 1;

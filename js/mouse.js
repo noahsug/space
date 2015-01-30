@@ -9,6 +9,8 @@ Mouse.prototype.init = function() {
 };
 
 Mouse.prototype.onMouseMove = function(e) {
+  this.screenX = e.x / this.screen_.upscale;
+  this.screenY = e.y / this.screen_.upscale;
   var pos = this.screen_.screenToCanvas(e.x, e.y);
   this.x = pos.x;
   this.y = pos.y;

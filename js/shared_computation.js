@@ -83,6 +83,7 @@ SharedComputation.prototype.rangeInfo_ = function(obj) {
     ranges.push(1);
   }
   if (obj.primary.range) ranges.push(obj.primary.range);
+  if (obj.primary.range) ranges.push(obj.primary.range);
   if (obj.secondary.range) ranges.push(obj.secondary.range);
   if (obj.ability.range) ranges.push(obj.ability.range);
   obj.c.ranges = _.sortBy(ranges).reverse();

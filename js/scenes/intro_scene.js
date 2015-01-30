@@ -9,19 +9,20 @@ IntroScene.prototype.addEntities_ = function() {
   this.entityElement_.create('introSplash');
 
   var newGameBtn = this.btnElement_.create();
-  newGameBtn.setText('new game', {size: 16});
-  newGameBtn.onClick(function(btn) {
-    this.transition_(btn, 'main');
+  newGameBtn.setText('new game', {size: 'btn'});
+  newGameBtn.onClick(function() {
+    this.transition_('main');
   }.bind(this));
 
   var continueBtn = this.btnElement_.create();
-  continueBtn.setText('continue', {size: 16});
+  continueBtn.setText('continue', {size: 'btn'});
 
-  this.layout_ = this.layoutElement_.create({direction: 'vertical'});
-  this.layout_.padding.left = .65;
-  this.layout_.padding.top = .3;
+  this.layout_ = this.layoutElement_.create({
+    direction: 'vertical', align: 'bottom'});
+  this.layout_.padding.left = 'btn';
+  this.layout_.padding.bottom = 'btn';
   this.layout_.add(continueBtn);
-  continueBtn.padding.bottom = 25;
+  continueBtn.padding.bottom = 'btn';
   this.layout_.add(newGameBtn);
 };
 

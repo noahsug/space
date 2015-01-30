@@ -3,8 +3,7 @@ var Gfx = di.service('Gfx', [
 
 Gfx.Font = {
   TITLE: 'ElegantLux',
-  TEXT: 'Arial',
-  BASIC: 'Arial'
+  TEXT: 'Arial'
 };
 
 Gfx.Color = {
@@ -18,6 +17,9 @@ Gfx.Color = {
   YELLOW: '#FFFF00',
   PINK: '#FFCCEE',
 
+  SUCCESS: '#99FF99',
+  WARN: '#FF5544',
+  INFO: '#9999FF',
   LOCKED: '#666'
 };
 

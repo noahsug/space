@@ -1,6 +1,6 @@
 var AiMovement = di.service('AiMovement', [
   'EntityDecorator', 'Screen', 'DecoratorUtil as util', 'Random',
-  'SharedComputation as c']);
+  'SharedComputation as c', 'GameModel as gm']);
 
 AiMovement.prototype.init = function() {
   this.entityDecorator_.addDecorator(
@@ -9,7 +9,7 @@ AiMovement.prototype.init = function() {
 
 AiMovement.prototype.aiMovement_ = function(obj, spec) {
   obj.movement = _.options(spec, {
-    speed: 0,
+    speed: 100,
     accel: 4,
     vector: {x: 0, y: 0},
     intelligence: .1,
@@ -23,6 +23,7 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
     return this.random_.nextFloat(int - .1, int + .1);
   }.bind(this));
 
+  // Random urges.
   //this.util_.onCooldown(obj, function() {
   //  obj.movement.urge = {
   //    x: this.random_.nextInt(
@@ -57,10 +58,26 @@ AiMovement.prototype.getDesiredDistance_ = function(obj) {
   var numAttacks = 0;
   var bestNumAttacks = -9;
   var bestDistance = 2000;
+
+  var backAngle = obj.c.targetAngle + _.RADIANS_180;
+  var backAngleX = Math.cos(backAngle);
+  var xDis = (backAngleX < 0 ? obj.c.wallDisW : obj.c.wallDisE) /
+        Math.abs(backAngleX);
+  var backAngleY = Math.sin(backAngle);
+  var yDis = (backAngleY < 0 ? obj.c.wallDisN : obj.c.wallDisS) /
+        Math.abs(backAngleY);
+  var maxDis = _.distance({x: xDis, y: yDis});
+
+  if (!obj.movement.maxDis || maxDis < obj.movement.maxDis ||
+      obj.movement.maxDisTime < this.gm_.time) {
+    obj.movement.maxDis = maxDis;
+    obj.movement.maxDisTime = this.gm_.time + 12;
+  }
+
   for (var i = 0; i < obj.c.ranges.length; i++) {
-    var self = obj.c.ranges[i];
+    var self = Math.min(obj.movement.maxDis, obj.c.ranges[i]);
     var target = obj.c.targetRanges[targetIndex] || 0;
-    if (self >= target) {
+    if (self > target) {
       numAttacks++;
       if (numAttacks > bestNumAttacks) {
         bestNumAttacks = numAttacks;
@@ -71,10 +88,12 @@ AiMovement.prototype.getDesiredDistance_ = function(obj) {
       numAttacks--;
       i--;
       targetIndex++;
-    } else if (numAttacks > bestNumAttacks) {
-      bestNumAttacks = numAttacks;
-      bestDistance = self;
+    } else {
       targetIndex++;
+      if (numAttacks > bestNumAttacks) {
+        bestNumAttacks = numAttacks;
+        bestDistance = self;
+      }
     }
   }
 

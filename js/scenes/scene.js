@@ -1,4 +1,4 @@
-var Scene = di.factory('Scene', ['GameModel as gm']);
+var Scene = di.factory('Scene', ['GameModel as gm', 'Mouse']);
 
 Scene.TRANSITION_TIME = .25;
 
@@ -17,8 +17,11 @@ Scene.prototype.getState_ = function(state) {
 
 Scene.prototype.start = function() {
   this.setState_('active');
+  this.reset_();
   this.addEntities_();
 };
+
+Scene.prototype.reset_ = _.emptyFn;
 
 Scene.prototype.addEntities_ = _.emptyFn;
 
@@ -30,7 +33,7 @@ Scene.prototype.update = function(dt) {
     this.transitionTime_ -= dt;
     if (this.transitionTime_ <= 0) {
       this.transitionOver_();
-      this.gm_.transition = null;
+      this.gm_.transition.done = true;
       this.setState_('inactive');
       this.gm_.scenes[this.transitionTo_] = 'start';
     }
@@ -48,11 +51,22 @@ Scene.prototype.resolve = function(dt) {
 
 Scene.prototype.update_ = _.emptyFn;
 
-Scene.prototype.transition_ = function(entity, to) {
+Scene.prototype.transition_ = function(to, opt_time) {
+  this.transitionTime_ = opt_time || Scene.TRANSITION_TIME;
   this.setState_('transition');
-  this.gm_.transition = {pos: entity};
-  this.transitionTime_ = Scene.TRANSITION_TIME;
+  var pos = {screenX: this.mouse_.screenX, screenY: this.mouse_.screenY};
+  this.gm_.transition.pos = pos;
+  this.gm_.transition.time = this.transitionTime_;
+  this.gm_.transition.done = false;
   this.transitionTo_ = to;
+};
+
+Scene.prototype.transitionFast_ = function(to) {
+  this.transition_(to, Scene.TRANSITION_TIME / 2);
+};
+
+Scene.prototype.transitionInstantly_ = function(to) {
+  this.transition_(to, 0);
 };
 
 Scene.prototype.transitionOver_ = function() {
@@ -61,4 +75,14 @@ Scene.prototype.transitionOver_ = function() {
 
 Scene.prototype.removeEntities_ = function() {
   this.gm_.entities.clear();
+};
+
+Scene.prototype.restartGame_ = function() {
+  var scenes = this.gm_.scenes;
+  var player = this.gm_.player;
+  var inventory = this.gm_.inventory;
+  this.gm_.init();
+  this.gm_.scenes = scenes;
+  this.gm_.player = player;
+  this.gm_.inventory = inventory;
 };

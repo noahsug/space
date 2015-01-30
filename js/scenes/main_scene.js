@@ -1,5 +1,6 @@
 var MainScene = di.service('MainScene', [
-  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement']);
+  'GameModel as gm', 'Scene', 'LayoutElement', 'BtnElement', 'EntityElement',
+  'ShipFactory', 'Inventory']);
 
 MainScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('main'));
@@ -7,69 +8,61 @@ MainScene.prototype.init = function() {
 
 MainScene.prototype.addEntities_ = function() {
   this.entityElement_.create('mainSplash');
-};
 
-MainScene.prototype.addSelects_ = function() {
-  this.levelSelect_ = this.select_.create();
-  this.levelSelect_.setTitle('SAVE THE WORLD');
-  this.levelSelect_.setItems(['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII',
-                              'IX', 'X']);
-  this.levelSelect_.place(0, 3);
-  this.levelSelect_.onClick(function(item) {
-    this.startBattle_(item);
+  var finalBossBtn = this.btnElement_.create();
+  finalBossBtn.setText('vs ' + Strings.Boss[Game.NUM_LEVELS - 1],
+                       {size: 'btn-lg'});
+  finalBossBtn.onClick(function() {
+    this.gm_.level = Game.NUM_LEVELS - 1;
+    this.gm_.enemy = 'boss';
+    this.transition_('battle');
   }.bind(this));
-  _.invoke(_.rest(this.levelSelect_.items, this.gm_.level + 1), 'markAsLocked');
 
-  this.trainingSelect_ = this.select_.create();
-  this.trainingSelect_.setTitle('TRAIN');
-  this.trainingSelect_.setItems(['0']);
-  this.trainingSelect_.place(1, 3);
+  var bossBtn = this.btnElement_.create();
+  bossBtn.setText('vs ' + Strings.Boss[this.gm_.level], {size: 'btn-lg'});
+  bossBtn.onClick(function() {
+    this.gm_.enemy = 'boss';
+    this.transition_('battle');
+  }.bind(this));
 
-  this.equipSelect_ = this.select_.create();
-  this.equipSelect_.setTitle('EQUIP');
-  this.equipSelect_.setItems(['W', 'S', 'E', 'M']);
-  this.equipSelect_.place(2, 3);
+  var battleBtn = this.btnElement_.create();
+  battleBtn.setText('train', {size: 'btn-lg'});
+  battleBtn.onClick(function() {
+    this.gm_.enemy = 'random';
+    this.transition_('battle');
+  }.bind(this));
 
-  this.selects_ = [
-    this.levelSelect_,
-    this.trainingSelect_,
-    this.equipSelect_
-  ];
-};
+  var equipBtn = this.btnElement_.create();
+  equipBtn.setText('customize', {size: 'btn-lg'});
+  equipBtn.onClick(function() {
+    this.transition_('equipOptions');
+  }.bind(this));
 
-MainScene.prototype.removeEntities_ = function() {
-  this.gm_.entities.clear();
-};
-
-MainScene.prototype.goBack_ = function(btn) {
-  this.transition_(btn);
-  this.transitionTo_ = {name: 'intro'};
-};
-
-MainScene.prototype.startBattle_ = function(btn) {
-  this.transition_(btn);
-  this.transitionTo_ = {name: 'battle'};
-};
-
-MainScene.prototype.transition_ = function(btn) {
-  this.gm_.scenes[this.name] = 'transition';
-  this.transitionTime_ = Game.TRANSITION_TIME;
-  this.gm_.transition = btn.base;
-};
-
-MainScene.prototype.update = function(dt, state) {
-  if (state == 'active') {
-    for (var i = 0; i < this.selects_.length; i++) {
-      this.selects_[i].update(dt);
-    }
-    this.backBtn_.update(dt);
-
-  } else if (state == 'transition') {
-    if ((this.transitionTime_ -= dt) <= 0) {
-      this.gm_.transition = null;
-      this.removeEntities_();
-      this.gm_.scenes[this.name] = 'inactive';
-      this.gm_.scenes[this.transitionTo_.name] = 'start';
+  var btns = [];
+  if (this.gm_.daysLeft == 0) {
+    btns.push(finalBossBtn);
+  } else if (this.gm_.daysLeft == 1) {
+    btns.push(bossBtn);
+  } else {
+    btns.push(battleBtn);
+    if (this.gm_.daysOnLevel >= 2) {
+      btns.push(bossBtn);
     }
   }
+  if (this.inventory_.hasItemToEquip()) {
+    btns.push(equipBtn);
+  }
+
+  this.layout_ = this.layoutElement_.create({
+    direction: 'vertical', align: 'top'});
+  this.layout_.padding.left = 'btn-lg';
+  this.layout_.padding.top = .25;
+  _.each(btns, function(btn) {
+    this.layout_.add(btn);
+    btn.padding.bottom = 'btn-lg';
+  }, this);
+};
+
+MainScene.prototype.update_ = function(dt, state) {
+  this.layout_.update();
 };

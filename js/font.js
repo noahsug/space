@@ -5,6 +5,6 @@ Font.prototype.init = function() {
 };
 
 Font.prototype.widthUnmemoized_ = function(text, size) {
-  this.ctx_.font = 'bold ' + size + 'px Arial';
+  this.ctx_.font = size + 'px Arial';
   return this.ctx_.measureText(text).width;
 };

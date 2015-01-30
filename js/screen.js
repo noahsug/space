@@ -32,11 +32,10 @@ Screen.prototype.screenToDraw = function(x, y) {
 };
 
 Screen.prototype.screenToCanvas = function(x, y, opt_z) {
-  var upscale = this.getUpscale_();
   var z = opt_z || 1;
   return {
-    x: x / upscale - this.width / 2 + this.x / z,
-    y: y / upscale - this.height / 2 + this.y / z
+    x: x / this.upscale - this.width / 2 + this.x / z,
+    y: y / this.upscale - this.height / 2 + this.y / z
   };
 };
 

@@ -41,7 +41,7 @@ GameRunner.prototype.step_ = function() {
   //r = 1;
   //window.debug = time > 1.5;
 
-  dt = Math.min(dt, minDt) * this.gm_.speed;
+  dt = Math.min(dt, minDt) * this.gm_.gameSpeed;
   this.update_(dt);
   this.requestNextStep_();
 };

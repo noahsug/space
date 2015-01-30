@@ -8,6 +8,10 @@ _.radians = function(degrees) {
   return degrees * Math.PI / 180;
 };
 
+_.plural = function(string, num) {
+  return num == 1 ? string : string + 's';
+};
+
 _.isDef = function(value) {
   return !_.isUndefined(value);
 };
@@ -117,12 +121,17 @@ _.uncapitalize = function(str) {
   return str.charAt(0).toLowerCase() + str.slice(1);
 };
 
-_.parse = function(context, str) {
+_.parse = function(context, str, opt_createNew) {
   var obj = context;
-  _.each(str.split('.'), function(name) {
-    obj[name] = _.isDef(obj[name]) ? obj[name] : {};
+  var names = str.split('.');
+  for (var i = 0; i < names.length; i++) {
+    var name = names[i];
+    if (!_.isDef(obj[name])) {
+      if (opt_createNew) obj[name] = {};
+      else return undefined;
+    }
     obj = obj[name];
-  });
+  }
   return obj;
 };
 
@@ -157,6 +166,10 @@ _.key = function(obj) {
 
 _.value = function(obj) {
   return _.values(obj)[0];
+};
+
+_.sampleKey = function(obj) {
+  return _.sample(_.keys(obj));
 };
 
 _.swap = function(obj, a, b) {
@@ -233,6 +246,15 @@ _.generate = function(generator, length, opt_thisObj) {
   return list;
 };
 
+_.newList = function(list, generator, opt_thisObj) {
+  var result = new Array();
+  for (var i = 0; i < list.length; i++) {
+    var value = generator.call(opt_thisObj, list[i], i);
+    if (value !== undefined) result.push(value);
+  }
+  return result;
+};
+
 _.min = function(list) {
   var min;
   for (var i = 0; i < list.length; i++) {
@@ -252,6 +274,10 @@ _.ifDef = function(value, valueWhenUndefined) {
 _.pad = function(num, padding) {
   var numAsStr = '' + num;
   return _.repeat('0', padding - numAsStr.length) + numAsStr;
+};
+
+_.callForEach = function(list, obj, fnName) {
+  _.each(list, obj[fnName].bind(obj));
 };
 
 _.unimplemented = function() {

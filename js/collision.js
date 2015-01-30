@@ -49,6 +49,8 @@ Collision.prototype.circleLine = function(a, b) {
       cx * b.dx + cy * b.dy >= 0 && cx * b.dx + cy * b.dy <= len2);
 };
 
+Collision.prototype.circleRect = _.unimplemented;
+
 Collision.prototype.circleText = _.unimplemented;
 
 // Text collisions.
@@ -77,14 +79,21 @@ Collision.prototype.textPoint = function(a, b) {
   return this.rectPoint(rect, b);
 };
 
+Collision.prototype.textLine = _.unimplemented;
+
+Collision.prototype.textRect = _.unimplemented;
+
+Collision.prototype.textText = _.unimplemented;
+
+// Rect collisions.
 Collision.prototype.rectPoint = function(a, b) {
   return b.y > a.y && b.y < a.y + a.height &&
       b.x > a.x && b.x < a.x + a.width;
 };
 
-Collision.prototype.textLine = _.unimplemented;
+Collision.prototype.rectRect = _.unimplemented;
 
-Collision.prototype.textText = _.unimplemented;
+Collision.prototype.rectLine = _.unimplemented;
 
 // Line collisions.
 Collision.prototype.lineLine = _.unimplemented;

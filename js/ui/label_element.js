@@ -3,10 +3,13 @@ var LabelElement = di.factory('LabelElement', [
 
 LabelElement.prototype.init = function() {
   _.class.extend(this, this.entityElement_.create('label'));
+  this.addUnit_('size', 'btn', 16);
+  this.addUnit_('size', 'btn-lg', 20);
 };
 
 LabelElement.prototype.setText = function(text, spec) {
   spec.text = text;
+  spec.size = this.measure_('size', spec.size);
   _.decorate(this.entity_, this.d_.shape.text, spec);
 };
 

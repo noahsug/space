@@ -7,13 +7,18 @@ LayoutElement.prototype.init = function(opt_options) {
   this.elements_ = [];
   this.oriented_ = {};
   this.oriented_.padding = {};
-  this.maxHeight_ = 0;
-  this.maxWidth_ = 0;
+  this.maxHeight_ = null;  // null means screen height.
+  this.maxWidth_ = null;  // null means screen width.
 
   var options = opt_options || {};
   this.setDirection(options.direction || LayoutElement.Direction.HORIZONTAL);
   this.setAlign(options.align || LayoutElement.Align.CENTER);
   this.setPadding.apply(this, options.padding || [0]);
+
+  this.addUnit_('pad-left', 'btn', .66);
+  this.addUnit_('pad-bot', 'btn', .16);
+  this.addUnit_('pad-left', 'btn-lg', .6);
+  this.addUnit_('pad-top', 'btn-lg', .2);
 };
 
 LayoutElement.Direction = {
@@ -23,19 +28,20 @@ LayoutElement.Direction = {
 
 LayoutElement.Align = {
   LEFT: 'left',
-  TOP: 'left',
+  TOP: 'top',
   RIGHT: 'right',
-  BOTTOM: 'right',
+  BOTTOM: 'bottom',
   CENTER: 'center'
 };
 
 LayoutElement.prototype.setDirection = function(direction) {
   this.direction_ = direction;
+  this.oriented_.center = 'center';
   if (direction == LayoutElement.Direction.HORIZONTAL) {
-    this.oriented_.padding.top = this.padding.top;
-    this.oriented_.padding.right = this.padding.right;
-    this.oriented_.padding.bottom = this.padding.bottom;
-    this.oriented_.padding.left = this.padding.left;
+    this.oriented_.top = 'top';
+    this.oriented_.right = 'right';
+    this.oriented_.bottom = 'bottom';
+    this.oriented_.left = 'left';
     this.oriented_.height = 'height';
     this.oriented_.width = 'width';
     this.oriented_.maxHeight_ = 'maxHeight_';
@@ -43,10 +49,10 @@ LayoutElement.prototype.setDirection = function(direction) {
     this.oriented_.x = 'x';
     this.oriented_.y = 'y';
   } else if (direction == LayoutElement.Direction.VERTICAL) {
-    this.oriented_.padding.top = this.padding.right;
-    this.oriented_.padding.right = this.padding.bottom;
-    this.oriented_.padding.bottom = this.padding.left;
-    this.oriented_.padding.left = this.padding.top;
+    this.oriented_.top = 'right';
+    this.oriented_.right = 'bottom';
+    this.oriented_.bottom = 'left';
+    this.oriented_.left = 'top';
     this.oriented_.height = 'width';
     this.oriented_.width = 'height';
     this.oriented_.maxHeight_ = 'maxWidth_';
@@ -75,11 +81,11 @@ LayoutElement.prototype.add = function(element, opt_options) {
 LayoutElement.prototype.positionChild_ = function(x, y) {
   var o = this.oriented_;
   if (this.direction_ == LayoutElement.Direction.VERTICAL) {
-    var temp = x;
-    x = y;
-    y = temp;
+    var temp = x; x = y; y = temp;  // Swap x and y.
   }
-  var freeWidth = this[o.maxWidth_] || this.screen_[o.width];
+  var maxWidth = this[o.maxWidth_] || this.screen_[o.width];
+  var freeWidth =
+      maxWidth - this.calc_.padding[o.left] - this.calc_.padding[o.right];
   var totalFlex = 0;
   for (var i = 0; i < this.elements_.length; i++) {
     var e = this.elements_[i];
@@ -92,9 +98,9 @@ LayoutElement.prototype.positionChild_ = function(x, y) {
 
   var distance = x;
   if (totalFlex == 0) {
-    if (this.align_ == LayoutElement.Align.CENTER) {
+    if (this.align_ == o.center) {
       distance += freeWidth / 2;
-    } else if (this.align_ == LayoutElement.Align.RIGHT) {
+    } else if (this.align_ == o.right) {
       distance += freeWidth;
     }
     for (var i = 0; i < this.elements_.length; i++) {
@@ -110,9 +116,9 @@ LayoutElement.prototype.positionChild_ = function(x, y) {
       if (e.layout.flex) {
         var align = e.layout.align || this.align_;
         e[o.maxWidth_] = freeWidth * e.layout.flex / totalFlex;
-        if (align == LayoutElement.Align.LEFT) {
+        if (align == o.left) {
           this.orientedSetPosition_(e, distance, y);
-        } else if (align == LayoutElement.Align.CENTER) {
+        } else if (align == o.center) {
           this.orientedSetPosition_(e, distance + e[o.maxWidth_] / 2, y);
         } else {
           this.orientedSetPosition_(e, distance + e[o.maxWidth_], y);

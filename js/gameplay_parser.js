@@ -1,43 +1,32 @@
-var GameplayParser = di.service('GameplayParser', [
-  'gameplayFile', 'gameplay']);
+var GameplayParser = di.service('GameplayParser');
 
-var gameplay = di.constant('gameplay', {init: {}, items: {}});
-
-GameplayParser.prototype.init = function() {
+GameplayParser.prototype.parse = function(file, dest) {
   // Parse items.
-  this.gameplay_.items = {};
-  _.each(this.gameplayFile_.items, function(info, name) {
-    this.gameplay_.items[name] = this.parseItem_(name);
+  dest.items = {};
+  _.each(file.items, function(item, name) {
+    dest.items[name] = this.parseItem_(name, item);
   }, this);
 
-  // Parse initial inventory and equipment.
-  this.parseItemObj_(this.gameplayFile_.init, this.gameplay_.init);
+  dest.player = this.parseItemList_(file.player, dest.items);
+  dest.inventory = this.parseItemList_(file.inventory, dest.items);
 
   // Parse enemies for each level.
-  this.gameplay_.level = [];
-  for (var i = 0; i < this.gameplayFile_.level.length; i++) {
-    this.gameplay_.level.push({});
-    this.parseItemObj_(this.gameplayFile_.level[i], this.gameplay_.level[i]);
+  dest.bosses = [];
+  for (var i = 0; i < file.bosses.length; i++) {
+    dest.bosses[i] = this.parseItemList_(file.bosses[i], dest.items);
   }
 };
 
-GameplayParser.prototype.parseItemObj_ = function(itemObj, destination) {
-  _.each(itemObj, function(itemList, key) {
-    destination[key] = this.parseItemList_(itemList);
-  }, this);
-};
-
-GameplayParser.prototype.parseItemList_ = function(itemList) {
+GameplayParser.prototype.parseItemList_ = function(names, items) {
   var parsedItemList = [];
-  _.each(itemList, function(item) {
-    parsedItemList.push(this.gameplay_.items[item]);
+  _.each(names, function(name) {
+    parsedItemList.push(items[name]);
   }, this);
   return parsedItemList;
 };
 
-GameplayParser.prototype.parseItem_ = _.memoize(function(name) {
-  var item = _.clone(this.gameplayFile_.items[name]);
-  _.assert(item, 'Invalid item: ' + name);
+GameplayParser.prototype.parseItem_ = function(name, item) {
+  item = _.clone(item);
   var types = item.type.split('.');
   if (types.length > 1) {
     item.category = types[0];
@@ -48,4 +37,4 @@ GameplayParser.prototype.parseItem_ = _.memoize(function(name) {
   }
   item.name = name;
   return item;
-});
+};
