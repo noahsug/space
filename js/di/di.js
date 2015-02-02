@@ -144,7 +144,3 @@ window.document.addEventListener("DOMContentLoaded", function() {
   di.init();
   di.start();
 });
-
-window.document.addEventListener('touchstart', function(e) {
-  screen.resize();
-});
