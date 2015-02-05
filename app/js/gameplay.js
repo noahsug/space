@@ -6,7 +6,7 @@ Gameplay.prototype.init = function() {
 
 di.constant('gameplayFile', {
   player: [
-    'basic laser',
+    //'basic laser',
     //'burst laser',
     //'grenade',
     //'razors',
@@ -17,6 +17,7 @@ di.constant('gameplayFile', {
     //'stun',
     //'emp',
     //'pistol',
+    'knockback',
 
     //'teleport',
 
@@ -34,20 +35,17 @@ di.constant('gameplayFile', {
 
   bosses: [
     [
-      'boss1',
       'shotgun',
       'pistol',
       'circle',
     ],
     [
-      'boss2',
       'razors',
       'turtle',
       '+defence',
       'circle',
     ],
     [
-      'boss3',
       'grenade',
       'emp',
       'baboon II',
@@ -55,7 +53,6 @@ di.constant('gameplayFile', {
       'circle',
     ],
     [
-      'boss4',
       'sniper',
       'pistol II',
       'mink',
@@ -64,7 +61,6 @@ di.constant('gameplayFile', {
       'circle',
     ],
     [
-      'boss5',
       'missiles II',
       'teleport',
       '+attack rate II',
@@ -156,6 +152,10 @@ di.constant('gameplayFile', {
       desc: 'Basic laser.',
       type:'secondary.pistol', spec: {power: 2},
       level: 2},
+    'knockback': {
+      desc: '',
+      type:'secondary.knockback', spec: {},
+      level: 1},
 
     'dash': {
       desc: 'dash.',
@@ -202,10 +202,6 @@ di.constant('gameplayFile', {
       desc: 'Small and agile, but deal less damage.',
       type: 'ability.mink', spec: {},
       level: 1},
-    'turtle': {
-      desc: 'High def, low speed.',
-      type: 'ability.turtle', spec: {},
-      level: 0},
     //'zombie': {
     //  desc: 'Stay alive for a few seconds after death.',
     //  type: 'ability.zombie', spec: {cooldown: 4},
@@ -256,21 +252,6 @@ di.constant('gameplayFile', {
 
     'circle': {
       desc: 'Circle',
-      type: 'shape.circle', spec: {radius: 12}},
-
-    'boss1': {
-      type: 'stats', spec: {health: 10}},
-
-    'boss2': {
-      type: 'stats', spec: {health: 16}},
-
-    'boss3': {
-      type: 'stats', spec: {health: 24}},
-
-    'boss4': {
-      type: 'stats', spec: {health: 36}},
-
-    'boss5': {
-      type: 'stats', spec: {health: 50}}
+      type: 'shape.circle', spec: {radius: 12}}
   }
 });

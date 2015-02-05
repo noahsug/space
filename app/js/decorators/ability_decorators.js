@@ -15,16 +15,6 @@ AbilityDecorators.prototype.decorateMink_ = function(obj, spec) {
   this.util_.mod(obj, 'radius', obj.ability.radius);
 };
 
-AbilityDecorators.prototype.decorateTurtle_ = function(obj, spec) {
-  obj.ability = _.options(spec, {
-    speed: .7,
-    def: 1.3
-  });
-
-  this.util_.mod(obj, 'speed', obj.ability.speed);
-  this.util_.mod(obj, 'def', obj.def);
-};
-
 AbilityDecorators.prototype.decorateRage_ = function(obj, spec) {
   obj.ability = _.options(spec, {
     radius: 1.5,

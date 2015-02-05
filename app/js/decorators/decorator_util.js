@@ -48,6 +48,18 @@ DecoratorUtil.prototype.fireBlade = function(obj, spec) {
   return this.fireProjectile_(blade, obj, spec);
 };
 
+DecoratorUtil.prototype.fireAura = function(obj, spec) {
+  var d = this.entityDecorator_.getDecorators();
+  var aura = this.entity_.create('aura');
+  aura.style = spec.style;
+  spec.radius = 1;
+  _.decorate(aura, d.shape.circle, spec);
+  aura.target = obj.target;
+  _.decorate(aura, d.movement.atPosition, {target: obj});
+  _.decorate(aura, d.growRadius, spec);
+  this.gm_.entities.arr[this.gm_.entities.length++] = aura;
+};
+
 var EXTRA_RANGE_RATIO = 1.5;
 DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
   var d = this.entityDecorator_.getDecorators();

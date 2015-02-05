@@ -66,9 +66,6 @@ BattleScene.prototype.rewardPlayer_ = function() {
   this.gm_.results.earned = this.battleRewards_.getReward(this.gm_.results.won);
   if (this.gm_.results.earned.item) {
     this.gm_.inventory.push(this.gm_.results.earned.item);
-  } else if (this.gm_.results.earned.stat) {
-    var stat = this.gm_.results.earned.stat;
-    this.gm_.playerStats[stat.name] += stat.value;
   }
 };
 

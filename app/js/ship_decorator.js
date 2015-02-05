@@ -7,7 +7,7 @@ ShipDecorator.prototype.init = function() {
 
 ShipDecorator.prototype.name = 'shipDecorator';
 
-ShipDecorator.prototype.decorate = function(obj, opt_stats) {
+ShipDecorator.prototype.decorate = function(obj) {
   // Items.
   obj.primary = {};
   obj.secondary = {};
@@ -17,8 +17,6 @@ ShipDecorator.prototype.decorate = function(obj, opt_stats) {
 
   _.decorate(obj, this.sharedComputation_);
   _.decorate(obj, this.d_.effectable);
-  obj.def = 1;
-  _.decorate(obj, this.d_.stats, opt_stats);
 
   // Collisions.
   obj.collision = {

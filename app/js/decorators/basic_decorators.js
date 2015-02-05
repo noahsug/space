@@ -19,7 +19,7 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
   });
   obj.health = obj.maxHealth = obj.prevHealth = spec.health;
   obj.dmg = function(dmg) {
-    obj.health -= dmg / obj.def;
+    obj.health -= dmg;
   };
   obj.act(function() {
     obj.prevHealth = obj.health;
@@ -29,15 +29,6 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
       obj.dead = true;
     }
   }.bind(this));
-};
-
-BasicDecorators.prototype.decorateStats_ = function(obj, stats) {
-  stats = stats || {};
-  if (stats.dmg) this.util_.mod(obj, 'primary.dmg', 1 + stats.dmg / 100);
-  if (stats.dmg) this.util_.mod(obj, 'secondary.dmg', 1 + stats.dmg / 100);
-  if (stats.health) this.util_.mod(obj, 'health', 1 + stats.health / 100);
-  if (stats.speed) this.util_.mod(obj, 'movement.speed', 1 + stats.speed / 100);
-  if (stats.def) this.util_.mod(obj, 'def', 1 + stats.def / 100);
 };
 
 // Requires obj.movement.speed.
@@ -81,7 +72,7 @@ BasicDecorators.prototype.decorateCollision_ = function(obj, spec) {
 
 BasicDecorators.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
   obj.act(function() {
-    if (this.c_.hitWall(obj, 50)) obj.remove = true;
+    if (this.c_.hitWall(obj, 50)) obj.dead = true;
   }.bind(this));
 };
 
@@ -109,6 +100,13 @@ BasicDecorators.prototype.decorateEffectable_ = function(obj) {
         obj.effect[name] -= dt;
       }
     }
+  });
+};
+
+BasicDecorators.prototype.decorateGrowRadius_ = function(obj, spec) {
+  obj.grow = spec.grow;
+  obj.update(function(dt) {
+    obj.radius *= dt * obj.grow;
   });
 };
 

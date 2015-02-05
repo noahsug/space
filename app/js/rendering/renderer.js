@@ -128,7 +128,7 @@ Renderer.prototype.drawResultSplash_ = function() {
   var result = this.gm_.results.won ? 'victory' : 'defeat';
   this.drawHeading_(result, 70, this.screen_.width / 2, 30 - 12);
 
-  if (this.gm_.results.earned) {
+  if (!_.isEmpty(this.gm_.results.earned)) {
     var y = this.screen_.height / 2 - 20;
     var x = this.screen_.width / 2;
     this.ctx_.textAlign = 'right';
@@ -142,11 +142,6 @@ Renderer.prototype.drawResultSplash_ = function() {
       this.drawText_(item.name, 16, x, y, true);
       msg = '(' + Strings.ItemType[item.category] + ')';
       this.drawText_(msg, 16, x, y + 20);
-    }
-    if (this.gm_.results.earned.stat) {
-      var stat = this.gm_.results.earned.stat;
-      msg = '+ ' + stat.value + ' ' + Strings.Stat[stat.name];
-      this.drawText_(msg, 16, x, y, true);
     }
   }
 };
@@ -437,6 +432,23 @@ Renderer.prototype.drawBomb_ = function(entity, style, dt) {
     this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
                      entity.radius * NORMAL_SIZE);
   }
+};
+
+Renderer.prototype.addAuraStyle_ = function(style) {
+  style.normal = this.gfx_.addStyle({
+    stroke: Gfx.Color.WHITE,
+    lineWidth: 4
+  });
+};
+Renderer.prototype.drawAura_ = function(entity, style, dt) {
+  if (entity.dead) {
+    entity.remove = true;
+    return;
+  }
+  this.gfx_.setStyle(style.normal);
+  this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                   entity.radius);
+
 };
 
 Renderer.prototype.addBladeStyle_ = function(style) {

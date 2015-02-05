@@ -86,3 +86,14 @@ MovementDecorators.prototype.decorateStraight_ = function(obj, spec) {
     }
   }.bind(this);
 };
+
+MovementDecorators.prototype.decorateAtPosition_ = function(obj, spec) {
+  obj.movement = _.options(spec, {
+    target: {x: 0, y: 0}
+  });
+
+  obj.update(function(dt) {
+    obj.x = obj.movement.target.x;
+    obj.y += obj.movement.target.y;
+  });
+};
