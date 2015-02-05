@@ -42,5 +42,5 @@ Inventory.prototype.getEquippedIndex_ = function(item) {
 };
 
 Inventory.prototype.hasItemToEquip = function() {
-  return this.gm_.player.length < this.gm_.inventory.length;
+  return this.gm_.player.length - 1 < this.gm_.inventory.length;
 };

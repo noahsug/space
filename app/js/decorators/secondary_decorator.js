@@ -37,7 +37,7 @@ SecondaryDecorators.prototype.decorateStun_ = function(obj, spec) {
     accuracy: _.radians(10),
     cooldown: 1.5,
     length: 4 + 16,
-    duration: .9,
+    duration: .8,
     style: 'effect',
     effect: 'disabled',
     range: 150,
@@ -46,7 +46,7 @@ SecondaryDecorators.prototype.decorateStun_ = function(obj, spec) {
 
   switch(spec.power) {
   case 1:
-    obj.secondary.duration *= 1.5;
+    obj.secondary.duration *= 1.3;
   }
 
   var stopMovement = function(obj) {
@@ -63,7 +63,7 @@ SecondaryDecorators.prototype.decorateEmp_ = function(obj, spec) {
     speed: 200,
     accuracy: _.radians(10),
     cooldown: 1.5,
-    radius: 18,
+    radius: 15,
     duration: 1.5,
     style: 'effect',
     effect: 'weaponsDisabled',
@@ -73,8 +73,8 @@ SecondaryDecorators.prototype.decorateEmp_ = function(obj, spec) {
 
   switch(spec.power) {
   case 1:
-    obj.secondary.duration *= 1.5;
-    obj.secondary.radius *= .85;
+    obj.secondary.duration *= 1.3;
+    obj.secondary.radius *= 1.3;
   }
 
   this.addEffectWeapon_(obj, this.util_.fireBomb.bind(this.util_));

@@ -129,8 +129,8 @@ AiMovement.prototype.setDesiredVector_ = function(obj) {
 //  _.vector.add(v, this.getCurrentDirection_(obj));
   _.vector.add(v, this.getWallXVector_(obj, 4));
   _.vector.add(v, this.getWallYVector_(obj, 4));
-  _.vector.add(v, this.getEnemyDistanceVector_(obj, 4));
-  _.vector.add(v, this.getCurrentPerpendicularVector_(obj, 4));
+  _.vector.add(v, this.getEnemyDistanceVector_(obj, 5));
+  _.vector.add(v, this.getCurrentPerpendicularVector_(obj, 3));
   _.vector.add(v, this.getDodgeVector_(obj, 2));
   _.vector.add(v, this.getFleeVector_(obj, 4));
   _.vector.add(v, this.getPerpendicularVector_(obj, 2, v));

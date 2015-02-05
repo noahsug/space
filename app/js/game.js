@@ -28,13 +28,15 @@ Game.prototype.start = function() {
   //this.gm_.results.earned = {item: _.value(this.gameplay_.items)};
   //this.gm_.results.earned = {stat: {name: 'health', value: 3}};
 
-  //this.gm_.daysOnLevel = 10;
+  //this.gm_.daysOnLevel = 4;
   //this.gm_.daysLeft = 10 - this.gm_.daysOnLevel;
 
   //this.gm_.enemy = 'boss';
   //this.gm_.enemy = 'random';
 
-  this.scenes_[0].start();
+  //this.gm_.level = 3;
+
+  this.scenes_[2].start();
 };
 
 Game.prototype.setPlayerItems_ = function() {
