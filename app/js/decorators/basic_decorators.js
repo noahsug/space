@@ -103,10 +103,13 @@ BasicDecorators.prototype.decorateEffectable_ = function(obj) {
   });
 };
 
-BasicDecorators.prototype.decorateGrowRadius_ = function(obj, spec) {
+BasicDecorators.prototype.decorateGrowRadiusAndDie_ = function(obj, spec) {
   obj.grow = spec.grow;
+  obj.growDuration = spec.growDuration;
   obj.update(function(dt) {
-    obj.radius *= dt * obj.grow;
+    if (!obj.growDuration) obj.dead = true;
+    obj.radius += Math.min(dt, obj.growDuration) * obj.grow;
+    obj.growDuration = Math.max(obj.growDuration - dt, 0);
   });
 };
 

@@ -94,6 +94,6 @@ MovementDecorators.prototype.decorateAtPosition_ = function(obj, spec) {
 
   obj.update(function(dt) {
     obj.x = obj.movement.target.x;
-    obj.y += obj.movement.target.y;
+    obj.y = obj.movement.target.y;
   });
 };

@@ -6,7 +6,7 @@ Gameplay.prototype.init = function() {
 
 di.constant('gameplayFile', {
   player: [
-    //'basic laser',
+    'basic laser',
     //'burst laser',
     //'grenade',
     //'razors',

@@ -44,8 +44,7 @@ UtilityDecorators.prototype.decorateDash_ = function(obj, spec) {
 UtilityDecorators.prototype.decorateTeleport_ = function(obj, spec) {
   obj.utility = _.options(spec, {
     cooldown: 2,
-    range: 300,
-    disabledDuration: .05
+    range: 300
   });
 
   switch(spec.power) {
@@ -68,7 +67,6 @@ UtilityDecorators.prototype.decorateTeleport_ = function(obj, spec) {
 
   obj.utility.useTeleport = function() {
     obj.effect.teleportCooldown = obj.utility.cooldown;
-    obj.addEffect('disabled', obj.utility.disabledDuration);
     obj.movement.vector = {x: 0, y: 0};
     obj.x = obj.utility.teleportPos.x;
     obj.y = obj.utility.teleportPos.y;

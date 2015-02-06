@@ -436,8 +436,8 @@ Renderer.prototype.drawBomb_ = function(entity, style, dt) {
 
 Renderer.prototype.addAuraStyle_ = function(style) {
   style.normal = this.gfx_.addStyle({
-    stroke: Gfx.Color.WHITE,
-    lineWidth: 4
+    stroke: Gfx.Color.OPAC_WHITE,
+    lineWidth: 1
   });
 };
 Renderer.prototype.drawAura_ = function(entity, style, dt) {

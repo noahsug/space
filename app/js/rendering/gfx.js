@@ -9,6 +9,7 @@ Gfx.Font = {
 Gfx.Color = {
   BLACK: '#000000',
   WHITE: '#FFFFFF',
+  OPAC_WHITE: 'rgba(255, 255, 255, .5)',
   RED: '#FF0000',
   OPAC_RED: 'rgba(255, 0, 0, .4)',
   MORE_OPAC_RED: 'rgba(255, 0, 0, .3)',

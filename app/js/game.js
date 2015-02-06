@@ -31,12 +31,14 @@ Game.prototype.start = function() {
   //this.gm_.daysOnLevel = 4;
   //this.gm_.daysLeft = 10 - this.gm_.daysOnLevel;
 
-  //this.gm_.enemy = 'boss';
+  this.gm_.enemy = 'boss';
   //this.gm_.enemy = 'random';
 
   //this.gm_.level = 3;
 
-  this.scenes_[2].start();
+  this.gm_.gameSpeed = 2;
+
+  this.scenes_[3].start();
 };
 
 Game.prototype.setPlayerItems_ = function() {

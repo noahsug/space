@@ -318,9 +318,9 @@ AiMovement.prototype.move_ = function(obj, dt) {
   obj.x += obj.movement.vector.x * obj.movement.speed * dt;
   obj.y += obj.movement.vector.y * obj.movement.speed * dt;
   this.c_.wallDis(obj);
-  if (obj.c.wallDisN < 0) obj.y = obj.y -= obj.c.wallDisN;
-  else if (obj.c.wallDisS < 0) obj.y = obj.y += obj.c.wallDisS;
-  else if (obj.c.wallDisE < 0) obj.x = obj.x += obj.c.wallDisE;
-  else if (obj.c.wallDisW < 0) obj.x = obj.x -= obj.c.wallDisW;
+  if (obj.c.wallDisN < 0) obj.y -= obj.c.wallDisN;
+  else if (obj.c.wallDisS < 0) obj.y += obj.c.wallDisS;
+  if (obj.c.wallDisE < 0) obj.x += obj.c.wallDisE;
+  else if (obj.c.wallDisW < 0) obj.x -= obj.c.wallDisW;
   if (obj.c.hitWall && obj.effect.dash) obj.utility.stopDash();
 };
