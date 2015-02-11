@@ -279,21 +279,17 @@ Renderer.prototype.addShipStyle_ = function(style) {
     stroke: Gfx.Color.MORE_OPAC_RED,
     shadow: 'none'
   });
+  style.disabled = this.gfx_.addStyle({
+    lineWidth: 5,
+    stroke: Gfx.Color.OPAC_BLUE,
+    shadow: 'none'
+  });
+  style.tagged = this.gfx_.addStyle({
+    lineWidth: 2,
+    stroke: Gfx.Color.RED
+  });
 };
 Renderer.prototype.drawShip_ = function(entity, style, dt) {
-  if (!entity.dead) {
-    // Don't resize instantly.
-    var rGap = entity.radius - entity.render.radius;
-    if (rGap) {
-      var dr = Math.sign(rGap) * 10 * dt;
-      if (Math.abs(rGap) < Math.abs(dr)) {
-        entity.render.radius = entity.radius;
-      } else {
-        entity.render.radius += dr;
-      }
-    }
-  }
-
   var damage = entity.prevHealth - entity.health;
   if (damage != entity.render.damageTaken) {
     entity.render.damageTaken = damage;
@@ -312,8 +308,32 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
     entity.render.shaking--;
   }
 
-  // Draw health indicator
   if (!entity.dead) {
+    // Don't resize instantly.
+    var rGap = entity.radius - entity.render.radius;
+    if (rGap) {
+      var dr = Math.sign(rGap) * 10 * dt;
+      if (Math.abs(rGap) < Math.abs(dr)) {
+        entity.render.radius = entity.radius;
+      } else {
+        entity.render.radius += dr;
+      }
+    }
+
+    // Draw disabled indicator.
+    if (entity.effect.disabled) {
+      this.gfx_.setStyle(style.disabled);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                       entity.render.radius - 5);
+    }
+
+    // Draw tagged indicator.
+    if (entity.effect.tagged) {
+      this.gfx_.setStyle(style.tagged);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y, 2);
+    }
+
+    // Draw health indicator.
     if (entity.health <= damage) {
       entity.render.healthIndicator = 30;
     }
@@ -341,7 +361,7 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
   this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
                    entity.render.radius - 2);
 
-  // DEBUG.
+  // DEBUG: See where the ship is aiming.
   //var dx = entity.render.pos.x - entity.x;
   //var dy = entity.render.pos.y - entity.y;
   //if (entity.aimPos) {
@@ -353,7 +373,7 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
   //}
 };
 
-var SPEED_FUDGING = 8;
+var SPEED_FUDGING = 8;  // Draw laser ahead of where it actually is.
 Renderer.prototype.addLaserStyle_ = function(style) {
   style.weak = this.gfx_.addStyle({
     stroke: Gfx.Color.YELLOW,
@@ -406,6 +426,7 @@ Renderer.prototype.addBombStyle_ = function(style) {
   });
 };
 Renderer.prototype.drawBomb_ = function(entity, style, dt) {
+  if (entity.remove) return;
   if (entity.dead) {
     // Draw explosion.
     if (!_.isDef(entity.render.explodeTime)) {

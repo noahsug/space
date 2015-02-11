@@ -4,8 +4,9 @@ var DecoratorUtil = di.service('DecoratorUtil', [
 DecoratorUtil.prototype.addWeapon = function(obj, spec, fire) {
   var initCooldown = this.random_.nextFloat(.5) * spec.cooldown;
   this.onCooldown(obj, function() {
-    if (obj.dead) return 0;
+    if (obj.dead || obj.effect.silenced) return 0;
     if (spec.range && obj.c.targetDis > spec.range) return 0;
+    if (obj.c.targetDis < spec.minRange) return 0;
     if (spec.spread) this.fireSpread_(obj, spec, fire);
     else fire(obj, spec);
     spec.lastFired = this.gm_.time;
@@ -14,12 +15,11 @@ DecoratorUtil.prototype.addWeapon = function(obj, spec, fire) {
 };
 
 DecoratorUtil.prototype.fireSpread_ = function(obj, spec, fire) {
-  if (!obj.spreadPoints) {
-    // Save some time by only computing spread once.
-    obj.spreadPoints = _.geometry.spread(spec.spread, spec.projectiles);
-  }
-  for (var i = 0; i < obj.spreadPoints.length; i++) {
-    spec.dangle = obj.spreadPoints[i];
+  var spreadPoints = _.geometry.spread(spec.spread, spec.projectiles);
+  for (var i = 0; i < spreadPoints.length; i++) {
+    // Fire the middle shot first so that it gets the on-fire effects.
+    var index = Math.floor(i + spreadPoints.length / 2) % spreadPoints.length;
+    spec.dangle = spreadPoints[index];
     fire(obj, spec);
   }
 };
@@ -62,28 +62,35 @@ DecoratorUtil.prototype.fireAura = function(obj, spec) {
 
 var EXTRA_RANGE_RATIO = 1.5;
 DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
-  var d = this.entityDecorator_.getDecorators();
+  projectile.target = obj.target;
   projectile.setPos(obj.x, obj.y);
+
+  if (projectile.target.effect.tagged && spec.name == 'primary') {
+    projectile.target.effect.tagged = 0;
+    this.set(projectile, 'movement.seek', obj.secondary.taggedSeek);
+  }
+
+  var d = this.entityDecorator_.getDecorators();
   _.decorate(projectile, d.movement.straight, spec);
   _.decorate(projectile, d.removeOffScreen, spec);
   if (spec.range) {
     var range = spec.range * EXTRA_RANGE_RATIO;
     _.decorate(projectile, d.range, {range: range});
   }
-  projectile.target = obj.target;
+
   return this.gm_.entities.arr[this.gm_.entities.length++] = projectile;
 };
 
 DecoratorUtil.prototype.set = function(obj, prop, add) {
   obj.awake(function() {
-    var value = _.parse(obj, prop);
+    var value = _.parse(obj, prop) || 0;
     _.set(obj, prop, value + add);
   });
 };
 
 DecoratorUtil.prototype.mod = function(obj, prop, multiplier) {
   if (obj.awakened) {
-    var value = _.parse(obj, prop);
+    var value = _.parse(obj, prop) || 0;
     _.set(obj, prop, value * multiplier);
   } else {
     obj.awake(this.mod.bind(this, obj, prop, multiplier));
@@ -111,7 +118,6 @@ EntityCooldown.prototype.set = function(cooldown) {
 
 EntityCooldown.prototype.update_ = function(obj, dt) {
   // TODO: Move stun check out into passed in function.
-  if (obj.effect.disabled) return;
   if (this.cooldown_ > 0) this.cooldown_ -= dt;
   if (this.cooldown_ <= 0) {
     var newCooldown = this.act_();

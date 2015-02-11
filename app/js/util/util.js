@@ -263,8 +263,18 @@ _.min = function(list) {
   return min;
 };
 
-_.options = function(options, expected) {
-  return _.defaults(_.clone(options) || {}, expected);
+_.options = function(overrides, defaults) {
+  return _.defaults(_.clone(overrides) || {}, defaults);
+};
+
+_.spec = function(obj, name, overrides, defaults) {
+  if (arguments.length == 2) {
+    return _.options(obj /* overrides */, name /* defaults */);
+  } else {
+    obj[name] = _.defaults(_.clone(overrides) || {}, defaults);
+    obj[name].name = name;
+    return obj[name];
+  }
 };
 
 _.ifDef = function(value, valueWhenUndefined) {
@@ -287,7 +297,8 @@ _.unimplemented = function() {
 _.RADIANS_2 = _.radians(2);
 _.RADIANS_90 = _.radians(90);
 _.RADIANS_120 = _.radians(120);
-_.RADIANS_178 = _.radians(180);
+_.RADIANS_135 = _.radians(135);
+_.RADIANS_178 = _.radians(178);
 _.RADIANS_180 = _.radians(180);
 _.RADIANS_270 = _.radians(270);
 _.RADIANS_360 = _.radians(360);

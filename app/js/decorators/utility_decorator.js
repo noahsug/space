@@ -7,11 +7,11 @@ UtilityDecorators.prototype.init = function() {
 };
 
 UtilityDecorators.prototype.decorateDash_ = function(obj, spec) {
-  obj.utility = _.options(spec, {
+  _.spec(obj, 'utility', spec, {
     cooldown: 1.5,
     duration: .1,
     accel: .05,
-    speed: 4
+    speed: 4.5
   });
 
   switch(spec.power) {
@@ -21,8 +21,10 @@ UtilityDecorators.prototype.decorateDash_ = function(obj, spec) {
     obj.utility.cooldown *= .7;
   }
 
-  obj.addEffect('dashCooldown', obj.utility.cooldown, function() {
-    obj.utility.dashReady = true;
+  obj.addEffect('dashCooldown', obj.utility.cooldown);
+  obj.act(function(dt) {
+    obj.utility.dashReady = !obj.effect.dashCooldown && !obj.effect.silenced &&
+      !obj.effect.rooted;
   });
 
   obj.utility.useDash = function() {
@@ -35,6 +37,7 @@ UtilityDecorators.prototype.decorateDash_ = function(obj, spec) {
   };
 
   obj.utility.stopDash = function() {
+    obj.movement.vector = {x: 0, y: 0};
     obj.movement.accel /= obj.utility.accel;
     obj.movement.speed /= obj.utility.speed;
     obj.effect.dash = 0;
@@ -42,7 +45,7 @@ UtilityDecorators.prototype.decorateDash_ = function(obj, spec) {
 };
 
 UtilityDecorators.prototype.decorateTeleport_ = function(obj, spec) {
-  obj.utility = _.options(spec, {
+  _.spec(obj, 'utility', spec, {
     cooldown: 2,
     range: 300
   });
@@ -55,9 +58,13 @@ UtilityDecorators.prototype.decorateTeleport_ = function(obj, spec) {
 
   obj.addEffect('teleportCooldown', obj.utility.cooldown);
   obj.act(function(dt) {
-    obj.utility.teleportReady =
-        !obj.effect.teleportCooldown && obj.c.targetDis <= obj.utility.range;
-    if (!obj.utility.teleportReady) return;
+    if (obj.effect.silenced ||
+        obj.effect.rooted ||
+        obj.effect.teleportCooldown ||
+        obj.c.targetDis > obj.utility.range) {
+      obj.utility.teleportReady = false;
+      return;
+    }
     obj.utility.teleportPos = {
       x: obj.target.x + Math.cos(obj.c.targetAngle) * 60,
       y: obj.target.y + Math.sin(obj.c.targetAngle) * 60
@@ -71,42 +78,4 @@ UtilityDecorators.prototype.decorateTeleport_ = function(obj, spec) {
     obj.x = obj.utility.teleportPos.x;
     obj.y = obj.utility.teleportPos.y;
   };
-};
-
-UtilityDecorators.prototype.decorateMink_ = function(obj) {
-  var spec = {
-    radius: .8,
-    speed: 1.25,
-    dmg: .8
-  };
-
-  this.util_.mod(obj, 'radius', spec.radius);
-  this.util_.mod(obj, 'speed', spec.speed);
-  this.util_.mod(obj, 'primary.dmg', spec.dmg);
-  this.util_.mod(obj, 'secondary.dmg', spec.dmg);
-};
-
-UtilityDecorators.prototype.decorateRage_ = function(obj) {
-  var spec = {
-    radius: 1.5,
-    dmg: 1.5,
-    enrageHealth: .5
-  };
-
-  obj.resolve(function() {
-    var enrage = obj.maxHealth * spec.enrageHealth;
-    if (obj.health <= enrage && obj.prevHealth > enrage) {
-      obj.radius *= spec.radius;
-      if (obj.primary) obj.primary.dmg *= spec.dmg;
-      if (obj.secondary) obj.secondary.dmg *= spec.dmg;
-      return;
-    }
-
-    if (obj.health > enrage && obj.prevHealth <= enrage) {
-      this.util_.mod(obj, 'radius', 1 / spec.radius);
-      this.util_.mod(obj, 'primary.dmg', 1 / spec.dmg);
-      this.util_.mod(obj, 'secondary.dmg', 1 / spec.dmg);
-      return;
-    }
-  }.bind(this));
 };

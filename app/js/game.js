@@ -36,8 +36,6 @@ Game.prototype.start = function() {
 
   //this.gm_.level = 3;
 
-  this.gm_.gameSpeed = 2;
-
   this.scenes_[3].start();
 };
 

@@ -14,7 +14,7 @@ BasicDecorators.prototype.decorateClickable_ = function(obj) {
 };
 
 BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
-  spec = _.options(spec, {
+  spec = _.spec(spec, {
     health: 30
   });
   obj.health = obj.maxHealth = obj.prevHealth = spec.health;
@@ -33,8 +33,8 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
 
 // Requires obj.movement.speed.
 BasicDecorators.prototype.decorateRange_ = function(obj, spec) {
-  spec = _.options(spec, {
-    range: 0
+  spec = _.spec(spec, {
+    range: 1000
   });
   obj.remainingDistance = spec.range;
   obj.act(function(dt) {
@@ -48,11 +48,12 @@ BasicDecorators.prototype.decorateRange_ = function(obj, spec) {
 };
 
 BasicDecorators.prototype.decorateDmgCollision_ = function(obj, spec) {
-  spec = _.options(spec, {
+  spec = _.spec(spec, {
     dmg: 0
   });
+  obj.dmg = spec.dmg;
   this.decorateCollision_(obj, {collide: function() {
-    obj.target.dmg(spec.dmg);
+    obj.target.dmg(obj.dmg);
     obj.dead = true;
   }});
 };
@@ -76,28 +77,46 @@ BasicDecorators.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
   }.bind(this));
 };
 
-// disabled: stops cooldowns, attacks and control of movement.
-// weaponsDisabled: no primary or secondary weapons.
+// rooted: stops movement control.
+// silenced: stops actives.
+// stunned: stops actives and movement control.
+// disabled: visually mark the ship as disabled.
 BasicDecorators.prototype.decorateEffectable_ = function(obj) {
-  var effectNames = [];
+  var effects = [];
   obj.effect = {};
   obj.onEffectEnd = {};
   obj.addEffect = function(effect, duration, opt_onEffectEnd) {
+    // Add multiple effects, seperated by a space.
+    if (effect.indexOf(' ') != -1) {
+      var effectsToAdd = effect.split(' ');
+      effect = effectsToAdd[0];
+      for (var i = 1; i < effectsToAdd.length; i++) {
+        obj.addEffect(effectsToAdd[i], duration);
+      }
+    }
+
+    // Stunned = silenced + rooted.
+    if (effect == 'stunned') {
+      obj.addEffect('silenced', duration);
+      obj.addEffect('rooted', duration * .9);
+    }
+
     var currentDuration = obj.effect[effect];
-    if (!_.isDef(currentDuration)) effectNames.push(effect);
-    obj.effect[effect] = Math.max(currentDuration || 0, duration);
+    if (!_.isDef(currentDuration)) effects.push(effect);
+    else if (obj.onEffectEnd[effect]) obj.onEffectEnd[effect]();
+    obj.effect[effect] = duration;
     obj.onEffectEnd[effect] = opt_onEffectEnd;
   };
 
   obj.act(function(dt) {
-    for (var i = 0; i < effectNames.length; i++) {
-      var name = effectNames[i];
-      if (!obj.effect[name]) continue;
-      if (obj.effect[name] <= dt) {
-        obj.effect[name] = 0;
-        obj.onEffectEnd[name] && obj.onEffectEnd[name]();
+    for (var i = 0; i < effects.length; i++) {
+      var effect = effects[i];
+      if (!obj.effect[effect]) continue;
+      if (obj.effect[effect] <= dt) {
+        obj.effect[effect] = 0;
+        obj.onEffectEnd[effect] && obj.onEffectEnd[effect]();
       } else {
-        obj.effect[name] -= dt;
+        obj.effect[effect] -= dt;
       }
     }
   });

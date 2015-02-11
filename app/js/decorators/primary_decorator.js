@@ -7,7 +7,7 @@ PrimaryDecorators.prototype.init = function() {
 };
 
 PrimaryDecorators.prototype.decorateGrenade_ = function(obj, spec) {
-  obj.primary = _.options(spec, {
+  _.spec(obj, 'primary', spec, {
     dmg: 10,
     speed: 200,
     radius: 20,
@@ -20,7 +20,7 @@ PrimaryDecorators.prototype.decorateGrenade_ = function(obj, spec) {
 };
 
 PrimaryDecorators.prototype.decorateBasicLaser_ = function(obj, spec) {
-  obj.primary = _.options(spec, {
+  _.spec(obj, 'primary', spec, {
     dmg: 4,
     speed: 300,
     accuracy: _.radians(10),
@@ -40,7 +40,7 @@ PrimaryDecorators.prototype.decorateBasicLaser_ = function(obj, spec) {
 };
 
 PrimaryDecorators.prototype.decorateShotgun_ = function(obj, spec) {
-  obj.primary = _.options(spec, {
+  _.spec(obj, 'primary', spec, {
     dmg: 5,
     speed: 550,
     accuracy: _.radians(10),
@@ -67,7 +67,7 @@ PrimaryDecorators.prototype.decorateShotgun_ = function(obj, spec) {
 };
 
 PrimaryDecorators.prototype.decorateRazors_ = function(obj, spec)  {
-  obj.primary = _.options(spec, {
+  _.spec(obj, 'primary', spec, {
     dmg: 8,
     speed: 350,
     radius: 6,
@@ -82,7 +82,7 @@ PrimaryDecorators.prototype.decorateRazors_ = function(obj, spec)  {
 };
 
 PrimaryDecorators.prototype.decorateMissiles_ = function(obj, spec) {
-  obj.primary = _.options(spec, {
+  _.spec(obj, 'primary', spec, {
     dmg: 6,
     speed: 300,
     seek: _.radians(60),
@@ -102,7 +102,7 @@ PrimaryDecorators.prototype.decorateMissiles_ = function(obj, spec) {
 };
 
 PrimaryDecorators.prototype.decorateSniper_ = function(obj, spec) {
-  obj.primary = _.options(spec, {
+  _.spec(obj, 'primary', spec, {
     dmg: 12,
     speed: 350,
     length: 20 + 16,
@@ -115,7 +115,7 @@ PrimaryDecorators.prototype.decorateSniper_ = function(obj, spec) {
 };
 
 PrimaryDecorators.prototype.decorateBurstLaser_ = function(obj, spec)  {
-  obj.primary = _.options(spec, {
+  _.spec(obj, 'primary', spec, {
     dmg: 4,
     speed: 200,
     accuracy: _.radians(25),
@@ -137,6 +137,7 @@ PrimaryDecorators.prototype.decorateBurstLaser_ = function(obj, spec)  {
   });
 
   this.util_.onCooldown(obj, function() {
+    if (obj.effect.silenced) projectilesRemaining = 0;
     if (projectilesRemaining) {
       var laser = this.util_.fireLaser(obj, obj.primary);
       _.decorate(laser, this.d_.dmgCollision, obj.primary);

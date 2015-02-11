@@ -1,5 +1,5 @@
 var SecondaryDecorators = di.service('SecondaryDecorators', [
-  'EntityDecorator', 'DecoratorUtil as util']);
+  'EntityDecorator', 'DecoratorUtil as util', 'GameModel as gm']);
 
 
 SecondaryDecorators.prototype.init = function() {
@@ -8,7 +8,7 @@ SecondaryDecorators.prototype.init = function() {
 };
 
 SecondaryDecorators.prototype.decoratePistol_ = function(obj, spec) {
-  obj.secondary = _.options(spec, {
+  _.spec(obj, 'secondary', spec, {
     dmg: 3,
     speed: 300,
     accuracy: _.radians(10),
@@ -31,17 +31,16 @@ SecondaryDecorators.prototype.decoratePistol_ = function(obj, spec) {
 };
 
 SecondaryDecorators.prototype.decorateStun_ = function(obj, spec) {
-  obj.secondary = _.options(spec, {
+  _.spec(obj, 'secondary', spec, {
     dmg: 1,
     speed: 300,
     accuracy: _.radians(10),
     cooldown: 1.5,
     length: 4 + 16,
-    duration: .8,
+    duration: 1,
     style: 'effect',
-    effect: 'disabled',
-    range: 150,
-    power: 0
+    effect: 'stunned disabled',
+    range: 150
   });
 
   switch(spec.power) {
@@ -50,25 +49,44 @@ SecondaryDecorators.prototype.decorateStun_ = function(obj, spec) {
   }
 
   var stopMovement = function(obj) {
-    obj.target.movement.vector.x = 0;
-    obj.target.movement.vector.y = 0;
+    obj.target.movement.vector = {x: 0, y: 0};
   };
   this.addEffectWeapon_(
       obj, this.util_.fireLaser.bind(this.util_), stopMovement);
 };
 
+SecondaryDecorators.prototype.decorateEmp_ = function(obj, spec) {
+  _.spec(obj, 'secondary', spec, {
+    dmg: 1,
+    speed: 200,
+    accuracy: _.radians(10),
+    cooldown: 1.5,
+    radius: 15,
+    duration: 1.2,
+    style: 'effect',
+    effect: 'silenced disabled',
+    range: 150
+  });
+
+  switch(spec.power) {
+  case 1:
+    obj.secondary.duration *= 1.3;
+    obj.secondary.radius *= 1.3;
+  }
+
+  this.addEffectWeapon_(obj, this.util_.fireBomb.bind(this.util_));
+};
+
 SecondaryDecorators.prototype.decorateKnockback_ = function(obj, spec) {
-  obj.secondary = _.options(spec, {
+  _.spec(obj, 'secondary', spec, {
     speed: 300,
     cooldown: 2,
-    duration: 1,
-    style: 'effect',
-    effect: 'disabled',
+    duration: .25,
+    effect: 'stunned',
     knockback: 500,
     grow: 500,
     growDuration: .1,
-    range: 100,
-    power: 0
+    range: 100
   });
 
   switch(spec.power) {
@@ -79,7 +97,7 @@ SecondaryDecorators.prototype.decorateKnockback_ = function(obj, spec) {
   var knockback = function() {
     obj.target.movement.vector.x = Math.cos(obj.c.targetAngle);
     obj.target.movement.vector.y = Math.sin(obj.c.targetAngle);
-    var ratio = obj.secondary.knockback / obj.movement.speed;
+    var ratio = obj.secondary.knockback / (obj.movement.speed || 1);
     obj.target.movement.speed *= ratio;
     obj.target.addEffect('knockback', obj.secondary.duration, function() {
       obj.target.movement.speed /= ratio;
@@ -93,18 +111,13 @@ SecondaryDecorators.prototype.decorateKnockback_ = function(obj, spec) {
   }.bind(this));
 };
 
-SecondaryDecorators.prototype.decorateEmp_ = function(obj, spec) {
-  obj.secondary = _.options(spec, {
-    dmg: 3,
-    speed: 200,
+SecondaryDecorators.prototype.decorateCharge_ = function(obj, spec) {
+  _.spec(obj, 'secondary', spec, {
+    speed: 400,
     accuracy: _.radians(10),
-    cooldown: 1.5,
-    radius: 15,
-    duration: 1.5,
-    style: 'effect',
-    effect: 'weaponsDisabled',
-    range: 150,
-    power: 0
+    range: 200,
+    minRange: 100,
+    cooldown: 4
   });
 
   switch(spec.power) {
@@ -113,16 +126,56 @@ SecondaryDecorators.prototype.decorateEmp_ = function(obj, spec) {
     obj.secondary.radius *= 1.3;
   }
 
-  this.addEffectWeapon_(obj, this.util_.fireBomb.bind(this.util_));
+  var ratio = obj.secondary.speed / (obj.movement.speed || 1);
+  this.util_.addWeapon(obj, obj.secondary, function() {
+    obj.movement.vector.x = Math.cos(obj.c.targetAngle);
+    obj.movement.vector.y = Math.sin(obj.c.targetAngle);
+    obj.movement.speed *= ratio;
+    var collisionRatio = .00001;
+    obj.collision.dmg *= collisionRatio;
+    obj.collision.stunDuration *= collisionRatio;
+    var duration = obj.secondary.range * 1.2 / obj.movement.speed;
+    obj.secondary.charging = true;
+
+    obj.addEffect('stunned', duration, function() {
+      obj.secondary.charging = false;
+      obj.movement.speed /= ratio;
+      obj.collision.dmg /= collisionRatio;
+      obj.collision.stunDuration /= collisionRatio;
+    });
+  });
+};
+
+SecondaryDecorators.prototype.decorateTracker_ = function(obj, spec) {
+  _.spec(obj, 'secondary', spec, {
+    dmg: 1,
+    speed: 300,
+    accuracy: _.radians(10),
+    cooldown: 1.5,
+    length: 4 + 16,
+    duration: 100,
+    style: 'effect',
+    effect: 'tagged',
+    taggedSeek: _.radians(70),
+    range: 300
+  });
+
+  switch(spec.power) {
+  case 1:
+    obj.secondary.taggedSeek *= 1.3;
+  }
+
+  this.addEffectWeapon_(obj, this.util_.fireLaser.bind(this.util_));
 };
 
 SecondaryDecorators.prototype.addEffectWeapon_ = function(
     obj, fire, opt_onCollide) {
   this.util_.addWeapon(obj, obj.secondary, function() {
     var projectile = fire(obj, obj.secondary);
-    obj.secondary.collide = function(obj, spec) {
-      this.effect_(obj, spec);
-      opt_onCollide && opt_onCollide(obj);
+    obj.secondary.collide = function(proj, spec) {
+      this.effect_(proj, spec);
+      opt_onCollide && opt_onCollide(proj);
+      proj.dead = true;
     }.bind(this);
     _.decorate(projectile, this.d_.collision, obj.secondary);
   }.bind(this));

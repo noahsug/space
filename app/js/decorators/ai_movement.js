@@ -8,7 +8,7 @@ AiMovement.prototype.init = function() {
 };
 
 AiMovement.prototype.aiMovement_ = function(obj, spec) {
-  obj.movement = _.options(spec, {
+  _.spec(obj, 'movement', spec, {
     speed: 100,
     accel: 4,
     vector: {x: 0, y: 0},
@@ -285,7 +285,7 @@ AiMovement.prototype.getClosestPerpAngle_ = function(perpTo, closeTo) {
 };
 
 AiMovement.prototype.updateVector_ = function(obj, dt) {
-  if (obj.effect.disabled) return;
+  if (obj.effect.rooted) return;
   var m = obj.movement;
   var dx = m.desiredVector.x - m.vector.x;
   var dy = m.desiredVector.y - m.vector.y;

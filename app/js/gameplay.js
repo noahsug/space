@@ -6,10 +6,10 @@ Gameplay.prototype.init = function() {
 
 di.constant('gameplayFile', {
   player: [
-    'basic laser',
+    //'basic laser',
     //'burst laser',
     //'grenade',
-    //'razors',
+    'razors',
     //'sniper',
     //'missiles',
     //'shotgun',
@@ -17,7 +17,9 @@ di.constant('gameplayFile', {
     //'stun',
     //'emp',
     //'pistol',
-    'knockback',
+    //'knockback',
+    //'charge',
+    'tracker',
 
     //'teleport',
 
@@ -35,7 +37,8 @@ di.constant('gameplayFile', {
 
   bosses: [
     [
-      'shotgun',
+      //'shotgun',
+      //'missiles',
       'pistol',
       'circle',
     ],
@@ -155,6 +158,14 @@ di.constant('gameplayFile', {
     'knockback': {
       desc: '',
       type:'secondary.knockback', spec: {},
+      level: 1},
+    'charge': {
+      desc: '',
+      type:'secondary.charge', spec: {},
+      level: 1},
+    'tracker': {
+      desc: '',
+      type:'secondary.tracker', spec: {},
       level: 1},
 
     'dash': {

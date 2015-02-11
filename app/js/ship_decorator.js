@@ -21,7 +21,7 @@ ShipDecorator.prototype.decorate = function(obj) {
   // Collisions.
   obj.collision = {
     dmg: 10,
-    disabledDuration: .75
+    stunDuration: .75
   };
   _.decorate(obj, this.d_.collision, {collide: function() {
     if (obj.effect.collided) return;
@@ -29,8 +29,7 @@ ShipDecorator.prototype.decorate = function(obj) {
     // Move directly away from collided target.
     obj.movement.vector = _.vector.cartesian({angle: obj.c.targetAngle,
                                               length: -.5});
-    obj.addEffect('disabled', obj.collision.disabledDuration);
-    obj.addEffect('collided', obj.collision.disabledDuration);
+    obj.addEffect('stunned collided', obj.collision.stunDuration);
   }});
 
   _.decorate(obj, this.d_.health);

@@ -6,7 +6,7 @@ AbilityDecorators.prototype.init = function() {
 };
 
 AbilityDecorators.prototype.decorateMink_ = function(obj, spec) {
-  obj.ability = _.options(spec, {
+  _.spec(obj, 'ability', spec, {
     radius: .7,
     speed: 1.3
   });
@@ -16,7 +16,7 @@ AbilityDecorators.prototype.decorateMink_ = function(obj, spec) {
 };
 
 AbilityDecorators.prototype.decorateRage_ = function(obj, spec) {
-  obj.ability = _.options(spec, {
+  _.spec(obj, 'ability', spec, {
     radius: 1.5,
     dmg: 1.5,
     enrageHealth: .5

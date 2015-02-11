@@ -6,7 +6,7 @@ MovementDecorators.prototype.init = function() {
 };
 
 MovementDecorators.prototype.decorateRadial_ = function(obj, spec) {
-  obj.movement = _.options(spec, {
+  _.spec(obj, 'movement', spec, {
     speed: 0
   });
 
@@ -32,19 +32,16 @@ MovementDecorators.prototype.decorateRadial_ = function(obj, spec) {
 };
 
 MovementDecorators.prototype.decorateStraight_ = function(obj, spec) {
-  obj.movement = _.options(spec, {
+  _.spec(obj, 'movement', spec, {
     speed: 0,
     accuracy: 0,
     dangle: 0,
-    seek: 0,
-    leadTarget: true
+    seek: 0
   });
 
   var target;
   obj.awake(function() {
-    var target = obj.movement.leadTarget ?
-        getExpectedTargetPos(obj) : obj.target;
-    obj.rotation = _.angle(obj, target);
+    obj.rotation = this.getLeadAngle_(obj);
     var a = this.random_.next() * obj.movement.accuracy;
     obj.rotation += obj.movement.accuracy / 2 - a;
     obj.rotation += obj.movement.dangle;
@@ -66,29 +63,34 @@ MovementDecorators.prototype.decorateStraight_ = function(obj, spec) {
     obj.x += Math.cos(obj.rotation) * obj.movement.speed * dt;
     obj.y += Math.sin(obj.rotation) * obj.movement.speed * dt;
   });
+};
 
-  var getExpectedTargetPos = function(obj) {
-    var leadRatio = 1;  //this.random_.next();
-    var aimPos = _.geometry.aimPosition(obj,
-                                        obj.target,
-                                        obj.target.movement.vector,
-                                        obj.target.movement.speed,
-                                        obj.movement.speed,
-                                        obj.collideDis,
-                                        leadRatio);
-    aimPos.collideDis = obj.target.collideDis;
-    this.sharedComputation_.wallDis(aimPos);
-    //obj.target.aimPos = aimPos;  // DEBUG.
-    if (aimPos.c.hitWall) {
-      return obj.target;
-    } else {
-      return aimPos;
-    }
-  }.bind(this);
+MovementDecorators.prototype.getLeadAngle_ = function(proj) {
+  var target = this.getExpectedTargetPos_(proj);
+  return _.angle(proj, target);
+};
+
+MovementDecorators.prototype.getExpectedTargetPos_ = function(proj) {
+  var leadRatio = .9;
+  var aimPos = _.geometry.aimPosition(proj,
+                                      proj.target,
+                                      proj.target.movement.vector,
+                                      proj.target.movement.speed,
+                                      proj.movement.speed,
+                                      proj.collideDis,
+                                      leadRatio);
+  aimPos.collideDis = proj.target.collideDis;
+  this.sharedComputation_.wallDis(aimPos);
+  //proj.target.aimPos = aimPos;  // DEBUG.
+  if (aimPos.c.hitWall) {
+    return proj.target;
+  } else {
+    return aimPos;
+  }
 };
 
 MovementDecorators.prototype.decorateAtPosition_ = function(obj, spec) {
-  obj.movement = _.options(spec, {
+  _.spec(obj, 'movement', spec, {
     target: {x: 0, y: 0}
   });
 
