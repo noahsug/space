@@ -35,9 +35,20 @@ DecoratorUtil.prototype.addWeapon = function(obj, spec, fire) {
   }.bind(this));
 };
 
+DecoratorUtil.prototype.addEffectAbility = function(obj, spec) {
+  spec.maxCharges = spec.charges;
+  this.addAbility(obj, spec, function() {
+    if (obj.effect[spec.effect]) return 0;
+    obj.addEffect(spec.effect, spec.duration);
+    spec.charges = spec.maxCharges;
+    return spec.cooldown;
+  });
+};
+
 DecoratorUtil.prototype.addAbility = function(obj, spec, ability) {
   this.addCooldown(obj, function() {
     if (obj.dead || obj.effect.silenced) return 0;
+    if (obj.effect.targetlessActive && !spec.targetless) return 0;
     if (spec.range && obj.c.targetDis > spec.range) return 0;
     if (obj.c.targetDis < spec.minRange) return 0;
     spec.lastFired = this.gm_.time;
@@ -101,7 +112,7 @@ DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
   projectile.setPos(obj.x, obj.y);
 
   obj.maybeTrackTarget && obj.maybeTrackTarget(projectile, spec);
-  obj.maybeApplyHaze && obj.maybeApplyHaze(obj, spec);
+  obj.maybeApplyHaze && obj.maybeApplyHaze(projectile, obj, spec);
 
   _.decorate(projectile, this.d_.movement.straight, spec);
   _.decorate(projectile, this.d_.removeOffScreen, spec);

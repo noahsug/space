@@ -20,6 +20,7 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
   obj.health = obj.maxHealth = obj.prevHealth = spec.health;
   obj.dmg = function(dmg, source) {
     if (obj.maybeShieldDmg && obj.maybeShieldDmg(source)) return;
+    if (obj.effect.invisible) obj.effect.invisible = 0;
     obj.health -= dmg;
   };
   obj.act(function() {
@@ -78,6 +79,7 @@ BasicDecorators.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
 // silenced: stops actives.
 // stunned: stops actives and movement control.
 // disabled: visually mark the ship as disabled.
+// invisible: stops target from firing projectiles and causes confused movement.
 BasicDecorators.prototype.decorateEffectable_ = function(obj) {
   var effects = [];
   obj.effect = {};
@@ -106,6 +108,20 @@ BasicDecorators.prototype.decorateEffectable_ = function(obj) {
   };
 
   obj.act(function(dt) {
+    computeEffects();
+    tickEffects(dt);
+  });
+
+  function computeEffects() {
+    obj.effect.targetlessMovement = obj.target.effect.invisible;
+    obj.effect.targetlessActive = obj.target.effect.invisible ||
+                                  obj.effect.invisible;
+    obj.effect.canDash = !obj.effect.targetlessMovement &&
+                         !obj.effect.silenced &&
+                         !obj.effect.rooted;
+  }
+
+  function tickEffects(dt) {
     for (var i = 0; i < effects.length; i++) {
       var effect = effects[i];
       if (!obj.effect[effect]) continue;
@@ -116,7 +132,7 @@ BasicDecorators.prototype.decorateEffectable_ = function(obj) {
         obj.effect[effect] -= dt;
       }
     }
-  });
+  }
 };
 
 BasicDecorators.prototype.decorateGrowRadiusAndDie_ = function(obj, spec) {

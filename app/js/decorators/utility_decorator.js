@@ -23,8 +23,7 @@ UtilityDecorators.prototype.decorateDash_ = function(obj, spec) {
 
   obj.addEffect('dashCooldown', obj.utility.cooldown);
   obj.act(function(dt) {
-    obj.utility.dashReady = !obj.effect.dashCooldown && !obj.effect.silenced &&
-      !obj.effect.rooted;
+    obj.utility.dashReady = !obj.effect.dashCooldown && obj.effect.canDash;
   });
 
   obj.utility.useDash = function() {
@@ -40,6 +39,7 @@ UtilityDecorators.prototype.decorateDash_ = function(obj, spec) {
     obj.movement.vector = {x: 0, y: 0};
     obj.movement.accel /= obj.utility.accel;
     obj.movement.speed /= obj.utility.speed;
+    if (!PROD) _.assert(_.isDef(obj.effect.dash));
     obj.effect.dash = 0;
   };
 };
@@ -58,8 +58,7 @@ UtilityDecorators.prototype.decorateTeleport_ = function(obj, spec) {
 
   obj.addEffect('teleportCooldown', obj.utility.cooldown);
   obj.act(function(dt) {
-    if (obj.effect.silenced ||
-        obj.effect.rooted ||
+    if (!obj.effect.canDash ||
         obj.effect.teleportCooldown ||
         obj.c.targetDis > obj.utility.range) {
       obj.utility.teleportReady = false;

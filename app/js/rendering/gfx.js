@@ -20,8 +20,9 @@ Gfx.Color = {
   OPAC_YELLOW: 'rgba(255, 255, 50, .4)',
   YELLOW: '#FFFF00',
   PINK: '#FFCCEE',
-  GRAY: 'rgb(100, 100, 100)',
+  GRAY: 'rgb(120, 120, 120)',
   OPAC_GRAY: 'rgba(50, 50, 50, .5)',
+  LESS_OPAC_GRAY: 'rgba(50, 50, 50, .8)',
 
   SUCCESS: '#99FF99',
   WARN: '#FF5544',

@@ -8,7 +8,7 @@ AbilityDecorators.prototype.init = function() {
 AbilityDecorators.prototype.decorateMink_ = function(obj, spec) {
   _.spec(obj, 'ability', spec, {
     radius: .7,
-    speed: 1.3
+    speed: 1.3,
   });
 
   this.util_.mod(obj, 'speed', obj.ability.speed);
@@ -55,7 +55,8 @@ AbilityDecorators.prototype.decorateShield_ = function(obj, spec) {
     cooldown: 6,
     effect: 'shield',
     duration: 1000,
-    charges: 1
+    charges: 1,
+    targetless: true
   });
 
   switch(spec.power) {
@@ -64,14 +65,8 @@ AbilityDecorators.prototype.decorateShield_ = function(obj, spec) {
   case 1:
     obj.ability.charges++;
   }
-  obj.ability.maxCharges = obj.ability.charges;
 
-  this.util_.addAbility(obj, obj.ability, function(obj, spec) {
-    if (obj.effect.shield) return 0;
-    obj.addEffect(obj.ability.effect, obj.ability.duration);
-    obj.ability.charges = obj.ability.maxCharges;
-    return obj.ability.cooldown;
-  });
+  this.util_.addEffectAbility(obj, obj.ability);
 
   obj.maybeShieldDmg = function(source) {
     // Only effects projectiles.
@@ -90,7 +85,8 @@ AbilityDecorators.prototype.decorateReflect_ = function(obj, spec) {
   _.spec(obj, 'ability', spec, {
     cooldown: 6,
     effect: 'reflect',
-    duration: 1
+    duration: 1,
+    targetless: true
   });
 
   switch(spec.power) {
@@ -98,11 +94,7 @@ AbilityDecorators.prototype.decorateReflect_ = function(obj, spec) {
     obj.ability.duration++;
   }
 
-  this.util_.addAbility(obj, obj.ability, function(obj, spec) {
-    if (obj.effect.reflect) return 0;
-    obj.addEffect(obj.ability.effect, obj.ability.duration);
-    return obj.ability.cooldown;
-  });
+  this.util_.addEffectAbility(obj, obj.ability);
 
   obj.maybeReflect = function(source) {
     if (!obj.effect.reflect) return false;
@@ -123,7 +115,8 @@ AbilityDecorators.prototype.decorateHaze_ = function(obj, spec) {
     cooldown: 4,
     range: 300,
     effect: 'haze',
-    duration: 1.5
+    hazeAccuracy: _.radians(90),
+    duration: 2
   });
 
   switch(spec.power) {
@@ -134,5 +127,31 @@ AbilityDecorators.prototype.decorateHaze_ = function(obj, spec) {
 
   this.util_.addEffectWeapon_(obj,
                               obj.ability,
-                              this.util_.fireBall.bind(this.util_));
+                              this.util_.fireBall.bind(this.util_),
+                              makeHazable.bind(this));
+
+  function makeHazable() {
+    obj.target.maybeApplyHaze = function(projectile, target, spec) {
+      if (target.effect.haze) {
+        this.util_.set(
+            projectile, 'movement.accuracy', obj.ability.hazeAccuracy);
+      }
+    }.bind(this);
+  }
+};
+
+AbilityDecorators.prototype.decorateInvisible_ = function(obj, spec) {
+  _.spec(obj, 'ability', spec, {
+    cooldown: 6,
+    effect: 'invisible',
+    duration: 2,
+    targetless: true
+  });
+
+  switch(spec.power) {
+  case 2:
+    obj.ability.duration++;
+  }
+
+  this.util_.addEffectAbility(obj, obj.ability);
 };

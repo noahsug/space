@@ -252,6 +252,7 @@ Renderer.prototype.drawItem_ = function(item, pos) {
 };
 
 var DEATH_ANIMATION_DURATION = .3;
+var SHIP_SHRINKAGE = 2;
 Renderer.prototype.initShip_ = function(entity) {
   entity.render.damageTaken = 0;
   entity.render.shaking = 0;
@@ -285,8 +286,7 @@ Renderer.prototype.addShipStyle_ = function(style) {
     shadow: 'none'
   });
   style.tagged = this.gfx_.addStyle({
-    lineWidth: 2,
-    stroke: Gfx.Color.RED
+    fill: Gfx.Color.OPAC_RED
   });
   style.shield = this.gfx_.addStyle({
     lineWidth: 2,
@@ -299,6 +299,10 @@ Renderer.prototype.addShipStyle_ = function(style) {
   });
   style.haze = this.gfx_.addStyle({
     fill: Gfx.Color.OPAC_GRAY
+  });
+  style.invisible = this.gfx_.addStyle({
+    stroke: Gfx.Color.LESS_OPAC_GRAY,
+    lineWidth: 3
   });
 };
 Renderer.prototype.drawShip_ = function(entity, style, dt) {
@@ -342,7 +346,7 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
     // Draw tagged indicator.
     if (entity.effect.tagged) {
       this.gfx_.setStyle(style.tagged);
-      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y, 2);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y, 3);
     }
 
     // Draw shield indicator.
@@ -363,7 +367,14 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
     if (entity.effect.haze) {
       this.gfx_.setStyle(style.haze);
       this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                       entity.radius * 1.7);
+                       entity.radius * 1.5);
+    }
+
+    // Draw invisible indicator.
+    if (entity.effect.invisible) {
+      this.gfx_.setStyle(style.invisible);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                       entity.render.radius - SHIP_SHRINKAGE);
     }
 
     // Draw health indicator.
@@ -392,7 +403,7 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
   // Draw ship.
   this.gfx_.setStyle(style[entity.style], customStyle);
   this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                   entity.render.radius - 2);
+                   entity.render.radius - SHIP_SHRINKAGE);
 
   // DEBUG: See where the ship is aiming.
   //var dx = entity.render.pos.x - entity.x;

@@ -25,7 +25,8 @@ di.constant('gameplayFile', {
 
     //'shield',
     //'reflect',
-    'haze',
+    //'haze',
+    'invisible',
     //'mink',
     //'baboon',
 
@@ -200,6 +201,10 @@ di.constant('gameplayFile', {
     //  type: 'utility.invisible', spec: {cooldown: 4},
     //  level: 9},
 
+    'invisible': {
+      desc: '',
+      type: 'ability.invisible', spec: {},
+      level: 0},
     'haze': {
       desc: '',
       type: 'ability.haze', spec: {},

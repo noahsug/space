@@ -18,23 +18,11 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
 
   this.util_.addCooldown(obj, function() {
     if (obj.dead) return 0;
-    this.think_(obj);
+    if (obj.effect.targetlessMovement) this.wonder_(obj);
+    else this.think_(obj);
     var int = obj.movement.intelligence;
     return this.random_.nextFloat(int - .1, int + .1);
   }.bind(this));
-
-  // Random urges.
-  //this.util_.addCooldown(obj, function() {
-  //  obj.movement.urge = {
-  //    x: this.random_.nextInt(
-  //        this.screen_.x - this.screen_.width / 2 + obj.radius,
-  //        this.screen_.x + this.screen_.width / 2 - obj.radius),
-  //    y: this.random_.nextInt(
-  //        this.screen_.y - this.screen_.height / 2 + obj.radius,
-  //        this.screen_.y + this.screen_.height / 2 - obj.radius)
-  //  };
-  //  return obj.movement.urgeCooldown;
-  //}.bind(this));
 
   obj.update(function(dt) {
     if (obj.dead) return;
@@ -43,7 +31,22 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
   }.bind(this));
 };
 
-AiMovement.prototype.think_ = function(obj, dt) {
+AiMovement.prototype.wonder_ = function(obj) {
+  if (Math.random() < .2 || !obj.movement.urge) {
+    obj.movement.urge = {
+      x: this.random_.nextInt(
+        this.screen_.x - this.screen_.width / 2 + obj.radius,
+        this.screen_.x + this.screen_.width / 2 - obj.radius),
+      y: this.random_.nextInt(
+        this.screen_.y - this.screen_.height / 2 + obj.radius,
+        this.screen_.y + this.screen_.height / 2 - obj.radius)
+    };
+  }
+  obj.movement.desiredVector = this.getRandomUrgeVector_(obj, 1);
+  _.vector.cartesian(obj.movement.desiredVector);
+};
+
+AiMovement.prototype.think_ = function(obj) {
   //console.log('----- think ' + obj.style + ' -----');
   obj.movement.distance = this.getDesiredDistance_(obj) - 20;
   this.maybeUseDash_(obj);
@@ -125,15 +128,16 @@ AiMovement.prototype.maybeUseTeleport_ = function(obj) {
 
 AiMovement.prototype.setDesiredVector_ = function(obj) {
   var v = {x: 0, y: 0};
-//  _.vector.add(v, this.getRandomUrgeVector_(obj, v));
 //  _.vector.add(v, this.getCurrentDirection_(obj));
   _.vector.add(v, this.getWallXVector_(obj, 4));
   _.vector.add(v, this.getWallYVector_(obj, 4));
   _.vector.add(v, this.getEnemyDistanceVector_(obj, 5));
-  _.vector.add(v, this.getCurrentPerpendicularVector_(obj, 3));
   _.vector.add(v, this.getDodgeVector_(obj, 2));
   _.vector.add(v, this.getFleeVector_(obj, 4));
-  _.vector.add(v, this.getPerpendicularVector_(obj, 2, v));
+  if (!obj.effect.invisible) {
+    _.vector.add(v, this.getCurrentPerpendicularVector_(obj, 3));
+    _.vector.add(v, this.getPerpendicularVector_(obj, 2, v));
+  }
   _.vector.normalize(v);
   obj.movement.desiredVector = v;
 };
@@ -285,6 +289,7 @@ AiMovement.prototype.getClosestPerpAngle_ = function(perpTo, closeTo) {
 };
 
 AiMovement.prototype.updateVector_ = function(obj, dt) {
+  if (!PROD) _.assert(_.isDef(obj.movement.desiredVector.x));
   if (obj.effect.rooted) return;
   var m = obj.movement;
   var dx = m.desiredVector.x - m.vector.x;

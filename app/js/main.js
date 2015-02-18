@@ -59,3 +59,6 @@ Main.prototype.on_ = function(var_events, fn, opt_req) {
 di.start(function() {
   di.get('Main').start();
 });
+
+// Set PROD to true for production.
+window.PROD = false;

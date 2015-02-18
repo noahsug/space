@@ -70,12 +70,14 @@ _.pseudorandomSeed = function(opt_seed) {
 };
 
 _.assert = function(truth, msg) {
+  if (window.PROD) return;
   if (!truth) {
     throw 'Assert failed: ' + msg;
   }
 };
 
 _.fail = function(msg) {
+  if (window.PROD) return;
   _.assert(false, msg);
 };
 
