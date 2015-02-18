@@ -18,7 +18,8 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
     health: 30
   });
   obj.health = obj.maxHealth = obj.prevHealth = spec.health;
-  obj.dmg = function(dmg) {
+  obj.dmg = function(dmg, source) {
+    if (obj.maybeShieldDmg && obj.maybeShieldDmg(source)) return;
     obj.health -= dmg;
   };
   obj.act(function() {
@@ -36,12 +37,12 @@ BasicDecorators.prototype.decorateRange_ = function(obj, spec) {
   spec = _.spec(spec, {
     range: 1000
   });
-  obj.remainingDistance = spec.range;
+  obj.maxRange = obj.remainingRange = spec.range;
   obj.act(function(dt) {
-    obj.remainingDistance -= obj.movement.speed * dt;
+    obj.remainingRange -= obj.movement.speed * dt;
   });
   obj.resolve(function(dt) {
-    if (obj.remainingDistance <= 0) {
+    if (obj.remainingRange <= 0) {
       obj.dead = true;
     }
   });
@@ -51,9 +52,8 @@ BasicDecorators.prototype.decorateDmgCollision_ = function(obj, spec) {
   spec = _.spec(spec, {
     dmg: 0
   });
-  obj.dmg = spec.dmg;
   this.decorateCollision_(obj, {collide: function() {
-    obj.target.dmg(obj.dmg);
+    obj.target.dmg(spec.dmg, obj);
     obj.dead = true;
   }});
 };
@@ -62,11 +62,8 @@ BasicDecorators.prototype.decorateCollision_ = function(obj, spec) {
   obj.affect(function() {
     if (obj.dead || obj.target.dead) return;
     if (obj.collides(obj.target)) {
-      if (obj.target.teleport && obj.target.teleport.ready) {
-        obj.target.teleport.use = true;
-      } else {
-        spec.collide(obj, spec);
-      }
+      if (obj.target.maybeReflect && obj.target.maybeReflect(obj)) return;
+      spec.collide(obj, spec);
     }
   });
 };

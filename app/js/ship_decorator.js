@@ -25,7 +25,7 @@ ShipDecorator.prototype.decorate = function(obj) {
   };
   _.decorate(obj, this.d_.collision, {collide: function() {
     if (obj.effect.collided) return;
-    obj.dmg(obj.collision.dmg);
+    obj.dmg(obj.collision.dmg, obj.target);
     // Move directly away from collided target.
     obj.movement.vector = _.vector.cartesian({angle: obj.c.targetAngle,
                                               length: -.5});

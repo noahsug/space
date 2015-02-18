@@ -51,8 +51,9 @@ SecondaryDecorators.prototype.decorateStun_ = function(obj, spec) {
   var stopMovement = function(obj) {
     obj.target.movement.vector = {x: 0, y: 0};
   };
-  this.addEffectWeapon_(
-      obj, this.util_.fireLaser.bind(this.util_), stopMovement);
+  this.util_.addEffectWeapon_(obj, obj.secondary,
+                              this.util_.fireLaser.bind(this.util_),
+                              stopMovement);
 };
 
 SecondaryDecorators.prototype.decorateEmp_ = function(obj, spec) {
@@ -74,7 +75,9 @@ SecondaryDecorators.prototype.decorateEmp_ = function(obj, spec) {
     obj.secondary.radius *= 1.3;
   }
 
-  this.addEffectWeapon_(obj, this.util_.fireBomb.bind(this.util_));
+  this.util_.addEffectWeapon_(obj,
+                              obj.secondary,
+                              this.util_.fireBomb.bind(this.util_));
 };
 
 SecondaryDecorators.prototype.decorateKnockback_ = function(obj, spec) {
@@ -106,7 +109,7 @@ SecondaryDecorators.prototype.decorateKnockback_ = function(obj, spec) {
 
   this.util_.addWeapon(obj, obj.secondary, function() {
     this.util_.fireAura(obj, obj.secondary);
-    this.effect_(obj, obj.secondary);
+    obj.target.addEffect(obj.secondary.effect, obj.secondary.duration);
     knockback();
   }.bind(this));
 };
@@ -165,27 +168,14 @@ SecondaryDecorators.prototype.decorateTracker_ = function(obj, spec) {
     obj.secondary.taggedSeek *= 1.3;
   }
 
-  this.addEffectWeapon_(obj, this.util_.fireLaser.bind(this.util_));
-};
+  this.util_.addEffectWeapon_(obj,
+                              obj.secondary,
+                              this.util_.fireLaser.bind(this.util_));
 
-SecondaryDecorators.prototype.addEffectWeapon_ = function(
-    obj, fire, opt_onCollide) {
-  this.util_.addWeapon(obj, obj.secondary, function() {
-    var projectile = fire(obj, obj.secondary);
-    obj.secondary.collide = function(proj, spec) {
-      this.effect_(proj, spec);
-      opt_onCollide && opt_onCollide(proj);
-      proj.dead = true;
-    }.bind(this);
-    _.decorate(projectile, this.d_.collision, obj.secondary);
-  }.bind(this));
-};
-
-SecondaryDecorators.prototype.effect_ = function(obj, spec) {
-  if (spec.effect) {
-    obj.target.addEffect(spec.effect, spec.duration);
-  }
-  if (spec.dmg) {
-    obj.target.dmg(spec.dmg);
-  }
+  obj.maybeTrackTarget = function(projectile, spec) {
+    if (projectile.target.effect.tagged && spec.name == 'primary') {
+      projectile.target.effect.tagged = 0;
+      this.util_.set(projectile, 'movement.seek', obj.secondary.taggedSeek);
+    }
+  }.bind(this);
 };

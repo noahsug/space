@@ -16,7 +16,7 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
     urgeCooldown: 1.5
   });
 
-  this.util_.onCooldown(obj, function() {
+  this.util_.addCooldown(obj, function() {
     if (obj.dead) return 0;
     this.think_(obj);
     var int = obj.movement.intelligence;
@@ -24,7 +24,7 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
   }.bind(this));
 
   // Random urges.
-  //this.util_.onCooldown(obj, function() {
+  //this.util_.addCooldown(obj, function() {
   //  obj.movement.urge = {
   //    x: this.random_.nextInt(
   //        this.screen_.x - this.screen_.width / 2 + obj.radius,

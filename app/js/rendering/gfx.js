@@ -16,8 +16,12 @@ Gfx.Color = {
   OPAC_RED: 'rgba(255, 0, 0, .4)',
   MORE_OPAC_RED: 'rgba(255, 0, 0, .3)',
   OPAC_BLUE: 'rgba(50, 50, 255, .65)',
+  MORE_OPAC_BLUE: 'rgba(50, 50, 255, .2)',
+  OPAC_YELLOW: 'rgba(255, 255, 50, .4)',
   YELLOW: '#FFFF00',
   PINK: '#FFCCEE',
+  GRAY: 'rgb(100, 100, 100)',
+  OPAC_GRAY: 'rgba(50, 50, 50, .5)',
 
   SUCCESS: '#99FF99',
   WARN: '#FF5544',

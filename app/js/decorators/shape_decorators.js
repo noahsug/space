@@ -30,6 +30,12 @@ ShapeDecorators.prototype.decorateLine_ = function(obj, spec) {
   obj.rotation = obj.rotation || 0;
   obj.length = obj.collideDis = spec.length;
 
+  obj.rotate = function(angle) {
+    obj.rotation += angle;
+    obj.dx = Math.cos(obj.rotation) * obj.length;
+    obj.dy = Math.sin(obj.rotation) * obj.length;
+  };
+
   obj.collides = function(target) {
     var collisionFn;
     if (target.radius) collisionFn = this.collision_.lineCircle;
@@ -42,8 +48,7 @@ ShapeDecorators.prototype.decorateLine_ = function(obj, spec) {
   }.bind(this);
 
   obj.act(function(dt) {
-    obj.dx = Math.cos(obj.rotation) * obj.length;
-    obj.dy = Math.sin(obj.rotation) * obj.length;
+    obj.rotate(0);  // Calc dx and dy.
   });
 };
 

@@ -30,7 +30,7 @@ UtilityDecorators.prototype.decorateDash_ = function(obj, spec) {
   obj.utility.useDash = function() {
     obj.addEffect('dash', obj.utility.duration, obj.utility.stopDash);
     obj.utility.dashReady = false;
-    obj.effect.dashCooldown = obj.utility.cooldown;
+    obj.effect.dashCooldown = this.util_.randomCooldown(obj.utility.cooldown);
     obj.movement.vector = obj.movement.desiredVector;
     obj.movement.accel *= obj.utility.accel;
     obj.movement.speed *= obj.utility.speed;
@@ -73,7 +73,8 @@ UtilityDecorators.prototype.decorateTeleport_ = function(obj, spec) {
   }.bind(this));
 
   obj.utility.useTeleport = function() {
-    obj.effect.teleportCooldown = obj.utility.cooldown;
+    obj.effect.teleportCooldown =
+        this.util_.randomCooldown(obj.utility.cooldown);
     obj.movement.vector = {x: 0, y: 0};
     obj.x = obj.utility.teleportPos.x;
     obj.y = obj.utility.teleportPos.y;

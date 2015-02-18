@@ -288,6 +288,18 @@ Renderer.prototype.addShipStyle_ = function(style) {
     lineWidth: 2,
     stroke: Gfx.Color.RED
   });
+  style.shield = this.gfx_.addStyle({
+    lineWidth: 2,
+    fill: Gfx.Color.MORE_OPAC_BLUE,
+    stroke: Gfx.Color.OPAC_BLUE
+  });
+  style.reflect = this.gfx_.addStyle({
+    lineWidth: 2,
+    stroke: Gfx.Color.OPAC_YELLOW
+  });
+  style.haze = this.gfx_.addStyle({
+    fill: Gfx.Color.OPAC_GRAY
+  });
 };
 Renderer.prototype.drawShip_ = function(entity, style, dt) {
   var damage = entity.prevHealth - entity.health;
@@ -331,6 +343,27 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
     if (entity.effect.tagged) {
       this.gfx_.setStyle(style.tagged);
       this.gfx_.circle(entity.render.pos.x, entity.render.pos.y, 2);
+    }
+
+    // Draw shield indicator.
+    if (entity.effect.shield) {
+      this.gfx_.setStyle(style.shield);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                       entity.radius * 1.5);
+    }
+
+    // Draw reflect indicator.
+    if (entity.effect.reflect) {
+      this.gfx_.setStyle(style.reflect);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                       entity.radius * 1.5);
+    }
+
+    // Draw reflect indicator.
+    if (entity.effect.haze) {
+      this.gfx_.setStyle(style.haze);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                       entity.radius * 1.7);
     }
 
     // Draw health indicator.
@@ -453,6 +486,21 @@ Renderer.prototype.drawBomb_ = function(entity, style, dt) {
     this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
                      entity.radius * NORMAL_SIZE);
   }
+};
+
+Renderer.prototype.addBallStyle_ = function(style) {
+  style.normal = this.gfx_.addStyle({
+    fill: Gfx.Color.GRAY
+  });
+};
+Renderer.prototype.drawBall_ = function(entity, style, dt) {
+  if (entity.dead) {
+    entity.remove = true;
+    return;
+  }
+  this.gfx_.setStyle(style.normal);
+  this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                   entity.radius);
 };
 
 Renderer.prototype.addAuraStyle_ = function(style) {

@@ -16,7 +16,8 @@ PrimaryDecorators.prototype.decorateGrenade_ = function(obj, spec) {
     range: 150
   });
 
-  this.addDmgWeapon_(obj, this.util_.fireBomb.bind(this.util_));
+  this.util_.addDmgWeapon_(obj, obj.primary,
+                          this.util_.fireBomb.bind(this.util_));
 };
 
 PrimaryDecorators.prototype.decorateBasicLaser_ = function(obj, spec) {
@@ -36,7 +37,8 @@ PrimaryDecorators.prototype.decorateBasicLaser_ = function(obj, spec) {
     obj.primary.dmg *= 1.5;
   }
 
-  this.addDmgWeapon_(obj, this.util_.fireLaser.bind(this.util_));
+  this.util_.addDmgWeapon_(obj, obj.primary,
+                          this.util_.fireLaser.bind(this.util_));
 };
 
 PrimaryDecorators.prototype.decorateShotgun_ = function(obj, spec) {
@@ -63,7 +65,8 @@ PrimaryDecorators.prototype.decorateShotgun_ = function(obj, spec) {
     obj.primary.cooldown *= .9;
   }
 
-  this.addDmgWeapon_(obj, this.util_.fireLaser.bind(this.util_));
+  this.util_.addDmgWeapon_(obj, obj.primary,
+                          this.util_.fireLaser.bind(this.util_));
 };
 
 PrimaryDecorators.prototype.decorateRazors_ = function(obj, spec)  {
@@ -78,7 +81,8 @@ PrimaryDecorators.prototype.decorateRazors_ = function(obj, spec)  {
     range: 150
   });
 
-  this.addDmgWeapon_(obj, this.util_.fireBlade.bind(this.util_));
+  this.util_.addDmgWeapon_(obj, obj.primary,
+                          this.util_.fireBlade.bind(this.util_));
 };
 
 PrimaryDecorators.prototype.decorateMissiles_ = function(obj, spec) {
@@ -98,7 +102,8 @@ PrimaryDecorators.prototype.decorateMissiles_ = function(obj, spec) {
     obj.primary.speed *= 1.1;
   }
 
-  this.addDmgWeapon_(obj, this.util_.fireBlade.bind(this.util_));
+  this.util_.addDmgWeapon_(obj, obj.primary,
+                          this.util_.fireBlade.bind(this.util_));
 };
 
 PrimaryDecorators.prototype.decorateSniper_ = function(obj, spec) {
@@ -111,7 +116,8 @@ PrimaryDecorators.prototype.decorateSniper_ = function(obj, spec) {
     range: 500
   });
 
-  this.addDmgWeapon_(obj, this.util_.fireLaser.bind(this.util_));
+  this.util_.addDmgWeapon_(obj, obj.primary,
+                          this.util_.fireLaser.bind(this.util_));
 };
 
 PrimaryDecorators.prototype.decorateBurstLaser_ = function(obj, spec)  {
@@ -136,7 +142,7 @@ PrimaryDecorators.prototype.decorateBurstLaser_ = function(obj, spec)  {
     projectilesRemaining = obj.primary.projectiles;
   });
 
-  this.util_.onCooldown(obj, function() {
+  this.util_.addCooldown(obj, function() {
     if (obj.effect.silenced) projectilesRemaining = 0;
     if (projectilesRemaining) {
       var laser = this.util_.fireLaser(obj, obj.primary);
@@ -144,12 +150,5 @@ PrimaryDecorators.prototype.decorateBurstLaser_ = function(obj, spec)  {
       projectilesRemaining--;
     }
     return projectilesRemaining && obj.primary.miniCooldown;
-  }.bind(this));
-};
-
-PrimaryDecorators.prototype.addDmgWeapon_ = function(obj, fire) {
-  this.util_.addWeapon(obj, obj.primary, function() {
-    var projectile = fire(obj, obj.primary);
-    _.decorate(projectile, this.d_.dmgCollision, obj.primary);
   }.bind(this));
 };

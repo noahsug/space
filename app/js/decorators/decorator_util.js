@@ -1,17 +1,49 @@
 var DecoratorUtil = di.service('DecoratorUtil', [
   'Entity', 'EntityDecorator', 'GameModel as gm', 'Random']);
 
+DecoratorUtil.prototype.init = function() {
+  this.d_ = this.entityDecorator_.getDecorators();
+};
+
+DecoratorUtil.prototype.addEffectWeapon_ = function(
+    obj, spec, fire, opt_onCollide) {
+  this.addWeapon(obj, spec, function() {
+    var projectile = fire(obj, spec);
+    spec.collide = function(proj) {
+      proj.target.addEffect(spec.effect, spec.duration);
+      if (spec.dmg) proj.target.dmg(spec.dmg);
+      opt_onCollide && opt_onCollide(proj);
+      proj.dead = true;
+    }.bind(this);
+    _.decorate(projectile, this.d_.collision, spec);
+  }.bind(this));
+};
+
+DecoratorUtil.prototype.addDmgWeapon_ = function(
+    obj, spec, fire) {
+  this.addWeapon(obj, spec, function() {
+    var projectile = fire(obj, spec);
+    _.decorate(projectile, this.d_.dmgCollision, obj.primary);
+  }.bind(this));
+};
+
 DecoratorUtil.prototype.addWeapon = function(obj, spec, fire) {
-  var initCooldown = this.random_.nextFloat(.5) * spec.cooldown;
-  this.onCooldown(obj, function() {
+  this.addAbility(obj, spec, function(obj, spec) {
+    if (spec.spread) this.fireSpread_(obj, spec, fire);
+    else fire(obj, spec);
+    return spec.cooldown;
+  }.bind(this));
+};
+
+DecoratorUtil.prototype.addAbility = function(obj, spec, ability) {
+  this.addCooldown(obj, function() {
     if (obj.dead || obj.effect.silenced) return 0;
     if (spec.range && obj.c.targetDis > spec.range) return 0;
     if (obj.c.targetDis < spec.minRange) return 0;
-    if (spec.spread) this.fireSpread_(obj, spec, fire);
-    else fire(obj, spec);
     spec.lastFired = this.gm_.time;
-    return this.randomCooldown(spec.cooldown);
-  }.bind(this), initCooldown);
+    var cooldown = ability(obj, spec);
+    return this.randomCooldown(cooldown);
+  }.bind(this), this.initCooldown(spec.cooldown));
 };
 
 DecoratorUtil.prototype.fireSpread_ = function(obj, spec, fire) {
@@ -25,38 +57,41 @@ DecoratorUtil.prototype.fireSpread_ = function(obj, spec, fire) {
 };
 
 DecoratorUtil.prototype.fireLaser = function(obj, spec) {
-  var d = this.entityDecorator_.getDecorators();
   var laser = this.entity_.create('laser');
   laser.style = spec.style;
-  _.decorate(laser, d.shape.line, spec);
+  _.decorate(laser, this.d_.shape.line, spec);
   return this.fireProjectile_(laser, obj, spec);
 };
 
 DecoratorUtil.prototype.fireBomb = function(obj, spec) {
-  var d = this.entityDecorator_.getDecorators();
   var bomb = this.entity_.create('bomb');
   bomb.style = spec.style;
-  _.decorate(bomb, d.shape.circle, spec);
+  _.decorate(bomb, this.d_.shape.circle, spec);
+  return this.fireProjectile_(bomb, obj, spec);
+};
+
+DecoratorUtil.prototype.fireBall = function(obj, spec) {
+  var bomb = this.entity_.create('ball');
+  bomb.style = spec.style;
+  _.decorate(bomb, this.d_.shape.circle, spec);
   return this.fireProjectile_(bomb, obj, spec);
 };
 
 DecoratorUtil.prototype.fireBlade = function(obj, spec) {
-  var d = this.entityDecorator_.getDecorators();
   var blade = this.entity_.create('blade');
   blade.style = spec.style;
-  _.decorate(blade, d.shape.circle, spec);
+  _.decorate(blade, this.d_.shape.circle, spec);
   return this.fireProjectile_(blade, obj, spec);
 };
 
 DecoratorUtil.prototype.fireAura = function(obj, spec) {
-  var d = this.entityDecorator_.getDecorators();
   var aura = this.entity_.create('aura');
   aura.style = spec.style;
   spec.radius = obj.radius;
-  _.decorate(aura, d.shape.circle, spec);
+  _.decorate(aura, this.d_.shape.circle, spec);
   aura.target = obj.target;
-  _.decorate(aura, d.movement.atPosition, {target: obj});
-  _.decorate(aura, d.growRadiusAndDie, spec);
+  _.decorate(aura, this.d_.movement.atPosition, {target: obj});
+  _.decorate(aura, this.d_.growRadiusAndDie, spec);
   return this.gm_.entities.arr[this.gm_.entities.length++] = aura;
 };
 
@@ -65,20 +100,35 @@ DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
   projectile.target = obj.target;
   projectile.setPos(obj.x, obj.y);
 
-  if (projectile.target.effect.tagged && spec.name == 'primary') {
-    projectile.target.effect.tagged = 0;
-    this.set(projectile, 'movement.seek', obj.secondary.taggedSeek);
-  }
+  obj.maybeTrackTarget && obj.maybeTrackTarget(projectile, spec);
+  obj.maybeApplyHaze && obj.maybeApplyHaze(obj, spec);
 
-  var d = this.entityDecorator_.getDecorators();
-  _.decorate(projectile, d.movement.straight, spec);
-  _.decorate(projectile, d.removeOffScreen, spec);
+  _.decorate(projectile, this.d_.movement.straight, spec);
+  _.decorate(projectile, this.d_.removeOffScreen, spec);
   if (spec.range) {
     var range = spec.range * EXTRA_RANGE_RATIO;
-    _.decorate(projectile, d.range, {range: range});
+    _.decorate(projectile, this.d_.range, {range: range});
   }
 
   return this.gm_.entities.arr[this.gm_.entities.length++] = projectile;
+};
+
+DecoratorUtil.prototype.initCooldown = function(cooldown) {
+  return this.random_.nextFloat(.5) * cooldown;
+};
+
+DecoratorUtil.prototype.randomCooldown = function(cooldown) {
+  return this.random_.nextFloat(.8, 1.2) * cooldown;
+};
+
+DecoratorUtil.prototype.addCooldown = function(obj, action, opt_initCooldown) {
+  var cooldown = opt_initCooldown || 0;
+  obj.act(function(dt) {
+    if (cooldown > 0) cooldown -= dt;
+    if (cooldown <= 0) {
+      cooldown += action() || 0;
+    }
+  });
 };
 
 DecoratorUtil.prototype.set = function(obj, prop, add) {
@@ -94,33 +144,5 @@ DecoratorUtil.prototype.mod = function(obj, prop, multiplier) {
     _.set(obj, prop, value * multiplier);
   } else {
     obj.awake(this.mod.bind(this, obj, prop, multiplier));
-  }
-};
-
-DecoratorUtil.prototype.randomCooldown = function(cooldown) {
-  return this.random_.nextFloat(.8, 1.2) * cooldown;
-};
-
-DecoratorUtil.prototype.onCooldown = function(obj, act, opt_initCooldown) {
-  return new EntityCooldown(obj, act, opt_initCooldown);
-};
-
-var EntityCooldown = function(obj, act, opt_initCooldown) {
-  this.cooldown_ = opt_initCooldown || 0;
-  this.act_ = act;
-  this.obj_ = obj;
-  obj.act(this.update_.bind(this, obj));
-};
-
-EntityCooldown.prototype.set = function(cooldown) {
-  this.cooldown_ = cooldown;
-};
-
-EntityCooldown.prototype.update_ = function(obj, dt) {
-  // TODO: Move stun check out into passed in function.
-  if (this.cooldown_ > 0) this.cooldown_ -= dt;
-  if (this.cooldown_ <= 0) {
-    var newCooldown = this.act_();
-    this.cooldown_ += _.ifDef(newCooldown, 0);
   }
 };

@@ -49,3 +49,90 @@ AbilityDecorators.prototype.decorateRage_ = function(obj, spec) {
     }
   }.bind(this));
 };
+
+AbilityDecorators.prototype.decorateShield_ = function(obj, spec) {
+  _.spec(obj, 'ability', spec, {
+    cooldown: 6,
+    effect: 'shield',
+    duration: 1000,
+    charges: 1
+  });
+
+  switch(spec.power) {
+  case 2:
+    obj.ability.charges++;
+  case 1:
+    obj.ability.charges++;
+  }
+  obj.ability.maxCharges = obj.ability.charges;
+
+  this.util_.addAbility(obj, obj.ability, function(obj, spec) {
+    if (obj.effect.shield) return 0;
+    obj.addEffect(obj.ability.effect, obj.ability.duration);
+    obj.ability.charges = obj.ability.maxCharges;
+    return obj.ability.cooldown;
+  });
+
+  obj.maybeShieldDmg = function(source) {
+    // Only effects projectiles.
+    if (source.type == 'ship') return false;
+    if (obj.effect.shield) {
+      if (!--obj.ability.charges) {
+        obj.effect.shield = 0;
+      }
+      return true;
+    }
+    return false;
+  };
+};
+
+AbilityDecorators.prototype.decorateReflect_ = function(obj, spec) {
+  _.spec(obj, 'ability', spec, {
+    cooldown: 6,
+    effect: 'reflect',
+    duration: 1
+  });
+
+  switch(spec.power) {
+  case 2:
+    obj.ability.duration++;
+  }
+
+  this.util_.addAbility(obj, obj.ability, function(obj, spec) {
+    if (obj.effect.reflect) return 0;
+    obj.addEffect(obj.ability.effect, obj.ability.duration);
+    return obj.ability.cooldown;
+  });
+
+  obj.maybeReflect = function(source) {
+    if (!obj.effect.reflect) return false;
+    if (source.type == 'ship') return false;
+    source.rotate && source.rotate(_.RADIANS_180);
+    source.target = obj.target;
+    source.remainingRange = source.maxRange;
+    return true;
+  };
+};
+
+AbilityDecorators.prototype.decorateHaze_ = function(obj, spec) {
+  _.spec(obj, 'ability', spec, {
+    speed: 200,
+    seek: _.radians(85),
+    radius: 4,
+    accuracy: 0,
+    cooldown: 4,
+    range: 300,
+    effect: 'haze',
+    duration: 1.5
+  });
+
+  switch(spec.power) {
+  case 1:
+    obj.primary.duration *= 1.5;
+    obj.primary.radius *= 1.25;
+  }
+
+  this.util_.addEffectWeapon_(obj,
+                              obj.ability,
+                              this.util_.fireBall.bind(this.util_));
+};

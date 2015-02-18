@@ -23,6 +23,9 @@ di.constant('gameplayFile', {
 
     //'teleport',
 
+    //'shield',
+    //'reflect',
+    'haze',
     //'mink',
     //'baboon',
 
@@ -197,6 +200,18 @@ di.constant('gameplayFile', {
     //  type: 'utility.invisible', spec: {cooldown: 4},
     //  level: 9},
 
+    'haze': {
+      desc: '',
+      type: 'ability.haze', spec: {},
+      level: 0},
+    'shield': {
+      desc: '',
+      type: 'ability.shield', spec: {},
+      level: 0},
+    'reflect': {
+      desc: '',
+      type: 'ability.reflect', spec: {},
+      level: 0},
     'baboon': {
       desc: 'Enrage when hurt, becoming larger and dealing more damage.',
       type: 'ability.rage', spec: {},
