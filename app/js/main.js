@@ -31,7 +31,7 @@ Main.prototype.start = function() {
   //this.random_.useTrueRandom();
   this.screen_.setSurfaceArea(Screen.DESIRED_SURFACE_AREA);
   // Hack to fix the screen sometimes not resizing.
-  setTimeout(this.screen_.resize.bind(this.screen_), .5);
+  setTimeout(this.screen_.resize.bind(this.screen_), 1);
   this.gameRunner_.start();
 };
 
@@ -59,6 +59,3 @@ Main.prototype.on_ = function(var_events, fn, opt_req) {
 di.start(function() {
   di.get('Main').start();
 });
-
-// Set PROD to true for production.
-window.PROD = false;

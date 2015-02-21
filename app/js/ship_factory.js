@@ -3,7 +3,7 @@ var ShipFactory = di.service('ShipFactory', [
   'ShipDecorator', 'ItemService']);
 
 ShipFactory.prototype.createPlayer = function() {
-  return this.createShip_(this.gm_.player, 'good', this.playerStats);
+  return this.createShip_(this.gm_.player, 'good');
 };
 
 ShipFactory.prototype.createRandomShip = function(level) {
@@ -19,13 +19,13 @@ ShipFactory.prototype.createRandomShip = function(level) {
       'mod', this.getLevel_(level)));
   var circle = this.itemService_.getByName('circle');
 
-  var spec = [primary, circle];
+  var dna = [primary, circle];
   var chance = .05 + .7 * level / Game.NUM_LEVELS;
-  if (Math.random() < chance) spec.push(secondary);
-  if (Math.random() < chance) spec.push(ability);
-  if (Math.random() < chance) spec.push(utility);
-  if (Math.random() < chance) spec.push(mod);
-  return this.createEnemy_(spec);
+  if (Math.random() < chance) dna.push(secondary);
+  if (Math.random() < chance) dna.push(ability);
+  if (Math.random() < chance) dna.push(utility);
+  if (Math.random() < chance) dna.push(mod);
+  return this.createEnemy_(dna);
 };
 
 ShipFactory.prototype.getLevel_ = function(level) {
@@ -37,18 +37,19 @@ ShipFactory.prototype.getLevel_ = function(level) {
 };
 
 ShipFactory.prototype.createBoss = function(level) {
-  var spec = this.gameplay_.bosses[level];
-  return this.createEnemy_(spec);
+  var dna = this.gameplay_.bosses[level];
+  return this.createEnemy_(dna);
 };
 
-ShipFactory.prototype.createEnemy_ = function(spec) {
-  return this.createShip_(spec, 'bad');
+ShipFactory.prototype.createEnemy_ = function(dna) {
+  return this.createShip_(dna, 'bad');
 };
 
-ShipFactory.prototype.createShip_ = function(spec, style, opt_stats) {
+ShipFactory.prototype.createShip_ = function(dna, style) {
   var ship = this.entity_.create('ship');
-  _.decorate(ship, this.shipDecorator_, opt_stats);
-  this.ed_.decorate(ship, spec);
+  ship.dna = dna;
+  _.decorate(ship, this.shipDecorator_);
+  this.ed_.decorate(ship, dna);
   ship.style = style;
   this.gm_.entities.add(ship);
   ship.x = this.screen_.x;

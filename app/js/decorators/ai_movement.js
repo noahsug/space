@@ -48,7 +48,7 @@ AiMovement.prototype.wonder_ = function(obj) {
 
 AiMovement.prototype.think_ = function(obj) {
   //console.log('----- think ' + obj.style + ' -----');
-  obj.movement.distance = this.getDesiredDistance_(obj) - 20;
+  obj.movement.desiredDistance = this.getDesiredDistance_(obj) - 20;
   this.maybeUseDash_(obj);
   this.maybeUseTeleport_(obj);
   this.setDesiredVector_(obj);
@@ -105,7 +105,7 @@ AiMovement.prototype.getDesiredDistance_ = function(obj) {
 
 AiMovement.prototype.maybeUseDash_ = function(obj) {
   if (!obj.utility.dashReady) return;
-  var dd = obj.c.targetDis - obj.movement.distance;
+  var dd = obj.c.targetDis - obj.movement.desiredDistance;
   if (Math.abs(dd) < 35) return;
 
   var dir = Math.sign(dd);
@@ -121,7 +121,7 @@ AiMovement.prototype.maybeUseDash_ = function(obj) {
 
 AiMovement.prototype.maybeUseTeleport_ = function(obj) {
   if (!obj.utility.teleportReady) return;
-  var dd = obj.c.targetDis - obj.movement.distance;
+  var dd = obj.c.targetDis - obj.movement.desiredDistance;
   if (dd < 35) return;
   if (this.random_.next() < .5) obj.utility.useTeleport();
 };
@@ -132,6 +132,7 @@ AiMovement.prototype.setDesiredVector_ = function(obj) {
   _.vector.add(v, this.getWallXVector_(obj, 4));
   _.vector.add(v, this.getWallYVector_(obj, 4));
   _.vector.add(v, this.getEnemyDistanceVector_(obj, 5));
+  _.vector.add(v, this.getCloneDistanceVector_(obj, 4));
   _.vector.add(v, this.getDodgeVector_(obj, 2));
   _.vector.add(v, this.getFleeVector_(obj, 4));
   if (!obj.effect.invisible) {
@@ -177,13 +178,23 @@ AiMovement.prototype.getRandomUrgeVector_ = function(obj, weight) {
 };
 
 AiMovement.prototype.getEnemyDistanceVector_ = function(obj, weight) {
-  if (!obj.movement.distance) return _.vector.EMPTY;
-  var dd = obj.c.targetDis - obj.movement.distance;
+  if (!obj.movement.desiredDistance) return _.vector.EMPTY;
+  var dd = obj.c.targetDis - obj.movement.desiredDistance;
   // If we're a little too close or too far, don't panic.
   if (dd < 0 && dd > -40) weight *= dd * dd / (40 * 40);
   if (dd > 0 && dd < 40) weight = (weight - 5) * dd * dd / (40 * 40) + 5;
   var v = {length: weight * Math.sign(dd), angle: obj.c.targetAngle};
   //console.log('edis:', v);
+  return v;
+};
+
+AiMovement.prototype.getCloneDistanceVector_ = function(obj, weight) {
+  var clone = obj.clones[0];
+  if (!clone || clone.dead) return _.vector.EMPTY;
+  var distance = _.distance(obj, clone);
+  weight = (1 - _.step(distance, 0, 50, 100, Infinity)) * weight;
+  var v = {length: -weight, angle: _.angle(obj, clone)};
+  //console.log('clone:', v);
   return v;
 };
 
@@ -233,7 +244,7 @@ AiMovement.prototype.getCurrentPerpendicularVector_ = function(obj, weight) {
 AiMovement.prototype.getFleeVector_ = function(obj, weight) {
   if (!obj.movement.fleeing) {
     if (obj.c.wallDis > 30) return _.vector.EMPTY;
-    var dd = obj.movement.distance - obj.c.targetDis;
+    var dd = obj.movement.desiredDistance - obj.c.targetDis;
     if (dd < 50) return _.vector.EMPTY;
     if (obj.target.c.centerDis < 50) return _.vector.EMPTY;
 

@@ -70,14 +70,14 @@ _.pseudorandomSeed = function(opt_seed) {
 };
 
 _.assert = function(truth, msg) {
-  if (window.PROD) return;
+  if (PROD) return;
   if (!truth) {
     throw 'Assert failed: ' + msg;
   }
 };
 
 _.fail = function(msg) {
-  if (window.PROD) return;
+  if (PROD) return;
   _.assert(false, msg);
 };
 
@@ -286,6 +286,15 @@ _.ifDef = function(value, valueWhenUndefined) {
 _.pad = function(num, padding) {
   var numAsStr = '' + num;
   return _.repeat('0', padding - numAsStr.length) + numAsStr;
+};
+
+// step(25, 0, 25, 75, 100) = 0;
+// step(50, 0, 25, 75, 100) = .5;
+// step(75, 0, 25, 75, 100) = 1;
+_.step = function(value, s1, s2, e1, e2) {
+  if (value >= e2) return 1;
+  if (value <= s1) return 0;
+  return (value - s2) / (e1 - s2);
 };
 
 _.callForEach = function(list, obj, fnName) {

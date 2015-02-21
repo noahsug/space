@@ -15,22 +15,11 @@ ShipDecorator.prototype.decorate = function(obj) {
   obj.ability = {};
   obj.movement = {};
 
+  // Note: the order here matters.
+  _.decorate(obj, this.d_.selectTarget);
   _.decorate(obj, this.sharedComputation_);
   _.decorate(obj, this.d_.effectable);
-
-  // Collisions.
-  obj.collision = {
-    dmg: 10,
-    stunDuration: .75
-  };
-  _.decorate(obj, this.d_.collision, {collide: function() {
-    if (obj.effect.collided) return;
-    obj.dmg(obj.collision.dmg, obj.target);
-    // Move directly away from collided target.
-    obj.movement.vector = _.vector.cartesian({angle: obj.c.targetAngle,
-                                              length: -.5});
-    obj.addEffect('stunned collided', obj.collision.stunDuration);
-  }});
+  _.decorate(obj, this.d_.shipCollision);
 
   _.decorate(obj, this.d_.health);
   _.decorate(obj, this.d_.movement.ai);

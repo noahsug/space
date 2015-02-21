@@ -27,7 +27,7 @@ GameplayParser.prototype.parseItemList_ = function(names, items) {
 
 GameplayParser.prototype.parseItem_ = function(name, item) {
   item = _.clone(item);
-  var types = item.type.split('.');
+  var types = item.id.split('.');
   if (types.length > 1) {
     item.category = types[0];
     item.type = types[1];

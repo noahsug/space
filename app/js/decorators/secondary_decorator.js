@@ -120,13 +120,14 @@ SecondaryDecorators.prototype.decorateCharge_ = function(obj, spec) {
     accuracy: _.radians(10),
     range: 200,
     minRange: 100,
-    cooldown: 4
+    cooldown: 4,
+    stunReduction: 2
   });
 
   switch(spec.power) {
   case 1:
-    obj.secondary.duration *= 1.3;
-    obj.secondary.radius *= 1.3;
+    obj.secondary.speed *= 1.3;
+    obj.secondary.cooldown *= .8;
   }
 
   var ratio = obj.secondary.speed / (obj.movement.speed || 1);
@@ -136,7 +137,7 @@ SecondaryDecorators.prototype.decorateCharge_ = function(obj, spec) {
     obj.movement.speed *= ratio;
     var collisionRatio = .00001;
     obj.collision.dmg *= collisionRatio;
-    obj.collision.stunDuration *= collisionRatio;
+    obj.collision.stunDuration /= obj.movement.stunReduction;
     var duration = obj.secondary.range * 1.2 / obj.movement.speed;
     obj.secondary.charging = true;
 
@@ -144,7 +145,7 @@ SecondaryDecorators.prototype.decorateCharge_ = function(obj, spec) {
       obj.secondary.charging = false;
       obj.movement.speed /= ratio;
       obj.collision.dmg /= collisionRatio;
-      obj.collision.stunDuration /= collisionRatio;
+      obj.collision.stunDuration /= obj.movement.stunReduction;
     });
   });
 };
@@ -156,7 +157,7 @@ SecondaryDecorators.prototype.decorateTracker_ = function(obj, spec) {
     accuracy: _.radians(10),
     cooldown: 1.5,
     length: 4 + 16,
-    duration: 100,
+    duration: 1000,
     style: 'effect',
     effect: 'tagged',
     taggedSeek: _.radians(70),

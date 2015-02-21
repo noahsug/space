@@ -26,7 +26,7 @@ Di.prototype.factory = function(name, opt_deps) {
 };
 
 Di.prototype.addImplToInit_ = function(name, deps, type) {
-  validator.validateAddImplToInit_(name, deps);
+  if (!PROD) validator.validateAddImplToInit_(name, deps);
   var parsedDeps = this.parseDeps_(deps || []);
   var ImplClass = function() {};
   //ImplClass.$name
@@ -59,7 +59,7 @@ Di.prototype.map = function(mappings) {
 };
 
 Di.prototype.init = function() {
-  validator.validateInit(this.implsToInit_, this.mappings_);
+  if (!PROD) validator.validateInit(this.implsToInit_, this.mappings_);
   this.impls_ = {};
   this.initMappings_();
   for (var name in this.implsToInit_) {

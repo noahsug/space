@@ -9,9 +9,9 @@ DecoratorUtil.prototype.addEffectWeapon_ = function(
     obj, spec, fire, opt_onCollide) {
   this.addWeapon(obj, spec, function() {
     var projectile = fire(obj, spec);
-    spec.collide = function(proj) {
-      proj.target.addEffect(spec.effect, spec.duration);
-      if (spec.dmg) proj.target.dmg(spec.dmg);
+    spec.collide = function(proj, target) {
+      target.addEffect(spec.effect, spec.duration);
+      if (spec.dmg) target.dmg(spec.dmg);
       opt_onCollide && opt_onCollide(proj);
       proj.dead = true;
     }.bind(this);

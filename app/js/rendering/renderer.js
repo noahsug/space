@@ -245,10 +245,7 @@ Renderer.prototype.drawItem_ = function(item, pos) {
   this.ctx_.font = size + 'px Arial';
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'middle';
-  var x = pos.x; var y = pos.y;
-  if (item.name == '↩') y += 3;
-  if (item.name == '◃') { x -= 1; y += 1; }
-  this.ctx_.fillText(item.name, x, y);
+  this.ctx_.fillText(item.name, pos.x, pos.y);
 };
 
 var DEATH_ANIMATION_DURATION = .3;

@@ -1,5 +1,5 @@
 var AbilityDecorators = di.service('AbilityDecorators', [
-  'EntityDecorator', 'DecoratorUtil as util']);
+  'EntityDecorator', 'DecoratorUtil as util', 'ShipFactory']);
 
 AbilityDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'ability');
@@ -153,5 +153,53 @@ AbilityDecorators.prototype.decorateInvisible_ = function(obj, spec) {
     obj.ability.duration++;
   }
 
+  obj.resolve(function() {
+    if (obj.effect.invisible &&
+        obj.health < obj.prevHealth &&
+        obj.ability.duration - obj.effect.invisible > .5) {
+      obj.effect.invisible = 0;
+    }
+  });
+
   this.util_.addEffectAbility(obj, obj.ability);
+};
+
+AbilityDecorators.prototype.decorateSplit_ = function(obj, spec) {
+  _.spec(obj, 'ability', spec, {
+    cooldown: 6
+  });
+
+  obj.resolve(function(dt) {
+    if (obj.health < obj.prevHealth) split.call(this, dt);
+  }.bind(this));
+
+  function split(dt) {
+    var newDna = [];
+    for (var i = 0; i < obj.dna.length; i++) {
+      var item = obj.dna[i];
+      if (item.id == 'ability.split') continue;
+      if (item.id == 'shape.circle') item.spec.radius *= .85;
+      if (item.dmg) item.spec.dmg /= 2;
+      newDna.push(item);
+    }
+
+    var s1 = this.shipFactory_.createShip_(newDna, obj.style);
+    var s2 = this.shipFactory_.createShip_(newDna, obj.style);
+    s1.x = obj.x + 10;
+    s1.y = obj.y + 10;
+    s2.x = obj.x - 10;
+    s2.y = obj.y - 10;
+    this.shipFactory_.setTargets(s1, obj.target);
+    this.shipFactory_.setTargets(s2, obj.target);
+
+    s1.setMaxHealth(obj.health);
+    s2.setMaxHealth(obj.health);
+    obj.dead = obj.remove = true;
+    obj.clones = [s1, s2];
+    s1.clones = [s2];
+    s2.clones = [s1];
+
+    s1.act(dt);
+    s2.act(dt);
+  };
 };

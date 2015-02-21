@@ -17,15 +17,21 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
   spec = _.spec(spec, {
     health: 30
   });
-  obj.health = obj.maxHealth = obj.prevHealth = spec.health;
+
+  obj.setMaxHealth = function(health) {
+    obj.health = obj.maxHealth = obj.prevHealth = health;
+  };
+  obj.setMaxHealth(spec.health);
+
   obj.dmg = function(dmg, source) {
     if (obj.maybeShieldDmg && obj.maybeShieldDmg(source)) return;
-    if (obj.effect.invisible) obj.effect.invisible = 0;
     obj.health -= dmg;
   };
+
   obj.act(function() {
     obj.prevHealth = obj.health;
   });
+
   obj.resolve(function() {
     if (obj.health <= 0) {
       obj.dead = true;
@@ -49,24 +55,81 @@ BasicDecorators.prototype.decorateRange_ = function(obj, spec) {
   });
 };
 
+BasicDecorators.prototype.decorateSelectTarget_ = function(obj, spec) {
+  obj.clones = [];
+  obj.getLivingClone = function() {
+    if (!obj.dead) return obj;
+    for (var i = 0; i < obj.clones.length; i++) {
+      var clone = obj.clones[i];
+      if (!clone.dead) return clone;
+    }
+    return obj;
+  };
+
+  obj.act(function(dt) {
+    obj.target = selectClosestTarget();
+  });
+
+  function selectClosestTarget() {
+    if (!obj.target.clones.length) return obj.target;
+
+    var minDis = obj.target.dead ? Infinity : _.distance(obj, obj.target);
+    var target = obj.target;
+    for (var i = 0; i < obj.target.clones.length; i++) {
+      var clone = obj.target.clones[i];
+      if (clone.dead) continue;
+      var dis = _.distance(obj, clone);
+      if (dis < minDis) {
+        minDis = dis;
+        target = clone;
+      }
+    }
+    return target;
+  }
+};
+
+BasicDecorators.prototype.decorateShipCollision_ = function(obj, spec) {
+  _.spec(obj, 'collision', spec, {
+    dmg: 10,
+    stunDuration: .75,
+    collisionDuration: .75
+  });
+  this.decorateCollision_(obj, {collide: function(obj, target) {
+    if (obj.effect.collided) return;
+    obj.dmg(obj.collision.dmg, target);
+    // Move directly away from collided target.
+    obj.movement.vector = _.vector.cartesian({angle: obj.c.targetAngle,
+                                              length: -.5});
+    obj.addEffect('stunned', obj.collision.stunDuration);
+    obj.addEffect('collided', obj.collision.collisionDuration);
+  }});
+};
+
 BasicDecorators.prototype.decorateDmgCollision_ = function(obj, spec) {
   spec = _.spec(spec, {
     dmg: 0
   });
-  this.decorateCollision_(obj, {collide: function() {
-    obj.target.dmg(spec.dmg, obj);
+  this.decorateCollision_(obj, {collide: function(obj, target) {
+    target.dmg(spec.dmg, obj);
     obj.dead = true;
   }});
 };
 
 BasicDecorators.prototype.decorateCollision_ = function(obj, spec) {
   obj.affect(function() {
-    if (obj.dead || obj.target.dead) return;
-    if (obj.collides(obj.target)) {
-      if (obj.target.maybeReflect && obj.target.maybeReflect(obj)) return;
-      spec.collide(obj, spec);
+    maybeCollide(obj.target);
+    for (var i = 0; i < obj.target.clones.length; i++) {
+      var clone = obj.target.clones[i];
+      maybeCollide(clone);
     }
   });
+
+  function maybeCollide(target) {
+    if (!obj.dead && !target.dead && obj.collides(target)) {
+      if (target.maybeReflect && target.maybeReflect(obj)) return;
+      spec.collide(obj, target);
+    }
+  }
 };
 
 BasicDecorators.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
@@ -124,10 +187,12 @@ BasicDecorators.prototype.decorateEffectable_ = function(obj) {
   function tickEffects(dt) {
     for (var i = 0; i < effects.length; i++) {
       var effect = effects[i];
-      if (!obj.effect[effect]) continue;
       if (obj.effect[effect] <= dt) {
         obj.effect[effect] = 0;
-        obj.onEffectEnd[effect] && obj.onEffectEnd[effect]();
+        if (obj.onEffectEnd[effect]) {
+          obj.onEffectEnd[effect]();
+          obj.onEffectEnd[effect] = null;
+        }
       } else {
         obj.effect[effect] -= dt;
       }

@@ -43,9 +43,13 @@ BattleScene.prototype.update_ = function(dt) {
     }
   }
 
-  else if (this.player_.dead || this.enemy_.dead) {
-    this.gm_.results.won = !this.player_.dead;
-    this.battleEnding_ = SLOWDOWN_TIME;
+  else {
+    this.player_ = this.player_.getLivingClone();
+    this.enemy_ = this.enemy_.getLivingClone();
+    if (this.player_.dead || this.enemy_.dead) {
+      this.gm_.results.won = !this.player_.dead;
+      this.battleEnding_ = SLOWDOWN_TIME;
+    }
   }
 };
 
