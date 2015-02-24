@@ -375,7 +375,7 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
     }
 
     // Draw health indicator.
-    if (entity.health <= damage) {
+    if (entity.health <= 10 && damage) {
       entity.render.healthIndicator = 30;
     }
     if (entity.render.healthIndicator) {

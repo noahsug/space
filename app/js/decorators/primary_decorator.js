@@ -44,14 +44,14 @@ PrimaryDecorators.prototype.decorateBasicLaser_ = function(obj, spec) {
 PrimaryDecorators.prototype.decorateShotgun_ = function(obj, spec) {
   _.spec(obj, 'primary', spec, {
     dmg: 5,
+    cooldown: 2,
+    range: 100,
+    projectiles: 6,
     speed: 550,
     accuracy: _.radians(10),
-    cooldown: 2,
     spread: _.radians(35),
-    projectiles: 6,
     length: 4 + 16,
-    style: 'bullet',
-    range: 100
+    style: 'bullet'
   });
 
   switch(spec.power) {

@@ -17,6 +17,7 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
   spec = _.spec(spec, {
     health: 30
   });
+  obj.def = 1;
 
   obj.setMaxHealth = function(health) {
     obj.health = obj.maxHealth = obj.prevHealth = health;
@@ -24,8 +25,9 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
   obj.setMaxHealth(spec.health);
 
   obj.dmg = function(dmg, source) {
+    if (dmg < .5) return;
     if (obj.maybeShieldDmg && obj.maybeShieldDmg(source)) return;
-    obj.health -= dmg;
+    obj.health -= dmg / obj.def;
   };
 
   obj.act(function() {

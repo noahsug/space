@@ -122,8 +122,7 @@ AiMovement.prototype.maybeUseDash_ = function(obj) {
 AiMovement.prototype.maybeUseTeleport_ = function(obj) {
   if (!obj.utility.teleportReady) return;
   var dd = obj.c.targetDis - obj.movement.desiredDistance;
-  if (dd < 35) return;
-  if (this.random_.next() < .5) obj.utility.useTeleport();
+  if (dd > 35 && this.random_.next() < .5) obj.utility.useTeleport();
 };
 
 AiMovement.prototype.setDesiredVector_ = function(obj) {
@@ -189,6 +188,7 @@ AiMovement.prototype.getEnemyDistanceVector_ = function(obj, weight) {
 };
 
 AiMovement.prototype.getCloneDistanceVector_ = function(obj, weight) {
+  // TODO: Support 2 or more clones.
   var clone = obj.clones[0];
   if (!clone || clone.dead) return _.vector.EMPTY;
   var distance = _.distance(obj, clone);
@@ -213,9 +213,9 @@ AiMovement.prototype.getDodgeVector_ = function(obj, weight) {
   }
   if (!obj.movement.startDodge) {
     obj.movement.startDodge = true;
-    if (obj.utility.dashReady && this.random_.next() < .5) {
+    if (obj.utility.dashReady && this.random_.next() < .8) {
       obj.utility.useDash();
-    } else if (obj.utility.teleportReady && this.random_.next() < 1) {
+    } else if (obj.utility.teleportReady && this.random_.next() < .8) {
       obj.utility.useTeleport();
     }
   }
@@ -243,43 +243,42 @@ AiMovement.prototype.getCurrentPerpendicularVector_ = function(obj, weight) {
 
 AiMovement.prototype.getFleeVector_ = function(obj, weight) {
   if (!obj.movement.fleeing) {
-    if (obj.c.wallDis > 30) return _.vector.EMPTY;
-    var dd = obj.movement.desiredDistance - obj.c.targetDis;
-    if (dd < 50) return _.vector.EMPTY;
-    if (obj.target.c.centerDis < 50) return _.vector.EMPTY;
+    if (obj.c.wallDis > 30)
+      return _.vector.EMPTY;
+    if (obj.c.targetDis - obj.movement.desiredDistance > 50)
+      return _.vector.EMPTY;
+    if (obj.c.wallDis != obj.target.c.wallDis)
+      return _.vector.EMPTY;
+    obj.movement.fleeDirection = 0;
+    if (obj.c.wallDisN == obj.c.wallDis) {
+      obj.movement.fleeDirection = _.RADIANS_90;
+    } else if (obj.c.wallDisS == obj.c.wallDis) {
+      obj.movement.fleeDirection = _.RADIANS_270;
+    } else {
+      return _.vector.EMPTY;
+    }
 
-    var dirs = ['N', 'E', 'S', 'W'];
-    var oppositeDirs = ['S', 'W', 'N', 'E'];
-    for (var i = 0; i < dirs.length; i++) {
-      var name = 'wallDis' + dirs[i];
-      if (obj.c.wallDis == obj.c[name] &&
-          obj.target.c.wallDis == obj.target.c[name]) {
-        obj.movement.fleeing = true;
-        obj.movement.fleeDirection = oppositeDirs[i];
-        if (obj.utility.dashReady && this.random_.next() < .35) {
-          obj.utility.useDash();
-        } else if (obj.utility.teleportReady && this.random_.next() < .35) {
-          obj.utility.useTeleport();
-        }
-        break;
+    if (obj.movement.fleeDirection) {
+      obj.movement.fleeing = true;
+      if (obj.utility.teleportReady) {
+        obj.utility.useTeleport();
+      } else if (obj.utility.dashReady) {
+        obj.utility.useDash();
       }
     }
   }
   if (!obj.movement.fleeing) return _.vector.EMPTY;
 
-  if (obj.c['wallDis' + obj.movement.fleeDirection] < 100) {
+  var wallDis = obj.movement.fleeDirection == _.RADIANS_90 ?
+      obj.c.wallDisS : obj.c.wallDisN;
+  if (wallDis < 100) {
     obj.movement.fleeing = false;
     return _.vector.EMPTY;
   }
 
-  var angle;
-  if (obj.movement.fleeDirection == 'N') angle = _.RADIANS_270;
-  if (obj.movement.fleeDirection == 'E') angle = 0;
-  if (obj.movement.fleeDirection == 'S') angle = _.RADIANS_90;
-  if (obj.movement.fleeDirection == 'W') angle = _.RADIANS_180;
   var v = {
     length: weight,
-    angle: angle
+    angle: obj.movement.fleeDirection
   };
 
   //console.log('flee:', v);
