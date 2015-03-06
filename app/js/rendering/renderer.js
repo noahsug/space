@@ -115,11 +115,7 @@ Renderer.prototype.drawIntroSplash_ = function() {
 };
 
 Renderer.prototype.drawMainSplash_ = function() {
-  this.topLeftHeading_(Strings.Level[this.gm_.level]);
-  var color = (this.gm_.daysLeft <= 1) && Gfx.Color.WARN;
-  var msg = this.gm_.daysLeft + ' ' + _.plural('day', this.gm_.daysLeft) +
-      ' left';
-  this.topLeftSubHeading_(msg, color);
+  this.topLeftHeading_('Lives: ' + this.gm_.lives);
 };
 
 Renderer.prototype.drawResultSplash_ = function() {
@@ -182,6 +178,35 @@ Renderer.prototype.topLeftSubHeading_ = function(text, opt_color) {
   this.drawHeading_(text, 24, 20, 70 - 16, opt_color);
 };
 
+Renderer.prototype.drawRoundBtn_ = function(entity) {
+  this.ctx_.fillStyle = '#000000';
+  this.ctx_.lineWidth = 2;
+  var color = '#FFFFFF';
+  if (entity.style == 'done') {
+    color = '#CCCCCC';
+  } else if (entity.style == 'locked') {
+    color = Gfx.Color.LOCKED;
+  }
+  this.ctx_.strokeStyle = color;
+
+  this.ctx_.beginPath();
+  this.ctx_.arc(entity.render.pos.x, entity.render.pos.y,
+                entity.radius - 1, 0, 2 * Math.PI);
+  this.ctx_.fill();
+  this.ctx_.stroke();
+  if (entity.name) {
+    this.drawItem_(entity, entity.render.pos);
+  };
+
+  // Draw text.
+  this.ctx_.textAlign = 'center';
+  this.ctx_.textBaseline = 'middle';
+  var text = entity.style == 'done' ? 'X' : entity.text;
+  this.drawText_(text, entity.size,
+                 entity.render.pos.x, entity.render.pos.y,
+                 false, color);
+};
+
 Renderer.prototype.drawBtn_ = function(entity) {
   this.underlineLabel_(entity);
   this.drawLabel_(entity);
@@ -204,34 +229,6 @@ Renderer.prototype.drawHitbox_ = function(entity) {
   //this.ctx_.fillStyle = 'red';
   //this.ctx_.fillRect(entity.render.pos.x, entity.render.pos.y,
   //                   entity.width, entity.height);
-};
-
-// NOT USED.
-Renderer.prototype.drawBtnSm_ = function(entity) {
-  this.ctx_.fillStyle = '#000000';
-  this.ctx_.lineWidth = 2;
-  var color = '#FFFFFF';
-  if (entity.equipped) {
-    color = '#44FF77';
-  } else if (entity.locked) {
-    color = Gfx.Color.LOCKED;
-  }
-  this.ctx_.strokeStyle = color;
-
-  this.ctx_.beginPath();
-  this.ctx_.arc(entity.render.pos.x, entity.render.pos.y,
-                entity.radius - 1, 0, 2 * Math.PI);
-  this.ctx_.fill();
-  this.ctx_.stroke();
-  if (entity.name) {
-    this.drawItem_(entity, entity.render.pos);
-  };
-
-  //if (entity.locked) {
-  //  this.ctx_.fillStyle = 'rgba(200, 200, 200, .5)';
-  //  this.ctx_.font = (entity.radius * 2) + 'px Arial';
-  //  this.ctx_.fillText('✕', entity.render.pos.x, entity.render.pos.y);
-  //}
 };
 
 // NOT USED.

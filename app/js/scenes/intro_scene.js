@@ -18,12 +18,14 @@ IntroScene.prototype.addEntities_ = function() {
   continueBtn.setText('continue', {size: 'btn'});
 
   this.layout_ = this.layoutElement_.create({
-    direction: 'vertical', align: 'bottom'});
+    direction: 'vertical', childrenAlign: 'bottom'});
   this.layout_.padding.left = 'btn';
   this.layout_.padding.bottom = 'btn';
   this.layout_.add(continueBtn);
+  continueBtn.layout.align = 'top';
   continueBtn.padding.bottom = 'btn';
   this.layout_.add(newGameBtn);
+  newGameBtn.layout.align = 'top';
 };
 
 IntroScene.prototype.update_ = function(dt) {

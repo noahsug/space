@@ -1,66 +1,50 @@
 var MainScene = di.service('MainScene', [
-  'GameModel as gm', 'Scene', 'LayoutElement', 'BtnElement', 'EntityElement',
-  'ShipFactory', 'Inventory']);
+  'GameModel as gm', 'Screen', 'Scene', 'LayoutElement', 'RoundBtnElement',
+  'EntityElement']);
 
 MainScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('main'));
 };
 
+var COLS = 3;
+var ROWS = 4;
+var PADDING = 10;
 MainScene.prototype.addEntities_ = function() {
   this.entityElement_.create('mainSplash');
 
-  var finalBossBtn = this.btnElement_.create();
-  finalBossBtn.setText('vs ' + Strings.Boss[Game.NUM_LEVELS - 1],
-                       {size: 'btn-lg'});
-  finalBossBtn.onClick(function() {
-    this.gm_.level = Game.NUM_LEVELS - 1;
-    this.gm_.enemy = 'boss';
-    this.transition_('battle');
-  }.bind(this));
-
-  var bossBtn = this.btnElement_.create();
-  bossBtn.setText('vs ' + Strings.Boss[this.gm_.level], {size: 'btn-lg'});
-  bossBtn.onClick(function() {
-    this.gm_.enemy = 'boss';
-    this.transition_('battle');
-  }.bind(this));
-
-  var battleBtn = this.btnElement_.create();
-  battleBtn.setText('train', {size: 'btn-lg'});
-  battleBtn.onClick(function() {
-    this.gm_.enemy = 'random';
-    this.transition_('battle');
-  }.bind(this));
-
-  var equipBtn = this.btnElement_.create();
-  equipBtn.setText('customize', {size: 'btn-lg'});
-  equipBtn.onClick(function() {
-    this.transition_('equipOptions');
-  }.bind(this));
-
-  var btns = [];
-  if (this.gm_.daysLeft == 0) {
-    btns.push(finalBossBtn);
-  } else if (this.gm_.daysLeft == 1) {
-    btns.push(bossBtn);
-  } else {
-    btns.push(battleBtn);
-    if (this.gm_.daysOnLevel >= 2) {
-      btns.push(bossBtn);
+  var layouts = [];
+  for (var row = 0; row < ROWS; row++) {
+    var layout = this.layoutElement_.create();
+    layout.layout.flex = 1;
+    layout.layout.align = 'bottom';
+    layouts.push(layout);
+    for (var col = 0; col < COLS; col++) {
+      layout.add(this.createBtn_(row, col));
     }
   }
-  if (this.inventory_.hasItemToEquip()) {
-    btns.push(equipBtn);
-  }
 
-  this.layout_ = this.layoutElement_.create({
-    direction: 'vertical', align: 'top'});
-  this.layout_.padding.left = 'btn-lg';
-  this.layout_.padding.top = .25;
-  _.each(btns, function(btn) {
-    this.layout_.add(btn);
-    btn.padding.bottom = 'btn-lg';
+  this.layout_ = this.layoutElement_.create({direction: 'vertical'});
+  this.layout_.padding.bottom = 50;
+  _.each(layouts, function(layout) {
+    this.layout_.add(layout);
   }, this);
+};
+
+MainScene.prototype.createBtn_ = function(row, col) {
+  var size = 60;
+  var btn = this.roundBtnElement_.create();
+  btn.padding.right = 20;
+  btn.setSize(size);
+
+  var level = row * COLS + col;
+  btn.setText(level);
+  if (level == 0) btn.setStyle('done');
+  if (level >= 3) btn.setStyle('locked');
+  btn.onClick(function() {
+    this.gm_.level = level;
+    this.transition_('equip_options_scene');
+  }.bind(this));
+  return btn;
 };
 
 MainScene.prototype.update_ = function(dt, state) {

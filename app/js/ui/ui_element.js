@@ -2,8 +2,10 @@ var UiElement = di.factory('UiElement', [
   'Entity', 'EntityDecorator', 'Screen']);
 
 UiElement.prototype.init = function() {
-  this.layout = {};
+  this.layout = {align: 'center'};
   this.padding = {};
+  this.align = 'none';  // Not used.
+  this.baseline = 'none';  // Not used.
   this.setPadding(0);
   this.x = 0;
   this.y = 0;
@@ -85,8 +87,24 @@ UiElement.prototype.calcWidthHeight_ = function() {
 };
 
 UiElement.prototype.updateChildPosition_ = function() {
-  this.positionChild_(this.x + this.calc_.padding.left,
-                      this.y + this.calc_.padding.top);
+  //var x = this.x;
+  //if (this.align == 'left') {
+  //  x += this.calc_.padding.left;
+  //} else if (this.align == 'right') {
+  //  x += this.width - this.calc_.padding.right;
+  //} else {
+  //  x += this.calc_.padding.left + this.childWidth_ / 2;
+  //}
+  //var y = this.y;
+  //if (this.baseline == 'top') {
+  //  y += this.calc_.padding.top;
+  //} else if (this.baseline == 'bottom') {
+  //  y += this.height - this.calc_.padding.bottom;
+  //} else {
+  //  y += this.calc_.padding.top + this.childHeight_ / 2;
+  //}
+  this.positionChild_(this.calc_.padding.left + this.x,
+                      this.calc_.padding.top + this.y);
 };
 
 UiElement.prototype.positionChild_ = _.emptyFn;

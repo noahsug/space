@@ -36,7 +36,7 @@ Game.prototype.start = function() {
 
   //this.gm_.level = 3;
 
-  this.scenes_[3].start();
+  this.scenes_[2].start();
 };
 
 Game.prototype.setPlayerItems_ = function() {

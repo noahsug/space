@@ -9,7 +9,10 @@ ShapeDecorators.prototype.decorateCircle_ = function(obj, spec) {
   spec = _.options(spec, {
     radius: 10
   });
-  obj.radius = obj.collideDis = spec.radius;
+  obj.setRadius = function(radius) {
+    obj.radius = obj.collideDis = radius;
+  };
+  obj.setRadius(spec.radius);
 
   obj.collides = function(target) {
     var collisionFn;
