@@ -23,7 +23,6 @@ function inject(fn) {
 function start() {
   var main = di.get('Main');
   spyOn(main, 'on_');
-  main.start();
 }
 
 // Stop game from actually running.

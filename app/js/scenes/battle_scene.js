@@ -1,6 +1,6 @@
 var BattleScene = di.service('BattleScene', [
   'Scene', 'GameModel as gm', 'BattleRewards', 'ShipFactory',
-  'EntityDecorator']);
+  'EntityDecorator', 'World']);
 
 var SLOWDOWN_TIME = 2;
 
@@ -15,19 +15,12 @@ BattleScene.prototype.reset_ = function() {
 
 BattleScene.prototype.addEntities_ = function() {
   _.assert(!_.isEmpty(this.gm_.enemy), 'must have an enemy specified');
-  this.enemy_ = this.createEnemey_();
+  this.enemy_ = this.shipFactory_.createEnemy();
   this.player_ = this.shipFactory_.createPlayer();
   this.shipFactory_.setTargets(this.player_, this.enemy_);
 
   //DEBUG.
-  //this.enemy_.dead = true;
-};
-
-BattleScene.prototype.createEnemey_ = function() {
-  if (this.gm_.enemy == 'boss') {
-    return this.shipFactory_.createBoss(this.gm_.level);
-  }
-  return this.shipFactory_.createRandomShip(this.gm_.level);
+  this.enemy_.dead = true;
 };
 
 BattleScene.prototype.update_ = function(dt) {
@@ -47,7 +40,7 @@ BattleScene.prototype.update_ = function(dt) {
     this.player_ = this.player_.getLivingClone();
     this.enemy_ = this.enemy_.getLivingClone();
     if (this.player_.dead || this.enemy_.dead) {
-      this.gm_.results.won = !this.player_.dead;
+      this.gm_.level.results = this.player_.dead ? 'lost' : 'won';
       this.battleEnding_ = SLOWDOWN_TIME;
     }
   }
@@ -62,32 +55,25 @@ BattleScene.prototype.freezeEntities_ = function() {
 
 BattleScene.prototype.transitionOver_ = function() {
   this.removeEntities_();
-  this.rewardPlayer_();
-  this.goToNextDay_();
+  this.gm_.level.results == 'won' ? this.handleWin_() : this.handleLoss_();
+};
+
+BattleScene.prototype.handleWin_ = function() {
+  if (this.world_.won()) {
+    this.transition_('won');
+  } else {
+    this.world_.unlockAdjacent(this.gm_.level);
+    this.rewardPlayer_();
+  }
 };
 
 BattleScene.prototype.rewardPlayer_ = function() {
-  this.gm_.results.earned = this.battleRewards_.getReward(this.gm_.results.won);
-  if (this.gm_.results.earned.item) {
-    this.gm_.inventory.push(this.gm_.results.earned.item);
+  this.gm_.level.earned = this.battleRewards_.getReward();
+  if (this.gm_.level.earned.item) {
+    this.gm_.inventory.push(this.gm_.level.earned.item);
   }
 };
 
-BattleScene.prototype.goToNextDay_ = function() {
-  if (!this.gm_.results.won && !this.gm_.daysLeft) {
-    this.transition_('lost');
-    return;
-  }
-
-  this.gm_.daysLeft--;
-  this.gm_.daysOnLevel++;
-  if (this.gm_.enemy == 'boss' && this.gm_.results.won) {
-    if (this.gm_.level == Game.NUM_LEVELS - 1) {
-      this.transition_('won');
-    } else {
-      this.gm_.level++;
-      this.gm_.daysLeft += 11;
-      this.gm_.daysOnLevel = 0;
-    }
-  }
+BattleScene.prototype.handleLoss_ = function() {
+  if (this.world_.lost()) this.transition_('lost');
 };

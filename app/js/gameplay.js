@@ -6,13 +6,13 @@ Gameplay.prototype.init = function() {
 
 di.constant('gameplayFile', {
   player: [
-    'basic laser',
+    //'basic laser',
     //'burst laser',
     //'grenade',
     //'razors',
     //'sniper',
     //'missiles',
-    //'shotgun',
+    'shotgun',
 
     //'stun',
     //'emp',
@@ -22,21 +22,21 @@ di.constant('gameplayFile', {
 
     //'teleport',
 
-    'knockback',
+    //'knockback',
     //'shield',
     //'reflect',
     //'haze',
-    //'invisible',
+
+    //'ninja',
     //'mink',
     //'baboon',
-
-    //'+explosions',
 
     'circle'
   ],
 
   inventory: [
-    'basic laser',
+    'shotgun',
+    'pistol'
   ],
 
   bosses: [

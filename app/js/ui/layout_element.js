@@ -17,6 +17,7 @@ LayoutElement.prototype.init = function(opt_options) {
 
   this.addUnit_('pad-left', 'btn', .66);
   this.addUnit_('pad-bot', 'btn', .16);
+  this.addUnit_('pad-bot', 'btn-mix', .14);
   this.addUnit_('pad-left', 'btn-lg', .6);
   this.addUnit_('pad-top', 'btn-lg', .2);
 };

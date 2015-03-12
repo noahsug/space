@@ -115,26 +115,25 @@ Renderer.prototype.drawIntroSplash_ = function() {
 };
 
 Renderer.prototype.drawMainSplash_ = function() {
-  this.topLeftHeading_('Lives: ' + this.gm_.lives);
 };
 
 Renderer.prototype.drawResultSplash_ = function() {
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'top';
-  var result = this.gm_.results.won ? 'victory' : 'defeat';
+  var result = this.gm_.level.results == 'won' ? 'victory' : 'defeat';
   this.drawHeading_(result, 70, this.screen_.width / 2, 30 - 12);
 
-  if (!_.isEmpty(this.gm_.results.earned)) {
+  if (!_.isEmpty(this.gm_.level.earned)) {
     var y = this.screen_.height / 2 - 20;
     var x = this.screen_.width / 2;
     this.ctx_.textAlign = 'right';
-    var msg = this.gm_.results.earned.item ? 'aquired:' : 'gained:';
+    var msg = this.gm_.level.earned.item ? 'aquired:' : 'gained:';
     this.drawText_(msg, 16, x, y);
 
     y += 30;
     this.ctx_.textAlign = 'left';
-    if (this.gm_.results.earned.item) {
-      var item = this.gm_.results.earned.item;
+    if (this.gm_.level.earned.item) {
+      var item = this.gm_.level.earned.item;
       this.drawText_(item.name, 16, x, y, true);
       msg = '(' + Strings.ItemType[item.category] + ')';
       this.drawText_(msg, 16, x, y + 20);
@@ -178,14 +177,19 @@ Renderer.prototype.topLeftSubHeading_ = function(text, opt_color) {
   this.drawHeading_(text, 24, 20, 70 - 16, opt_color);
 };
 
+// TODO: Animate level state changes.
 Renderer.prototype.drawRoundBtn_ = function(entity) {
+  // Draw circle.
+  if (entity.level.result == 'lost') return;
   this.ctx_.fillStyle = '#000000';
   this.ctx_.lineWidth = 2;
-  var color = '#FFFFFF';
-  if (entity.style == 'done') {
-    color = '#CCCCCC';
-  } else if (entity.style == 'locked') {
+  var color;
+  if (entity.level.locked) {
     color = Gfx.Color.LOCKED;
+  } else if (entity.level.result == 'won') {
+     color = '#FFFFFF';
+  } else {
+    color = Gfx.Color.LIGHT_BLUE;
   }
   this.ctx_.strokeStyle = color;
 
@@ -194,15 +198,12 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
                 entity.radius - 1, 0, 2 * Math.PI);
   this.ctx_.fill();
   this.ctx_.stroke();
-  if (entity.name) {
-    this.drawItem_(entity, entity.render.pos);
-  };
 
   // Draw text.
+  if (entity.level.result == 'won') return;
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'middle';
-  var text = entity.style == 'done' ? 'X' : entity.text;
-  this.drawText_(text, entity.size,
+  this.drawText_(entity.level.type, 20,
                  entity.render.pos.x, entity.render.pos.y,
                  false, color);
 };
@@ -229,20 +230,6 @@ Renderer.prototype.drawHitbox_ = function(entity) {
   //this.ctx_.fillStyle = 'red';
   //this.ctx_.fillRect(entity.render.pos.x, entity.render.pos.y,
   //                   entity.width, entity.height);
-};
-
-// NOT USED.
-Renderer.prototype.drawItem_ = function(item, pos) {
-  var size = item.fontSize || 12;
-  if (item.locked) {
-    this.ctx_.fillStyle = Gfx.Color.LOCKED;
-  } else {
-    this.ctx_.fillStyle = '#FFFFFF';
-  }
-  this.ctx_.font = size + 'px Arial';
-  this.ctx_.textAlign = 'center';
-  this.ctx_.textBaseline = 'middle';
-  this.ctx_.fillText(item.name, pos.x, pos.y);
 };
 
 var DEATH_ANIMATION_DURATION = .3;

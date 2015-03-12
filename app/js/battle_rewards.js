@@ -1,18 +1,11 @@
 var BattleRewards = di.service('BattleRewards', [
   'GameModel as gm', 'Inventory']);
 
-BattleRewards.prototype.getReward = function(won) {
-  if (!won) return {};
-  var level = this.gm_.level;
-  var enemy = this.gm_.enemy;
+BattleRewards.prototype.getReward = function() {
+  var level = this.gm_.level.type;
   var r = Math.random();
   var item;
-  if (enemy == 'boss') {
-    item = this.getRandomItem_(level + 1);
-  } else if (r < .15) {
-    item = this.getRandomItem_(level);
-  }
-
+  item = this.getRandomItem_(level);
   return {item: item};
 };
 

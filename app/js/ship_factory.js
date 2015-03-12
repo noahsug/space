@@ -2,11 +2,14 @@ var ShipFactory = di.service('ShipFactory', [
   'GameModel as gm', 'Entity', 'EntityDecorator as ed', 'Gameplay', 'Screen',
   'ShipDecorator', 'ItemService']);
 
-ShipFactory.prototype.createPlayer = function() {
-  return this.createShip_(this.gm_.player, 'good');
+ShipFactory.prototype.createEnemyDna = function(level) {
+  //return this.gameplay_.bosses[level];
+  return this.createRandomDna_(level);
 };
 
-ShipFactory.prototype.createRandomShip = function(level) {
+var MAX_ITEM_LEVEL = 2;
+ShipFactory.prototype.createRandomDna_ = function(level) {
+  level = Math.round(MAX_ITEM_LEVEL * level / Game.MAX_LEVEL);
   var primary = _.sample(this.itemService_.getByTypeAndLevel(
       'primary', this.getLevel_(level)));
   var secondary = _.sample(this.itemService_.getByTypeAndLevel(
@@ -15,17 +18,14 @@ ShipFactory.prototype.createRandomShip = function(level) {
       'utility', this.getLevel_(level)));
   var ability = _.sample(this.itemService_.getByTypeAndLevel(
       'ability', this.getLevel_(level)));
-  var mod = _.sample(this.itemService_.getByTypeAndLevel(
-      'mod', this.getLevel_(level)));
   var circle = this.itemService_.getByName('circle');
 
   var dna = [primary, circle];
-  var chance = .05 + .7 * level / Game.NUM_LEVELS;
+  var chance = .05 + .7 * level / MAX_ITEM_LEVEL;
   if (Math.random() < chance) dna.push(secondary);
   if (Math.random() < chance) dna.push(ability);
   if (Math.random() < chance) dna.push(utility);
-  if (Math.random() < chance) dna.push(mod);
-  return this.createEnemy_(dna);
+  return dna;
 };
 
 ShipFactory.prototype.getLevel_ = function(level) {
@@ -36,13 +36,12 @@ ShipFactory.prototype.getLevel_ = function(level) {
   return level;
 };
 
-ShipFactory.prototype.createBoss = function(level) {
-  var dna = this.gameplay_.bosses[level];
-  return this.createEnemy_(dna);
+ShipFactory.prototype.createEnemy = function() {
+  return this.createShip_(this.gm_.level.enemy, 'bad');
 };
 
-ShipFactory.prototype.createEnemy_ = function(dna) {
-  return this.createShip_(dna, 'bad');
+ShipFactory.prototype.createPlayer = function() {
+  return this.createShip_(this.gm_.player, 'good');
 };
 
 ShipFactory.prototype.createShip_ = function(dna, style) {

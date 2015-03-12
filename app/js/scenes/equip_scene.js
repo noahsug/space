@@ -26,13 +26,14 @@ EquipScene.prototype.addEntities_ = function() {
     direction: 'vertical', align: 'top'});
   this.layout_.padding.left = 'btn-lg';
   this.layout_.padding.top = 'btn-lg';
-  this.layout_.padding.bottom = 'btn';
+  this.layout_.padding.bottom = 'btn-mix';
   _.each(itemBtns, function(btn) {
     this.layout_.add(btn);
     btn.padding.bottom = 'btn-lg';
   }, this);
   this.layout_.add(this.uiElement_.create(), {flex: 1});
   this.layout_.add(continueBtn);
+  continueBtn.layout.align = 'top';
   continueBtn.padding.left = 'btn-mix';
 };
 

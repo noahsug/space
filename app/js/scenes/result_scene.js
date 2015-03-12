@@ -15,10 +15,11 @@ ResultScene.prototype.addEntities_ = function() {
   }.bind(this));
 
   this.layout_ = this.layoutElement_.create({
-    direction: 'vertical', align: 'bottom'});
+    direction: 'vertical', childrenAlign: 'bottom'});
   this.layout_.padding.left = 'btn';
   this.layout_.padding.bottom = 'btn';
   this.layout_.add(continueBtn);
+  continueBtn.layout.align = 'top';
 };
 
 ResultScene.prototype.update_ = function(dt, state) {

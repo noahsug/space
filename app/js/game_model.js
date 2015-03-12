@@ -2,9 +2,10 @@ var GameModel = di.service('GameModel');
 
 GameModel.prototype.init = function() {
   this.player = [];
+  this.playerLevel = 0;
   this.inventory = [];
-  this.level = 0;
-  this.lives = 3;
+  this.world = [];
+  this.level = {};
 
   this.entities = new List();
   this.scenes = {};
@@ -13,8 +14,6 @@ GameModel.prototype.init = function() {
   this.time = 0;
   this.tick = 1;
 
-  this.enemy = {};
   this.transition = {done: true};
-  this.results = {};
   this.equipping = '';
 };

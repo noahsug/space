@@ -21,14 +21,7 @@ Strings = {
     primary: 'attack',
     secondary: 'attack II',
     ability: 'ability',
-    utility: 'movement',
+    utility: 'specialty',
     mod: 'boost'
-  },
-
-  Stat: {
-    health: 'health',
-    dmg: 'damage',
-    speed: 'speed',
-    def: 'defence'
   }
 };

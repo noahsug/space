@@ -1,17 +1,15 @@
 var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene', 'MainScene',
   'EquipOptionsScene', 'EquipScene', 'ResultScene', 'WonScene', 'LostScene',
-  'Gameplay']);
+  'Gameplay', 'World']);
 
 Game.UPDATE_RATE = .06;
-
-Game.prototype.init = function() {
-  Game.NUM_LEVELS = this.gameplay_.bosses.length;
-};
+Game.MAX_LEVEL = 7;
 
 Game.prototype.start = function() {
   this.nextAction_ = 0;
   this.setPlayerItems_();
+  this.world_.create();
   this.scenes_ = [
     /* 0 */ this.loadingScene_,
     /* 1 */ this.introScene_,
@@ -24,19 +22,12 @@ Game.prototype.start = function() {
     /* 8 */ this.lostScene_
   ];
 
-  //this.gm_.results.won = true;
-  //this.gm_.results.earned = {item: _.value(this.gameplay_.items)};
-  //this.gm_.results.earned = {stat: {name: 'health', value: 3}};
+  // DEBUG
+  this.gm_.level = this.gm_.world[0];
+  //this.gm_.level.results = 'won';
+  //this.gm_.level.earned = {item: _.value(this.gameplay_.items)};
 
-  //this.gm_.daysOnLevel = 4;
-  //this.gm_.daysLeft = 10 - this.gm_.daysOnLevel;
-
-  this.gm_.enemy = 'boss';
-  //this.gm_.enemy = 'random';
-
-  //this.gm_.level = 3;
-
-  this.scenes_[2].start();
+  this.scenes_[5].start();
 };
 
 Game.prototype.setPlayerItems_ = function() {

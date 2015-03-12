@@ -28,13 +28,14 @@ Inventory.prototype.unequip = function(item) {
 
 Inventory.prototype.getUnequippedByLevel = function(level) {
   var levels = _.range(0, level + 1).reverse().
-      concat(_.range(level + 1, Game.NUM_LEVELS));
+      concat(_.range(level + 1, Game.MAX_LEVEL + 1));
   for (var i = 0; i < levels.length; i++) {
     var items = _.filter(
         this.itemService_.getByLevel(levels[i]), this.isNotEquipped, this);
     if (items.length) return items;
   }
-  return this.itemService_.getByLevel(level);
+  // The player has every item!
+  return null;
 };
 
 Inventory.prototype.getEquippedIndex_ = function(item) {

@@ -9,13 +9,13 @@ UtilityDecorators.prototype.init = function() {
 UtilityDecorators.prototype.decorateDruid_ = function(obj, spec) {
   switch(spec.power) {
   case 3:
-    this.decoratSplit_(obj, spec);
+    this.decorateSplit_(obj, spec);
     break;
   case 2:
-    this.decoratRage_(obj, spec);
+    this.decorateRage_(obj, spec);
     break;
   case 1:
-    this.decoratMink_(obj, spec);
+    this.decorateMink_(obj, spec);
   }
 };
 
@@ -135,13 +135,13 @@ UtilityDecorators.prototype.decorateNinja_ = function(obj, spec) {
 
   switch(spec.power) {
   case 3:
-    this.decoratInvisible_(obj, spec);
+    this.decorateInvisible_(obj, spec);
     break;
   case 2:
-    this.decoratTeleport_(obj, spec);
+    this.decorateTeleport_(obj, spec);
     break;
   case 1:
-    this.decoratDash_(obj, spec);
+    this.decorateDash_(obj, spec);
   }
   this.util_.mod(obj, 'movement.speed', spec.speed);
 };

@@ -265,6 +265,17 @@ _.min = function(list) {
   return min;
 };
 
+_.pathExists = function(start, addNeighbors, atEnd, hash) {
+  // TODO: Implement this if needed.
+  var visited = {};
+  visited[hash(start)] = true;
+  return true;
+};
+
+_.between = function(value, min, max) {
+  return value >= min && value <= max;
+};
+
 _.options = function(overrides, defaults) {
   return _.defaults(_.clone(overrides) || {}, defaults);
 };

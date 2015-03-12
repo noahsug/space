@@ -1,49 +1,46 @@
 var MainScene = di.service('MainScene', [
   'GameModel as gm', 'Screen', 'Scene', 'LayoutElement', 'RoundBtnElement',
-  'EntityElement']);
+  'EntityElement', 'World']);
 
 MainScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('main'));
 };
 
-var COLS = 3;
-var ROWS = 4;
-var PADDING = 10;
 MainScene.prototype.addEntities_ = function() {
   this.entityElement_.create('mainSplash');
 
   var layouts = [];
-  for (var row = 0; row < ROWS; row++) {
+  for (var row = 0; row < World.ROWS; row++) {
     var layout = this.layoutElement_.create();
     layout.layout.flex = 1;
-    layout.layout.align = 'bottom';
+    layout.layout.align = 'center';
     layouts.push(layout);
-    for (var col = 0; col < COLS; col++) {
+    for (var col = 0; col < World.COLS; col++) {
       layout.add(this.createBtn_(row, col));
     }
   }
 
   this.layout_ = this.layoutElement_.create({direction: 'vertical'});
-  this.layout_.padding.bottom = 50;
+  this.layout_.setPadding(10, 0);
   _.each(layouts, function(layout) {
     this.layout_.add(layout);
   }, this);
 };
 
 MainScene.prototype.createBtn_ = function(row, col) {
-  var size = 60;
   var btn = this.roundBtnElement_.create();
   btn.padding.right = 20;
-  btn.setSize(size);
+  btn.setSize(60);
 
-  var level = row * COLS + col;
-  btn.setText(level);
-  if (level == 0) btn.setStyle('done');
-  if (level >= 3) btn.setStyle('locked');
-  btn.onClick(function() {
-    this.gm_.level = level;
-    this.transition_('equip_options_scene');
-  }.bind(this));
+  var level = this.world_.get(row, col);;
+  btn.getEntity().level = level;
+
+  if (!level.locked && !level.result) {
+    btn.onClick(function() {
+      this.gm_.level = level;
+      this.transition_('equipOptions');
+    }.bind(this));
+  }
   return btn;
 };
 

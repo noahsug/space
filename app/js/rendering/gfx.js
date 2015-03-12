@@ -13,6 +13,7 @@ Gfx.Color = {
   RED: '#FF0000',
   GREEN: '#00FF00',
   BLUE: '#7799FF',
+  LIGHT_BLUE: '#AAAAFF',
   OPAC_RED: 'rgba(255, 0, 0, .4)',
   MORE_OPAC_RED: 'rgba(255, 0, 0, .3)',
   OPAC_BLUE: 'rgba(50, 50, 255, .65)',
