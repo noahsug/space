@@ -20,7 +20,7 @@ BattleScene.prototype.addEntities_ = function() {
   this.shipFactory_.setTargets(this.player_, this.enemy_);
 
   //DEBUG.
-  this.enemy_.dead = true;
+  //this.enemy_.dead = true;
 };
 
 BattleScene.prototype.update_ = function(dt) {
@@ -40,7 +40,7 @@ BattleScene.prototype.update_ = function(dt) {
     this.player_ = this.player_.getLivingClone();
     this.enemy_ = this.enemy_.getLivingClone();
     if (this.player_.dead || this.enemy_.dead) {
-      this.gm_.level.results = this.player_.dead ? 'lost' : 'won';
+      this.gm_.level.state = this.player_.dead ? 'lost' : 'won';
       this.battleEnding_ = SLOWDOWN_TIME;
     }
   }
@@ -55,7 +55,7 @@ BattleScene.prototype.freezeEntities_ = function() {
 
 BattleScene.prototype.transitionOver_ = function() {
   this.removeEntities_();
-  this.gm_.level.results == 'won' ? this.handleWin_() : this.handleLoss_();
+  this.gm_.level.state == 'won' ? this.handleWin_() : this.handleLoss_();
 };
 
 BattleScene.prototype.handleWin_ = function() {

@@ -18,9 +18,8 @@ ShipFactory.prototype.createRandomDna_ = function(level) {
       'utility', this.getLevel_(level)));
   var ability = _.sample(this.itemService_.getByTypeAndLevel(
       'ability', this.getLevel_(level)));
-  var circle = this.itemService_.getByName('circle');
 
-  var dna = [primary, circle];
+  var dna = [primary];
   var chance = .05 + .7 * level / MAX_ITEM_LEVEL;
   if (Math.random() < chance) dna.push(secondary);
   if (Math.random() < chance) dna.push(ability);

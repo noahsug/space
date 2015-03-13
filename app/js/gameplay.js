@@ -29,9 +29,7 @@ di.constant('gameplayFile', {
 
     //'ninja',
     //'mink',
-    //'baboon',
-
-    'circle'
+    //'baboon'
   ],
 
   inventory: [
@@ -45,20 +43,17 @@ di.constant('gameplayFile', {
       //'missiles',
       //'pistol',
       //'split',
-      'circle',
     ],
     [
       'razors',
       'turtle',
       '+defence',
-      'circle',
     ],
     [
       'grenade',
       'emp',
       'baboon II',
       '+explosions',
-      'circle',
     ],
     [
       'sniper',
@@ -66,7 +61,6 @@ di.constant('gameplayFile', {
       'mink',
       'dash II',
       '+speed II',
-      'circle',
     ],
     [
       'missiles II',
@@ -74,7 +68,6 @@ di.constant('gameplayFile', {
       '+attack rate II',
       'baboon III',
       'stun',
-      'circle',
     ],
   ],
 
@@ -270,11 +263,5 @@ di.constant('gameplayFile', {
     //  desc: 'Stay alive for a few seconds after death.',
     //  id: 'ability.zombie', spec: {cooldown: 4},
     //  level: 9},
-
-    // Non-collectables.
-
-    'circle': {
-      desc: 'Circle',
-      id: 'shape.circle', spec: {radius: 12}}
   }
 });

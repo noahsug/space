@@ -6,15 +6,15 @@ Inventory.prototype.has = function(type) {
 };
 
 Inventory.prototype.get = function(type) {
-  return this.itemService_.getByTypeFrom(this.gm_.inventory, type);
+  return _.where(this.gm_.inventory, {category: type});
+};
+
+Inventory.prototype.getEquipped = function(type) {
+  return _.findWhere(this.gm_.player, {category: type});
 };
 
 Inventory.prototype.isEquipped = function(item) {
   return this.getEquippedIndex_(item) >= 0;
-};
-
-Inventory.prototype.isNotEquipped = function(item) {
-  return !this.isEquipped(item);
 };
 
 Inventory.prototype.equip = function(item) {
@@ -30,16 +30,16 @@ Inventory.prototype.getUnequippedByLevel = function(level) {
   var levels = _.range(0, level + 1).reverse().
       concat(_.range(level + 1, Game.MAX_LEVEL + 1));
   for (var i = 0; i < levels.length; i++) {
-    var items = _.filter(
-        this.itemService_.getByLevel(levels[i]), this.isNotEquipped, this);
+    var items = _.filter(this.itemService_.getByLevel(levels[i]),
+                         _.negate(this.isEquipped.bind(this)));
     if (items.length) return items;
   }
   // The player has every item!
-  return null;
+  return [];
 };
 
 Inventory.prototype.getEquippedIndex_ = function(item) {
-  return this.itemService_.getIndexByTypeFrom(this.gm_.player, item);
+  return _.findIndexWhere(this.gm_.player, {name: item.name});
 };
 
 Inventory.prototype.hasItemToEquip = function() {

@@ -4,7 +4,7 @@ var World = di.service('World', [
 World.COLS = 3;
 World.ROWS = 6;
 World.START = [0, 0];
-World.END = [World.COLS - 1, World.ROWS - 1];
+World.END = [World.ROWS - 1, World.COLS - 1];
 World.LEVELS = World.COLS * World.ROWS;
 
 World.prototype.create = function() {
@@ -13,8 +13,7 @@ World.prototype.create = function() {
     var level = i && Math.floor(i / 5 + Math.random() * (2 + i / 5));
     return {
       type: level,
-      locked: i != startIndex,
-      result: '',
+      state: i == startIndex ? 'unlocked' : 'locked',
       index: i,
       enemy: this.shipFactory_.createEnemyDna(level)
     };
@@ -35,12 +34,13 @@ World.prototype.unlockAdjacent = function(level) {
   var row = (level.index - col) / World.COLS;
   this.neighbors_(row, col).forEach(function(rowCol) {
     if (!this.isValid_(rowCol[0], rowCol[1])) return;
-    this.get.apply(this, rowCol).locked = false;
+    var level = this.get.apply(this, rowCol);
+    if (level.state == 'locked') level.state = 'unlocked';
   }, this);
 };
 
 World.prototype.won = function() {
-  return this.get.apply(this, World.END).results == 'won';
+  return this.get.apply(this, World.END).state == 'won';
 };
 
 World.prototype.lost = function() {

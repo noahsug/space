@@ -30,12 +30,12 @@ MainScene.prototype.addEntities_ = function() {
 MainScene.prototype.createBtn_ = function(row, col) {
   var btn = this.roundBtnElement_.create();
   btn.padding.right = 20;
-  btn.setSize(60);
+  btn.setSize('level');
 
   var level = this.world_.get(row, col);;
   btn.getEntity().level = level;
 
-  if (!level.locked && !level.result) {
+  if (level.state == 'unlocked') {
     btn.onClick(function() {
       this.gm_.level = level;
       this.transition_('equipOptions');

@@ -23,4 +23,5 @@ ShipDecorator.prototype.decorate = function(obj) {
 
   _.decorate(obj, this.d_.health);
   _.decorate(obj, this.d_.movement.ai);
+  _.decorate(obj, this.d_.shape.circle, {radius: 12});
 };

@@ -1,1 +1,0 @@
-window.PROD = false;

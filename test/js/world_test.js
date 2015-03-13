@@ -12,10 +12,11 @@ describe('A world', function() {
       return rowCol[0] * World.COLS + rowCol[1];
     });
     gm.world.forEach(function(level) {
-      if (!level.locked != _.contains(unlocked, level.index)) {
-        console.error(level.index, level.locked, unlocked);
+      if (_.contains(unlocked, level.index)) {
+        expect(level.state).toBe('unlocked');
+      } else {
+        expect(level.state).toBe('locked');
       }
-      expect(level.locked).toBe(!_.contains(unlocked, level.index));
     });
   };
 
@@ -58,17 +59,17 @@ describe('A world', function() {
   it('can detect when the game is won', function() {
     world.create();
     expect(world.won()).toBe(false);
-    world.get.apply(world, World.END).results = 'won';
+    world.get.apply(world, World.END).state = 'won';
     expect(world.won()).toBe(true);
   });
 
-  it('can detect when the game is lost', function() {
+  xit('can detect when the game is lost', function() {
     world.create();
     expect(world.lost()).toBe(false);
 
-    //for (var col = 0; col < World.COLS; col++) {
-    //  world.get(1, col).results = 'lost';
-    //}
-    //expect(world.lost()).toBe(true);
+    for (var col = 0; col < World.COLS; col++) {
+      world.get(1, col).state = 'lost';
+    }
+    expect(world.lost()).toBe(true);
   });
 });

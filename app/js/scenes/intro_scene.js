@@ -18,7 +18,7 @@ IntroScene.prototype.addEntities_ = function() {
   continueBtn.setText('continue', {size: 'btn'});
 
   this.layout_ = this.layoutElement_.create({
-    direction: 'vertical', childrenAlign: 'bottom'});
+    direction: 'vertical', align: 'bottom'});
   this.layout_.padding.left = 'btn';
   this.layout_.padding.bottom = 'btn';
   this.layout_.add(continueBtn);

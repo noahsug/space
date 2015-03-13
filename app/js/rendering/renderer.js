@@ -1,5 +1,6 @@
 var Renderer = di.service('Renderer', [
-  'GameModel as gm', 'Screen', 'ctx', 'Gfx', 'Background', 'Font']);
+  'GameModel as gm', 'Screen', 'ctx', 'Gfx', 'Background', 'Font',
+  'Inventory']);
 
 Renderer.prototype.init = function() {
   this.initFns_ = _.pickFunctions(this, {prefix: 'init', suffix: '_'});
@@ -120,7 +121,7 @@ Renderer.prototype.drawMainSplash_ = function() {
 Renderer.prototype.drawResultSplash_ = function() {
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'top';
-  var result = this.gm_.level.results == 'won' ? 'victory' : 'defeat';
+  var result = this.gm_.level.state == 'won' ? 'victory' : 'defeat';
   this.drawHeading_(result, 70, this.screen_.width / 2, 30 - 12);
 
   if (!_.isEmpty(this.gm_.level.earned)) {
@@ -134,7 +135,7 @@ Renderer.prototype.drawResultSplash_ = function() {
     this.ctx_.textAlign = 'left';
     if (this.gm_.level.earned.item) {
       var item = this.gm_.level.earned.item;
-      this.drawText_(item.name, 16, x, y, true);
+      this.drawText_(item.name, 16, x, y, {bold: true});
       msg = '(' + Strings.ItemType[item.category] + ')';
       this.drawText_(msg, 16, x, y + 20);
     }
@@ -142,7 +143,27 @@ Renderer.prototype.drawResultSplash_ = function() {
 };
 
 Renderer.prototype.drawEquipOptionsSplash_ = function() {
-  this.topLeftHeading_('customize');
+  var outerPadding = 30;
+
+  this.ctx_.fillStyle = '#000000';
+  this.ctx_.strokeStyle = '#FFFFFF';
+  this.ctx_.lineWidth = 1;
+  var x = outerPadding;
+  var y = 40;
+  var width = this.screen_.width - outerPadding * 2;
+  var height = 120;
+  this.ctx_.fillRect(x, y, width, height);
+  this.ctx_.strokeRect(x, y, width, height);
+
+  this.ctx_.textAlign = 'left';
+  this.ctx_.textBaseline = 'top';
+  this.drawText_('target:', 16, outerPadding, 18);
+
+  x = outerPadding + 15;
+  y = 50;
+  _.each(this.gm_.level.enemy, function(item, i) {
+    this.drawText_(item.name, 18, x, y + 25 * i);
+  }, this);
 };
 
 Renderer.prototype.drawEquipSplash_ = function() {
@@ -180,19 +201,21 @@ Renderer.prototype.topLeftSubHeading_ = function(text, opt_color) {
 // TODO: Animate level state changes.
 Renderer.prototype.drawRoundBtn_ = function(entity) {
   // Draw circle.
-  if (entity.level.result == 'lost') return;
-  this.ctx_.fillStyle = '#000000';
-  this.ctx_.lineWidth = 2;
-  var color;
-  if (entity.level.locked) {
-    color = Gfx.Color.LOCKED;
-  } else if (entity.level.result == 'won') {
-     color = '#FFFFFF';
-  } else {
-    color = Gfx.Color.LIGHT_BLUE;
+  var color = '#FFFFFF';
+  if (entity.level) {
+    switch (entity.level.state) {
+      case 'won':
+      case 'lost': return;
+      case 'locked': color = Gfx.Color.LOCKED; break;
+      case 'unlocked': color = '#FFFFFF'; break;
+      default: _.fail('invalid state: ', entity.level.state);
+    }
+  } else if (entity.item) {
+    if (!this.inventory_.has(entity.item.category)) color = Gfx.Color.LOCKED;
   }
   this.ctx_.strokeStyle = color;
-
+  this.ctx_.fillStyle = '#000000';
+  this.ctx_.lineWidth = 2;
   this.ctx_.beginPath();
   this.ctx_.arc(entity.render.pos.x, entity.render.pos.y,
                 entity.radius - 1, 0, 2 * Math.PI);
@@ -200,29 +223,37 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
   this.ctx_.stroke();
 
   // Draw text.
-  if (entity.level.result == 'won') return;
+  var text = '';
+  var textSize;
+  if (entity.level) {
+    if (entity.level.state == 'won') return;
+    textSize = 20;
+    text = entity.level.type;
+  } else if (entity.item) {
+    text = entity.item.name || 'none';
+    textSize = 16;
+  }
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'middle';
-  this.drawText_(entity.level.type, 20,
-                 entity.render.pos.x, entity.render.pos.y,
-                 false, color);
+  this.drawText_(text, textSize, entity.render.pos.x, entity.render.pos.y,
+                 {color: color});
 };
 
 Renderer.prototype.drawBtn_ = function(entity) {
-  this.underlineLabel_(entity);
+  this.underlineLabel_(entity, {direction: entity.direction});
   this.drawLabel_(entity);
 };
 
 Renderer.prototype.drawLabel_ = function(entity) {
   var color = null;
-  if (entity.style == 'equipped') {
-    color = Gfx.Color.SUCCESS;
+  if (entity.style == 'equipped' || entity.style == 'active') {
+    color = Gfx.Color.ACTIVE;
   }
   this.ctx_.textAlign = entity.align;
   this.ctx_.textBaseline = entity.baseline;
   this.drawText_(entity.text, entity.size,
                  entity.render.pos.x, entity.render.pos.y,
-                 false, color);
+                 {color: color, bold: entity.style == 'active'});
 };
 
 Renderer.prototype.drawHitbox_ = function(entity) {
@@ -533,11 +564,12 @@ Renderer.prototype.drawBlade_ = function(entity, style, dt) {
 
 };
 
-Renderer.prototype.drawText_ = function(text, size, x, y, opt_bold, opt_color) {
-  var color = opt_color || '#FFFFFF';
+Renderer.prototype.drawText_ = function(text, size, x, y, opt_options) {
+  var options = opt_options || {};
+  var color = options.color || '#FFFFFF';
   this.ctx_.fillStyle = color;
   this.ctx_.shadowBlur = 0;
-  this.ctx_.font = (opt_bold ? 'bold ' : '') + size + 'px ' + Gfx.Font.TEXT;
+  this.ctx_.font = (options.bold ? 'bold ' : '') + size + 'px ' + Gfx.Font.TEXT;
   this.ctx_.fillText(text, x, y);
 };
 
@@ -561,24 +593,36 @@ Renderer.prototype.drawHeading_ = function(text, size, x, y, opt_color) {
   this.ctx_.fillText(text, x, y);
 };
 
-Renderer.prototype.underlineLabel_ = function(entity) {
-  var color = null;
-  if (entity.style == 'equipped') {
-    color = Gfx.Color.SUCCESS;
+Renderer.prototype.underlineLabel_ = function(entity, opt_options) {
+  var options = opt_options || {};
+  options.color = '#FFFFFF';
+  if (entity.style == 'equipped' || entity.style == 'active') {
+    options.color = Gfx.Color.ACTIVE;
   }
-  this.underlineText_(entity.size, entity.render.pos.x, entity.render.pos.y,
-                      color);
+  options.lineDirection = entity.lineDirection;
+  this.underlineText_(entity.text, entity.size,
+                      entity.render.pos.x, entity.render.pos.y, options);
 };
 
-Renderer.prototype.underlineText_ = function(size, x, y, opt_color) {
-  var color = opt_color || '#FFFFFF';
+Renderer.prototype.underlineText_ = function(text, size, x, y, opt_options) {
+  var options = opt_options || {};
+  options.color = options.color || '#FFFFFF';
+  options.lineDirection = options.lineDirection || 'right';
   y += size + 5;
   this.ctx_.lineWidth = 1;
   this.ctx_.shadowBlur = 2;
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = color;
+  this.ctx_.strokeStyle = this.ctx_.shadowColor = options.color;
   this.ctx_.beginPath();
-  this.ctx_.moveTo(x, y);
-  this.ctx_.lineTo(x + this.screen_.width, y);
+
+  if (options.lineDirection == 'right') {
+    this.ctx_.moveTo(x, y);
+    this.ctx_.lineTo(x + this.screen_.width, y);
+  } else {
+    var width = this.font_.width(text, size);
+    this.ctx_.moveTo(x + width, y);
+    this.ctx_.lineTo(0, y);
+  }
+
   this.ctx_.stroke();
 };
 

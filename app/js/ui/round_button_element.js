@@ -5,12 +5,15 @@ RoundBtnElement.prototype.init = function() {
   _.class.extend(this, this.entityElement_.create('roundBtn'));
   _.decorate(this.entity_, this.d_.clickable);
   _.decorate(this.entity_, this.d_.shape.circle, {radius: 20});
+
+  this.addUnit_('size', 'level', 60);
+  this.addUnit_('size', 'item', .35);
 };
 
 RoundBtnElement.prototype.setSize = function(size) {
-  this.entity_.radius = size / 2;
+  this.entity_.radius = this.measure_('size', size) / 2;
 };
 
 RoundBtnElement.prototype.calcChildWidthHeight_ = function() {
-  this.childWidth_ = this.childHeight_ = this.entity_.radius * 2;
+  this.childWidth = this.childHeight = this.entity_.radius * 2;
 };

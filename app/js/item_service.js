@@ -14,17 +14,9 @@ ItemService.prototype.getByLevel = function(level) {
 };
 
 ItemService.prototype.getByType = function(type) {
-  return this.getByTypeFrom(this.gameplay_.items, type);
+  return _.where(this.gameplay_.items, {category: type});
 };
 
 ItemService.prototype.getByTypeAndLevel = function(type, level) {
   return _.where(this.gameplay_.items, {level: level, category: type});
-};
-
-ItemService.prototype.getByTypeFrom = function(list, type) {
-  return _.where(list, {category: type});
-};
-
-ItemService.prototype.getIndexByTypeFrom = function(list, item) {
-  return _.findIndexWhere(list, {name: item.name});
 };
