@@ -33,7 +33,7 @@ MainScene.prototype.createBtn_ = function(row, col) {
   btn.setSize('level');
 
   var level = this.world_.get(row, col);;
-  btn.getEntity().level = level;
+  btn.setProp('level', level);
 
   if (level.state == 'unlocked') {
     btn.onClick(function() {

@@ -17,13 +17,13 @@ Scene.prototype.getState_ = function(state) {
 
 Scene.prototype.start = function() {
   this.setState_('active');
-  this.reset_();
   this.addEntities_();
+  this.start_();
 };
 
-Scene.prototype.reset_ = _.emptyFn;
-
 Scene.prototype.addEntities_ = _.emptyFn;
+
+Scene.prototype.start_ = _.emptyFn;
 
 Scene.prototype.update = function(dt) {
   var state = this.getState_();
@@ -52,7 +52,7 @@ Scene.prototype.resolve = function(dt) {
 Scene.prototype.update_ = _.emptyFn;
 
 Scene.prototype.transition_ = function(to, opt_time) {
-  this.transitionTime_ = opt_time || Scene.TRANSITION_TIME;
+  this.transitionTime_ = _.orDef(opt_time, Scene.TRANSITION_TIME);
   this.setState_('transition');
   var pos = {screenX: this.mouse_.screenX, screenY: this.mouse_.screenY};
   this.gm_.transition.pos = pos;
@@ -71,11 +71,14 @@ Scene.prototype.transitionInstantly_ = function(to) {
 
 Scene.prototype.transitionOver_ = function() {
   this.removeEntities_();
+  this.end_();
 };
 
 Scene.prototype.removeEntities_ = function() {
   this.gm_.entities.clear();
 };
+
+Scene.prototype.end_ = _.emptyFn;
 
 Scene.prototype.restartGame_ = function() {
   var scenes = this.gm_.scenes;

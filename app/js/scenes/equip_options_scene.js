@@ -10,8 +10,7 @@ var ITEM_PADDING = 20;
 EquipOptionsScene.prototype.addEntities_ = function() {
   this.entityElement_.create('equipOptionsSplash');
 
-  var buttons = _.map(['primary', 'secondary', 'ability', 'utility'],
-                      this.createEquipButton_.bind(this));
+  var equipBtns = _.map(Game.ITEM_TYPES, this.createEquipButton_.bind(this));
 
   var continueBtn = this.btnElement_.create();
   continueBtn.setText('fight', {size: 'btn'});
@@ -31,10 +30,10 @@ EquipOptionsScene.prototype.addEntities_ = function() {
 
   this.layout_.addFlex();
 
-  var equipRow1 = this.getEquipRow_(buttons[0], buttons[1]);
+  var equipRow1 = this.getEquipRow_(equipBtns[0], equipBtns[1]);
   this.layout_.add(equipRow1);
   equipRow1.padding.bottom = ITEM_PADDING * 2;
-  var equipRow2 = this.getEquipRow_(buttons[2], buttons[3]);
+  var equipRow2 = this.getEquipRow_(equipBtns[2], equipBtns[3]);
   this.layout_.add(equipRow2);
 
   this.layout_.addFlex();
@@ -55,7 +54,7 @@ EquipOptionsScene.prototype.addEntities_ = function() {
 EquipOptionsScene.prototype.createEquipButton_ = function(type) {
   var btn = this.roundBtnElement_.create();
   btn.setSize('item');
-  btn.getEntity().item = this.inventory_.getEquipped(type) || {category: type};
+  btn.setProp('item', this.inventory_.getEquipped(type) || {category: type});
   if (this.inventory_.has(type)) {
     btn.onClick(function() {
       this.goToEquip_(type);

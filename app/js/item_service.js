@@ -1,5 +1,5 @@
 var ItemService = di.service('ItemService', [
-  'Gameplay']);
+  'Gameplay', 'GameModel as gm']);
 
 ItemService.prototype.get = function() {
   return this.gameplay_.items;
@@ -19,4 +19,8 @@ ItemService.prototype.getByType = function(type) {
 
 ItemService.prototype.getByTypeAndLevel = function(type, level) {
   return _.where(this.gameplay_.items, {level: level, category: type});
+};
+
+ItemService.prototype.getEnemyEquipped = function(type) {
+  return _.findWhere(this.gm_.level.enemy, {category: type});
 };

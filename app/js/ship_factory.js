@@ -7,9 +7,8 @@ ShipFactory.prototype.createEnemyDna = function(level) {
   return this.createRandomDna_(level);
 };
 
-var MAX_ITEM_LEVEL = 2;
 ShipFactory.prototype.createRandomDna_ = function(level) {
-  level = Math.round(MAX_ITEM_LEVEL * level / Game.MAX_LEVEL);
+  level = Math.round(Game.MAX_ITEM_LEVEL * level / Game.MAX_LEVEL);
   var primary = _.sample(this.itemService_.getByTypeAndLevel(
       'primary', this.getLevel_(level)));
   var secondary = _.sample(this.itemService_.getByTypeAndLevel(
@@ -20,7 +19,7 @@ ShipFactory.prototype.createRandomDna_ = function(level) {
       'ability', this.getLevel_(level)));
 
   var dna = [primary];
-  var chance = .05 + .7 * level / MAX_ITEM_LEVEL;
+  var chance = 1 * level / Game.MAX_ITEM_LEVEL;
   if (Math.random() < chance) dna.push(secondary);
   if (Math.random() < chance) dna.push(ability);
   if (Math.random() < chance) dna.push(utility);

@@ -5,6 +5,9 @@ var Game = di.service('Game', [
 
 Game.UPDATE_RATE = .06;
 Game.MAX_LEVEL = 7;
+Game.MAX_ITEM_LEVEL = 5;
+
+Game.ITEM_TYPES = ['primary', 'secondary', 'ability', 'utility'];
 
 Game.prototype.start = function() {
   this.nextAction_ = 0;
@@ -23,11 +26,10 @@ Game.prototype.start = function() {
   ];
 
   // DEBUG
-  this.gm_.level = this.gm_.world[0];
-  this.gm_.level.state = 'won';
-  this.gm_.level.earned = {item: _.value(this.gameplay_.items)};
+  //this.gm_.level = this.gm_.world[0];
+  //this.gm_.level.state = 'lost';
 
-  this.scenes_[5].start();
+  this.scenes_[0].start();
 };
 
 Game.prototype.setPlayerItems_ = function() {

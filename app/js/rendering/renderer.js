@@ -98,8 +98,8 @@ Renderer.prototype.drawLoadingSplash_ = function(entity) {
 
   var x = this.screen_.width / 2;
   var y = this.screen_.height / 2;
-  this.ctx_.shadowBlur = 8;
-  this.ctx_.lineWidth = 2;
+  this.ctx_.shadowBlur = 25;
+  this.ctx_.lineWidth = 5;
   this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
   this.ctx_.beginPath();
   this.ctx_.arc(x, y, x / 2, -Math.PI / 2,
@@ -118,27 +118,15 @@ Renderer.prototype.drawIntroSplash_ = function() {
 Renderer.prototype.drawMainSplash_ = function() {
 };
 
-Renderer.prototype.drawResultSplash_ = function() {
-  this.ctx_.textAlign = 'center';
+Renderer.prototype.drawResultSplash_ = function(entity) {
+  this.ctx_.textAlign = 'left';
   this.ctx_.textBaseline = 'top';
   var result = this.gm_.level.state == 'won' ? 'victory' : 'defeat';
-  this.drawHeading_(result, 70, this.screen_.width / 2, 30 - 12);
+  this.drawHeading_(result, 70, this.screen_.width * .14, 30 - 12);
 
-  if (!_.isEmpty(this.gm_.level.earned)) {
-    var y = this.screen_.height / 2 - 20;
-    var x = this.screen_.width / 2;
-    this.ctx_.textAlign = 'right';
-    var msg = this.gm_.level.earned.item ? 'aquired:' : 'gained:';
-    this.drawText_(msg, 16, x, y);
-
-    y += 30;
-    this.ctx_.textAlign = 'left';
-    if (this.gm_.level.earned.item) {
-      var item = this.gm_.level.earned.item;
-      this.drawText_(item.name, 16, x, y, {bold: true});
-      msg = '(' + Strings.ItemType[item.category] + ')';
-      this.drawText_(msg, 16, x, y + 20);
-    }
+  if (this.gm_.level.state == 'won') {
+    var text = entity.rewardExists ? 'select reward:' : 'no reward';
+    this.drawText_(text, 16, this.screen_.width * .14, 140);
   }
 };
 
@@ -162,7 +150,9 @@ Renderer.prototype.drawEquipOptionsSplash_ = function() {
   x = outerPadding + 15;
   y = 50;
   _.each(this.gm_.level.enemy, function(item, i) {
-    this.drawText_(item.name, 18, x, y + 25 * i);
+    var color = this.inventory_.hasItem(item) ?
+        Gfx.Color.WHITE : Gfx.Color.ACTIVE;
+    this.drawText_(item.name, 18, x, y + 25 * i, {color: color});
   }, this);
 };
 
@@ -211,7 +201,15 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
       default: _.fail('invalid state: ', entity.level.state);
     }
   } else if (entity.item) {
-    if (!this.inventory_.has(entity.item.category)) color = Gfx.Color.LOCKED;
+    if (entity.rewardBtn) {
+      if (!entity.item.name || this.inventory_.isEquipped(entity.item)) {
+        color = Gfx.Color.LOCKED;
+      } else if (entity.style == 'active') {
+        color = Gfx.Color.ACTIVE;
+      }
+    } else if (!this.inventory_.has(entity.item.category)) {
+      color = Gfx.Color.LOCKED;
+    }
   }
   this.ctx_.strokeStyle = color;
   this.ctx_.fillStyle = '#000000';
@@ -248,6 +246,8 @@ Renderer.prototype.drawLabel_ = function(entity) {
   var color = null;
   if (entity.style == 'equipped' || entity.style == 'active') {
     color = Gfx.Color.ACTIVE;
+  } else if (entity.style == 'locked') {
+    color = Gfx.Color.LOCKED;
   }
   this.ctx_.textAlign = entity.align;
   this.ctx_.textBaseline = entity.baseline;

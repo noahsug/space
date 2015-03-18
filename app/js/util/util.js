@@ -290,7 +290,7 @@ _.spec = function(obj, name, overrides, defaults) {
   }
 };
 
-_.ifDef = function(value, valueWhenUndefined) {
+_.orDef = function(value, valueWhenUndefined) {
   return _.isDef(value) ? value : valueWhenUndefined;
 };
 

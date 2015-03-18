@@ -91,10 +91,10 @@ Gfx.prototype.setDefaults_ = function(attrs) {
 };
 
 Gfx.prototype.getStyleStr_ = function(attrs) {
-  attrs.layer = _.ifDef(attrs.layer, 5);
+  attrs.layer = _.orDef(attrs.layer, 5);
   return _.map(Gfx.AttrNames, function(name) {
     var value = attrs[name];
-    return _.ifDef(value, '~');
+    return _.orDef(value, '~');
   }).join('~');
 };
 

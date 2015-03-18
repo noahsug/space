@@ -44,8 +44,9 @@ World.prototype.won = function() {
 };
 
 World.prototype.lost = function() {
-  //_.path(World.END, addNeighbors, atEnd, hash);
-  return false;
+  return this.gm_.world.some(function(level) {
+    return level.state == 'unlocked';
+  });
 };
 
 World.prototype.isValid_ = function(row, col) {

@@ -1,6 +1,10 @@
 var Inventory = di.service('Inventory', [
   'GameModel as gm', 'ItemService']);
 
+Inventory.prototype.hasItem = function(item) {
+  return !!_.findWhere(this.gm_.inventory, {name: item.name});
+};
+
 Inventory.prototype.has = function(type) {
   return !!this.get(type).length;
 };

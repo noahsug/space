@@ -9,6 +9,9 @@ BtnElement.prototype.init = function() {
 
   this.label_ = this.labelElement_.create();
   this.label_.setType('btn');
+  ['setStyle', 'getStyle', 'setProp', 'getProp'].forEach(function(name) {
+    this[name] = this.label_[name].bind(this.label_);
+  }, this);
 
   this.setLineDirection('right');
 
@@ -32,10 +35,6 @@ BtnElement.prototype.setText = function(text, spec) {
   this.label_.setText(text, spec);
 
   this.entity_.height = spec.size + 4;
-};
-
-BtnElement.prototype.setStyle = function(style) {
-  this.label_.setStyle(style);
 };
 
 BtnElement.prototype.calcChildWidthHeight_ = function() {

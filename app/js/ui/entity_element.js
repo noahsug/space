@@ -19,12 +19,20 @@ EntityElement.prototype.createEntity_ = function(type) {
   return entity;
 };
 
-EntityElement.prototype.getEntity = function() {
-  return this.entity_;
+EntityElement.prototype.setStyle = function(style) {
+  this.setProp('style', style);
 };
 
-EntityElement.prototype.setStyle = function(style) {
-  this.entity_.style = style;
+EntityElement.prototype.getStyle = function() {
+  return this.getProp('style');
+};
+
+EntityElement.prototype.setProp = function(prop, value) {
+  this.entity_[prop] = value;
+};
+
+EntityElement.prototype.getProp = function(prop) {
+  return this.entity_[prop];
 };
 
 EntityElement.prototype.positionChild_ = function(x, y) {

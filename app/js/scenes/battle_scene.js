@@ -1,6 +1,5 @@
 var BattleScene = di.service('BattleScene', [
-  'Scene', 'GameModel as gm', 'BattleRewards', 'ShipFactory',
-  'EntityDecorator', 'World']);
+  'Scene', 'GameModel as gm', 'ShipFactory', 'EntityDecorator', 'World']);
 
 var SLOWDOWN_TIME = 2;
 
@@ -9,7 +8,7 @@ BattleScene.prototype.init = function() {
   this.d_ = this.entityDecorator_.getDecorators();
 };
 
-BattleScene.prototype.reset_ = function() {
+BattleScene.prototype.start_ = function() {
   this.battleEnding_ = 0;
 };
 
@@ -63,14 +62,6 @@ BattleScene.prototype.handleWin_ = function() {
     this.transition_('won');
   } else {
     this.world_.unlockAdjacent(this.gm_.level);
-    this.rewardPlayer_();
-  }
-};
-
-BattleScene.prototype.rewardPlayer_ = function() {
-  this.gm_.level.earned = this.battleRewards_.getReward();
-  if (this.gm_.level.earned.item) {
-    this.gm_.inventory.push(this.gm_.level.earned.item);
   }
 };
 
