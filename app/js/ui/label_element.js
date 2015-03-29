@@ -6,6 +6,7 @@ LabelElement.prototype.init = function() {
 
   this.addUnit_('size', 'btn', 16);
   this.addUnit_('size', 'btn-lg', 20);
+  this.addUnit_('size', 'btn-sm', 12);
 };
 
 LabelElement.prototype.setText = function(text, spec) {

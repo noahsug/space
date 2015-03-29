@@ -16,6 +16,7 @@ LayoutElement.prototype.init = function(opt_options) {
   this.setPadding.apply(this, options.padding || [0]);
 
   this.addUnit_('pad-left', 'btn', .66);
+  this.addUnit_('pad-left', 'btn-sm', .8);
   this.addUnit_('pad-bot', 'btn', .16);
   this.addUnit_('pad-bot', 'btn-mix', .14);
   this.addUnit_('pad-bot', 'btn-crowded', .1);

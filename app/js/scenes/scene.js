@@ -17,8 +17,8 @@ Scene.prototype.getState_ = function(state) {
 
 Scene.prototype.start = function() {
   this.setState_('active');
-  this.addEntities_();
   this.start_();
+  this.addEntities_();
 };
 
 Scene.prototype.addEntities_ = _.emptyFn;
@@ -51,6 +51,14 @@ Scene.prototype.resolve = function(dt) {
 
 Scene.prototype.update_ = _.emptyFn;
 
+Scene.prototype.transitionFast_ = function(to) {
+  this.transition_(to, Scene.TRANSITION_TIME / 2);
+};
+
+Scene.prototype.transitionInstantly_ = function(to) {
+  this.transition_(to, 0);
+};
+
 Scene.prototype.transition_ = function(to, opt_time) {
   this.transitionTime_ = _.orDef(opt_time, Scene.TRANSITION_TIME);
   this.setState_('transition');
@@ -58,15 +66,8 @@ Scene.prototype.transition_ = function(to, opt_time) {
   this.gm_.transition.pos = pos;
   this.gm_.transition.time = this.transitionTime_;
   this.gm_.transition.done = false;
+  this.gm_.transition.prev = this.name_;
   this.transitionTo_ = to;
-};
-
-Scene.prototype.transitionFast_ = function(to) {
-  this.transition_(to, Scene.TRANSITION_TIME / 2);
-};
-
-Scene.prototype.transitionInstantly_ = function(to) {
-  this.transition_(to, 0);
 };
 
 Scene.prototype.transitionOver_ = function() {
@@ -81,11 +82,5 @@ Scene.prototype.removeEntities_ = function() {
 Scene.prototype.end_ = _.emptyFn;
 
 Scene.prototype.restartGame_ = function() {
-  var scenes = this.gm_.scenes;
-  var player = this.gm_.player;
-  var inventory = this.gm_.inventory;
-  this.gm_.init();
-  this.gm_.scenes = scenes;
-  this.gm_.player = player;
-  this.gm_.inventory = inventory;
+  this.requestRestart = true;
 };

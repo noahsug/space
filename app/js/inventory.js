@@ -25,9 +25,20 @@ Inventory.prototype.equip = function(item) {
   this.gm_.player.push(item);
 };
 
+Inventory.prototype.add = function(item) {
+  if (this.hasItem(item)) return;
+  this.gm_.inventory.push(item);
+};
+
+Inventory.prototype.remove = function(item) {
+  if (!this.hasItem(item)) return;
+  var index = _.findIndexWhere(this.gm_.inventory, {name: item.name});
+  this.gm_.inventory.splice(index, 1);
+};
+
 Inventory.prototype.unequip = function(item) {
   var equipIndex = this.getEquippedIndex_(item);
-  this.gm_.player.splice(equipIndex, 1);
+  if (equipIndex >= 0) this.gm_.player.splice(equipIndex, 1);
 };
 
 Inventory.prototype.getUnequippedByLevel = function(level) {

@@ -47,3 +47,6 @@ SeededRandom.prototype.nextFloat = function(minOrMax, opt_max) {
 SeededRandom.prototype.flipCoin = function() {
   return this.next() < .5;
 };
+
+_.r = new SeededRandom();
+_.r.useTrueRandom(true);

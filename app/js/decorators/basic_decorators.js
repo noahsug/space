@@ -9,13 +9,14 @@ BasicDecorators.prototype.init = function() {
 BasicDecorators.prototype.decorateClickable_ = function(obj) {
   obj.update(function() {
     obj.mouseOver = obj.collides(this.mouse_);
-    obj.clicked = obj.mouseOver && this.mouse_.pressed;
+    if (obj.clicked == this.gm_.time) obj.clicked = false;
+    else obj.clicked = obj.mouseOver && this.mouse_.pressed && this.gm_.time;
   }.bind(this));
 };
 
 BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
-  spec = _.spec(spec, {
-    health: 30
+  spec = this.util_.spec(spec, {
+    health: Health.DEFAULT
   });
   obj.def = 1;
 
@@ -43,7 +44,7 @@ BasicDecorators.prototype.decorateHealth_ = function(obj, spec) {
 
 // Requires obj.movement.speed.
 BasicDecorators.prototype.decorateRange_ = function(obj, spec) {
-  spec = _.spec(spec, {
+  spec = this.util_.spec(spec, {
     range: 1000
   });
   obj.maxRange = obj.remainingRange = spec.range;
@@ -91,7 +92,7 @@ BasicDecorators.prototype.decorateSelectTarget_ = function(obj, spec) {
 };
 
 BasicDecorators.prototype.decorateShipCollision_ = function(obj, spec) {
-  _.spec(obj, 'collision', spec, {
+  this.util_.spec(obj, 'collision', spec, {
     dmg: 10,
     stunDuration: .75,
     collisionDuration: .75
@@ -108,11 +109,12 @@ BasicDecorators.prototype.decorateShipCollision_ = function(obj, spec) {
 };
 
 BasicDecorators.prototype.decorateDmgCollision_ = function(obj, spec) {
-  spec = _.spec(spec, {
+  spec = this.util_.spec(spec, {
     dmg: 0
   });
+  obj.dmg = spec.dmg;
   this.decorateCollision_(obj, {collide: function(obj, target) {
-    target.dmg(spec.dmg, obj);
+    target.dmg(obj.dmg, obj);
     obj.dead = true;
   }});
 };

@@ -8,8 +8,8 @@ AiMovement.prototype.init = function() {
 };
 
 AiMovement.prototype.aiMovement_ = function(obj, spec) {
-  _.spec(obj, 'movement', spec, {
-    speed: 100,
+  this.util_.spec(obj, 'movement', spec, {
+    speed: Speed.SHIP_SPEED,
     accel: 4,
     vector: {x: 0, y: 0},
     intelligence: .1,
@@ -330,12 +330,22 @@ AiMovement.prototype.updateVector_ = function(obj, dt) {
 AiMovement.prototype.move_ = function(obj, dt) {
   obj.prevX = obj.x;
   obj.prevY = obj.y;
-  obj.x += obj.movement.vector.x * obj.movement.speed * dt;
-  obj.y += obj.movement.vector.y * obj.movement.speed * dt;
+
+  // Move slower if no target or invisible.
+  // TODO: Move this out of movement AI.
+  var mod = 1;
+  if (!obj.secondary.charging && !obj.effect.knockback && !obj.effect.dash) {
+    mod = obj.effect.invisible ? .5 : 1;
+    mod = obj.effect.targetlessMovement ? .25 : 1;
+  }
+
+  obj.x += obj.movement.vector.x * obj.movement.speed * mod * dt;
+  obj.y += obj.movement.vector.y * obj.movement.speed * mod * dt;
   this.c_.wallDis(obj);
   if (obj.c.wallDisN < 0) obj.y -= obj.c.wallDisN;
   else if (obj.c.wallDisS < 0) obj.y += obj.c.wallDisS;
   if (obj.c.wallDisE < 0) obj.x += obj.c.wallDisE;
   else if (obj.c.wallDisW < 0) obj.x -= obj.c.wallDisW;
   if (obj.c.hitWall && obj.effect.dash) obj.utility.stopDash();
+  if (obj.c.hitWall && obj.secondary.charging) obj.secondary.stopCharge();
 };

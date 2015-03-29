@@ -1,5 +1,6 @@
 var BattleScene = di.service('BattleScene', [
-  'Scene', 'GameModel as gm', 'ShipFactory', 'EntityDecorator', 'World']);
+  'Scene', 'GameModel as gm', 'ShipFactory', 'EntityDecorator', 'World',
+  'BattleRewards']);
 
 var SLOWDOWN_TIME = 2;
 
@@ -13,7 +14,6 @@ BattleScene.prototype.start_ = function() {
 };
 
 BattleScene.prototype.addEntities_ = function() {
-  _.assert(!_.isEmpty(this.gm_.enemy), 'must have an enemy specified');
   this.enemy_ = this.shipFactory_.createEnemy();
   this.player_ = this.shipFactory_.createPlayer();
   this.shipFactory_.setTargets(this.player_, this.enemy_);
@@ -55,6 +55,8 @@ BattleScene.prototype.freezeEntities_ = function() {
 BattleScene.prototype.transitionOver_ = function() {
   this.removeEntities_();
   this.gm_.level.state == 'won' ? this.handleWin_() : this.handleLoss_();
+  this.battleRewards_.calculateRewards();
+  this.gm_.equipping = null;
 };
 
 BattleScene.prototype.handleWin_ = function() {

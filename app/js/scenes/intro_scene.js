@@ -14,16 +14,10 @@ IntroScene.prototype.addEntities_ = function() {
     this.transition_('main');
   }.bind(this));
 
-  var continueBtn = this.btnElement_.create();
-  continueBtn.setText('continue', {size: 'btn'});
-
   this.layout_ = this.layoutElement_.create({
     direction: 'vertical', align: 'bottom'});
   this.layout_.padding.left = 'btn';
   this.layout_.padding.bottom = 'btn';
-  this.layout_.add(continueBtn);
-  continueBtn.layout.align = 'top';
-  continueBtn.padding.bottom = 'btn';
   this.layout_.add(newGameBtn);
   newGameBtn.layout.align = 'top';
 };

@@ -1,20 +1,32 @@
 var ResultScene = di.service('ResultScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'BtnElement', 'EntityElement',
-  'RoundBtnElement', 'ItemService', 'Inventory']);
+  'RoundBtnElement', 'ItemService', 'Inventory', 'BattleRewards']);
 
 ResultScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('result'));
+};
+
+ResultScene.prototype.start_ = function() {
+  this.selectedReward_ = undefined;
 };
 
 var ITEM_PADDING = 20;
 ResultScene.prototype.addEntities_ = function() {
   var splash = this.entityElement_.create('resultSplash');
 
+  var itemDesc = this.entityElement_.create('itemDesc');
+  itemDesc.childHeight = 32;
+  itemDesc.getEntity().update(function() {
+    if (this.selectedReward_) {
+      itemDesc.setProp('item', this.selectedReward_.getProp('item'));
+    }
+  }.bind(this));
+
   this.continueBtn_ = this.btnElement_.create();
-  this.continueBtn_.setText('continue', {size: 'btn'});
+  this.continueBtn_.setText('continue', {size: 'btn-sm'});
+  if (this.gm_.level.state == 'won') this.continueBtn_.setStyle('locked');
   this.continueBtn_.onClick(function() {
     if (this.continueBtn_.getStyle() == 'locked') return;
-    if (this.selectedReward_) this.inventory_.equip(this.selectedReward_);
     this.transition_('main');
   }.bind(this));
 
@@ -23,10 +35,9 @@ ResultScene.prototype.addEntities_ = function() {
   this.continueBtn_.layout.align = 'top';
 
   if (this.gm_.level.state == 'won') {
-    var numRewards = this.numRewards_();
+    var numRewards = this.battleRewards_.numItems();
     splash.setProp('rewardExists', numRewards);
-    if (numRewards > 1) this.continueBtn_.setStyle('locked');
-    this.layout_.padding.top = 160 - ITEM_PADDING;
+    this.layout_.padding.top = 120 - ITEM_PADDING;
 
     this.layout_.addFlex();
 
@@ -39,8 +50,12 @@ ResultScene.prototype.addEntities_ = function() {
 
     this.layout_.addFlex();
 
+    this.layout_.add(itemDesc);
+
+    this.layout_.addFlex();
+
     this.layout_.add(this.continueBtn_, {align: 'top'});
-    this.continueBtn_.padding.left = .66;
+    this.continueBtn_.padding.left = 'btn-sm';
 
     this.layout_.addFlex();
 
@@ -57,11 +72,12 @@ ResultScene.prototype.createRewardButton_ = function(type) {
   var btn = this.roundBtnElement_.create();
   btn.setSize('item');
   btn.setProp('rewardBtn', true);
-  var item = this.itemService_.getEnemyEquipped(type) || {};
+  var item = this.battleRewards_.getReward(type);
   btn.setProp('item', item);
 
-  if (item.name && !this.inventory_.isEquipped(item)) {
-    if (this.numRewards_() == 1) this.selectReward_(btn);
+  if (item.name) {
+    if (this.battleRewards_.numItems() == 1) this.selectReward_(btn);
+    else if (this.gm_.equipping == type) this.selectReward_(btn);
     btn.onClick(function() {
       this.selectReward_(btn);
     }.bind(this));
@@ -70,17 +86,24 @@ ResultScene.prototype.createRewardButton_ = function(type) {
 };
 
 ResultScene.prototype.selectReward_ = function(btn) {
-  if (this.selectedReward_) this.selectedReward_.setStyle('');
+  var item = btn.getProp('item');
+  if (this.selectedReward_) {
+    if (btn.getStyle() == 'active') {
+      this.gm_.equipping = item.category;
+      this.transitionFast_('equip');
+      return;
+    }
+    this.selectedReward_.setStyle('');
+    this.inventory_.remove(this.selectedReward_.getProp('item'));
+    this.inventory_.unequip(this.selectedReward_.getProp('item'));
+  }
   this.selectedReward_ = btn;
   this.selectedReward_.setStyle('active');
+  this.inventory_.add(btn.getProp('item'));
+  if (!this.inventory_.getEquipped(item.category)) {
+    this.inventory_.equip(item);
+  }
   this.continueBtn_.setStyle('');
-};
-
-ResultScene.prototype.numRewards_ = function() {
-  return Game.ITEM_TYPES.reduce(function(total, type) {
-    var item = this.itemService_.getEnemyEquipped(type);
-    return total + !!(item && !this.inventory_.isEquipped(item));
-  }.bind(this), 0);
 };
 
 ResultScene.prototype.getRewardRow_ = function(btn1, btn2) {

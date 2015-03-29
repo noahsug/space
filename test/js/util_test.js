@@ -271,6 +271,48 @@ describe('Util function:', function() {
     });
   });
 
+  describe('normalize', function() {
+    it('adjusts values in an array so they sum to 1', function() {
+      var a = [1, 2, 3, 4];
+      expect(_.normalize(a)).toEqual([.1, .2, .3, .4]);
+    });
+
+    it('adjusts values in an array so they sum to total', function() {
+      var a = [1, 2, 3, 4];
+      expect(_.normalize(a, 2)).toEqual([.2, .4, .6, .8]);
+    });
+  });
+
+  describe('intNormalize', function() {
+    it('normalized values as ints', function() {
+      var a = [1, 2, 3, 4];
+      expect(_.intNormalize(a)).toEqual([0, 0, 0, 1]);
+
+      var a = [1, 2, 3, 4];
+      expect(_.intNormalize(a, 5)).toEqual([0, 1, 2, 2]);
+    });
+  });
+
+  describe('intRandomSplit', function() {
+    it('Creates an array of values that sum to a total value', function() {
+      var split = _.intRandomSplit(4, 20);
+      expect(split.length).toBe(4);
+      expect(_.sum(split)).toBe(20);
+    });
+
+    it('Can be capped at a max value', function() {
+      expect(_.intRandomSplit(4, 19, 5).sort()).toEqual([4, 5, 5, 5]);
+      expect(_.intRandomSplit(4, 20, 5)).toEqual([5, 5, 5, 5]);
+      expect(_.intRandomSplit(4, 40, 5)).toEqual([5, 5, 5, 5]);
+
+      _.repeat(function() {
+        var split = _.intRandomSplit(4, 20, 6);
+        _.each(split, function(v) { expect(v < 6).toBe(true); });
+        console.log(split);
+      }, 20);
+    });
+  });
+
   describe('aimPosition', function() {
     var source, target, targetVector, targetSpeed;
     var projectileSpeed, projectileLength, leadRatio;

@@ -35,6 +35,10 @@ EntityElement.prototype.getProp = function(prop) {
   return this.entity_[prop];
 };
 
+EntityElement.prototype.getEntity = function() {
+  return this.entity_;
+};
+
 EntityElement.prototype.positionChild_ = function(x, y) {
   this.entity_.setPos(x, y);
 };
@@ -48,5 +52,6 @@ EntityElement.prototype.onClick = function(fn) {
 EntityElement.prototype.update_ = function() {
   if (this.entity_.clicked && !this.entity_.locked) {
     this.onClickFn_(this);
+    this.entity_.clicked = false;
   }
 };

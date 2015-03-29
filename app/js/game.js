@@ -1,18 +1,17 @@
 var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene', 'MainScene',
   'EquipOptionsScene', 'EquipScene', 'ResultScene', 'WonScene', 'LostScene',
-  'Gameplay', 'World']);
+  'Gameplay', 'World', 'BattleRewards']);
 
 Game.UPDATE_RATE = .06;
-Game.MAX_LEVEL = 7;
-Game.MAX_ITEM_LEVEL = 5;
 
 Game.ITEM_TYPES = ['primary', 'secondary', 'ability', 'utility'];
+Game.MAX_ITEM_LEVEL = 5;
+Game.MAX_LEVEL = (Game.MAX_ITEM_LEVEL + 1) * Game.ITEM_TYPES.length - 1;
 
 Game.prototype.start = function() {
   this.nextAction_ = 0;
-  this.setPlayerItems_();
-  this.world_.create();
+  this.initGameModel_();
   this.scenes_ = [
     /* 0 */ this.loadingScene_,
     /* 1 */ this.introScene_,
@@ -27,9 +26,25 @@ Game.prototype.start = function() {
 
   // DEBUG
   //this.gm_.level = this.gm_.world[0];
-  //this.gm_.level.state = 'lost';
+  //this.gm_.level.state = 'won';
+  //this.battleRewards_.calculateRewards();
+  //this.gm_.equipping = 'primary';
 
-  this.scenes_[0].start();
+  this.scenes_[1].start();
+};
+
+Game.prototype.restart_ = function() {
+  var scenes = this.gm_.scenes;
+  var entities = this.gm_.entities;
+  this.gm_.init();
+  this.gm_.scenes = scenes;
+  this.gm_.entities = entities;
+  this.initGameModel_();
+};
+
+Game.prototype.initGameModel_ = function() {
+  this.setPlayerItems_();
+  this.world_.create();
 };
 
 Game.prototype.setPlayerItems_ = function() {
@@ -45,9 +60,13 @@ Game.prototype.update = function(dt) {
   if (this.gm_.scenes['battle'] == 'start') {
     this.nextAction_ = 0;
   }
+  var requestRestart = false;
   for (var i = 0; i < this.scenes_.length; i++) {
     this.scenes_[i].resolve(dt);
+    requestRestart |= this.scenes_[i].requestRestart;
+    this.scenes_[i].requestRestart = false;
   }
+  if (requestRestart) this.restart_();
 };
 
 Game.prototype.updateEntities_ = function(dt) {

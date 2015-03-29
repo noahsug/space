@@ -1,38 +1,38 @@
 var MovementDecorators = di.service('MovementDecorators', [
-  'EntityDecorator', 'Random', 'SharedComputation']);
+  'EntityDecorator', 'Random', 'SharedComputation', 'DecoratorUtil as util']);
 
 MovementDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'movement');
 };
 
-MovementDecorators.prototype.decorateRadial_ = function(obj, spec) {
-  _.spec(obj, 'movement', spec, {
-    speed: 0
-  });
-
-  var target;
-  obj.act(function() {
-    target = {x: obj.target.x, y: obj.target.y};
-  });
-
-  obj.update(function(dt) {
-    if (obj.dead) return;
-    var currentAngle = _.angle(target, obj);
-    var dx = obj.x - target.x;
-    var dy = obj.y - target.y;
-    var radius = Math.hypot(Math.abs(dx), Math.abs(dy));
-    var circumference = Math.PI * radius * 2;
-    var arc = obj.movement.speed * dt;
-    var additionalAngle = Math.PI * 2 * (arc / circumference);
-    var nextAngle = currentAngle + additionalAngle;
-
-    obj.x += radius * Math.cos(nextAngle) - dx;
-    obj.y += radius * Math.sin(nextAngle) - dy;
-  });
-};
+//MovementDecorators.prototype.decorateRadial_ = function(obj, spec) {
+//  this.util_.spec(obj, 'movement', spec, {
+//    speed: 0
+//  });
+//
+//  var target;
+//  obj.act(function() {
+//    target = {x: obj.target.x, y: obj.target.y};
+//  });
+//
+//  obj.update(function(dt) {
+//    if (obj.dead) return;
+//    var currentAngle = _.angle(target, obj);
+//    var dx = obj.x - target.x;
+//    var dy = obj.y - target.y;
+//    var radius = Math.hypot(Math.abs(dx), Math.abs(dy));
+//    var circumference = Math.PI * radius * 2;
+//    var arc = obj.movement.speed * dt;
+//    var additionalAngle = Math.PI * 2 * (arc / circumference);
+//    var nextAngle = currentAngle + additionalAngle;
+//
+//    obj.x += radius * Math.cos(nextAngle) - dx;
+//    obj.y += radius * Math.sin(nextAngle) - dy;
+//  });
+//};
 
 MovementDecorators.prototype.decorateStraight_ = function(obj, spec) {
-  _.spec(obj, 'movement', spec, {
+  this.util_.spec(obj, 'movement', spec, {
     speed: 0,
     accuracy: 0,
     dangle: 0,
@@ -90,7 +90,7 @@ MovementDecorators.prototype.getExpectedTargetPos_ = function(proj) {
 };
 
 MovementDecorators.prototype.decorateAtPosition_ = function(obj, spec) {
-  _.spec(obj, 'movement', spec, {
+  this.util_.spec(obj, 'movement', spec, {
     target: {x: 0, y: 0}
   });
 

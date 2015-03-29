@@ -9,14 +9,14 @@ LostScene.prototype.addEntities_ = function() {
   this.entityElement_.create('lostSplash');
 
   var continueBtn = this.btnElement_.create();
-  continueBtn.setText('continue', {size: 'btn'});
+  continueBtn.setText('exit', {size: 'btn-sm'});
   continueBtn.onClick(function() {
     this.transition_('intro');
   }.bind(this));
 
   this.layout_ = this.layoutElement_.create({
     direction: 'vertical', align: 'bottom'});
-  this.layout_.padding.left = 'btn';
+  this.layout_.padding.left = 'btn-sm';
   this.layout_.padding.bottom = 'btn';
   this.layout_.add(continueBtn);
 };
@@ -25,6 +25,6 @@ LostScene.prototype.update_ = function(dt, state) {
   this.layout_.update();
 };
 
-LostScene.prototype.transitionOver_ = function() {
+LostScene.prototype.end_ = function() {
   this.restartGame_();
 };

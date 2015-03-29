@@ -9,7 +9,7 @@ WonScene.prototype.addEntities_ = function() {
   this.entityElement_.create('wonSplash');
 
   var continueBtn = this.btnElement_.create();
-  continueBtn.setText('continue', {size: 'btn'});
+  continueBtn.setText('exit', {size: 'btn-sm'});
   continueBtn.onClick(function() {
     this.transition_('intro');
   }.bind(this));
@@ -25,6 +25,6 @@ WonScene.prototype.update_ = function(dt, state) {
   this.layout_.update();
 };
 
-WonScene.prototype.transitionOver_ = function() {
+WonScene.prototype.end_ = function() {
   this.restartGame_();
 };

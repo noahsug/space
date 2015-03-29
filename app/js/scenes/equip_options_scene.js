@@ -13,20 +13,19 @@ EquipOptionsScene.prototype.addEntities_ = function() {
   var equipBtns = _.map(Game.ITEM_TYPES, this.createEquipButton_.bind(this));
 
   var continueBtn = this.btnElement_.create();
-  continueBtn.setText('fight', {size: 'btn'});
-  continueBtn.setStyle('active');
+  continueBtn.setText('fight', {size: 'btn-sm'});
   continueBtn.onClick(function() {
     this.transition_('battle');
   }.bind(this));
   var backBtn = this.btnElement_.create();
-  backBtn.setText('back', {size: 'btn'});
+  backBtn.setText('back', {size: 'btn-sm'});
   backBtn.onClick(function() {
     this.transition_('main');
   }.bind(this));
 
   this.layout_ = this.layoutElement_.create({
     direction: 'vertical', align: 'top'});
-  this.layout_.padding.top = 160 - ITEM_PADDING;
+  this.layout_.padding.top = 150 - ITEM_PADDING;
 
   this.layout_.addFlex();
 
@@ -70,7 +69,7 @@ EquipOptionsScene.prototype.goToEquip_ = function(type) {
 
 EquipOptionsScene.prototype.getEquipRow_ = function(btn1, btn2) {
   var equipRow = this.layoutElement_.create();
-  equipRow.childHeight = btn1.entity_.radius * 2;
+  equipRow.childHeight = btn1.getEntity().radius * 2;
   equipRow.add(btn1);
   btn1.padding.right = btn2.padding.right = ITEM_PADDING;
   equipRow.add(btn2);

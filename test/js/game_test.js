@@ -17,19 +17,19 @@ describe('A game', function() {
     watch = false;
 
     items = [];
-    _.each(['primary', 'secondary', 'ability', 'utility', 'mod'],
-           function(type) {
-             items.push(_.pluck(
-                 _.where(gameplay.items, {category: type}),
-                 'name'));
-           });
+    _.each(Game.ITEM_TYPES, function(type) {
+      items.push(_.pluck(
+        _.where(gameplay.items, {category: type}),
+        'name'));
+    });
   });
 
-  xit('watch', function() {
+  it('watch', function() {
+    screen.setSurfaceArea(Screen.DESIRED_SURFACE_AREA);
     document.getElementById('hide-canvas').style.display = "";
-    var spec1 = ["razors", "emp", "mink", "teleport", "+speed"];
-    var spec2 = ["razors", "stun", "dash", "+attack rate"];
-    var seed = 92482230.84417963;
+    var seed = 2006309135.2142427;
+    var spec1 = ["shotgun", "charge", "reflect II", "scope II"];
+    var spec2 = ["shotgun II"];
 
     r.seed(seed);
     watch = true;
@@ -37,7 +37,8 @@ describe('A game', function() {
   });
 
   xit('analyze', function() {
-    var data = gatherData(10000);
+    // TODO: Make both players have same health (not 40 vs 30).
+    var data = gatherData(15000);
     analyzeItems(data);
     analyzeReplays(data);
   });
@@ -69,12 +70,14 @@ describe('A game', function() {
     var stats = [];
     _.each(data, function(sample) {
       var record = stats[sample[i]] = stats[sample[i]] ||
-          {name: items[i][sample[i]], ratio: 0, total: 0, wins: 0, losses: 0};
+          {name: items[i][sample[i]], level: 0, actualLevel: 'N/A',
+           ratio: 0, wins: 0, losses: 0};
       var won = sample[sample.length - 1];
       record.wins += won;
       record.losses += !won;
       record.ratio = record.wins / record.losses;
-      record.total = record.wins + record.losses;
+      record.level = Math.round(record.ratio / .4);
+      if (record.name) record.actualLevel = gameplay.items[record.name].level;
     });
     return _.sortBy(stats, function(stat) {
       return -stat.ratio;
@@ -108,15 +111,16 @@ describe('A game', function() {
   function getRandomSpec() {
     var id = new Array(items.length);
     var names = _.newList(items, function(names, i) {
-      var itemInfo = pickRandomItem(names);
+      var itemInfo = pickRandomItem(names, i == 0);
       id[i] = itemInfo.index;
       return itemInfo.item || undefined;
     });
     return {names: names, id: id};
   };
 
-  function pickRandomItem(names) {
-    var index = Math.floor(Math.random() * (names.length + 1));
+  function pickRandomItem(names, required) {
+    var len = names.length + !required;  // Ensure primary weapon is included.
+    var index = Math.floor(Math.random() * len);
     return {
       index: index,
       item: names[index]
@@ -128,6 +132,8 @@ describe('A game', function() {
     game.nextAction_ = 0;
     var ship1 = createShip(spec1, 'good');
     var ship2 = createShip(spec2, 'bad');
+    ship1.setMaxHealth(50);
+    ship2.setMaxHealth(50);
     shipFactory.setTargets(ship1, ship2);
     var seed = r.getSeed();
 
@@ -138,6 +144,8 @@ describe('A game', function() {
         renderer.update(Game.UPDATE_RATE);
         debugger;
       }
+      ship1 = ship1.getLivingClone();
+      ship2 = ship2.getLivingClone();
       if (ship1.dead || ship2.dead) break;
     }
     return {
@@ -153,7 +161,6 @@ describe('A game', function() {
       var name = spec[i];
       items[i] = gameplay.items[name];
     }
-    items[spec.length] = gameplay.items['circle'];
-    return shipFactory.createShip_(items, style);
+    return shipFactory.createShip(items, style);
   };
 });

@@ -29,7 +29,7 @@ EntityDecorator.prototype.validateItem_ = function(item) {
 EntityDecorator.prototype.addDecoratorObj = function(obj, category) {
   var fns = _.pickFunctions(obj, {prefix: 'decorate', suffix: '_'});
   _.each(fns, function(fn, type) {
-    this.addDecorator(category, type, fn);
+    this.addDecorator(category, type, fn.bind(obj));
   }, this);
 };
 

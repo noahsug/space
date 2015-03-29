@@ -19,6 +19,8 @@ BtnElement.prototype.init = function() {
   this.addUnit_('pad-bot', 'btn-lg', 30);
   this.addUnit_('pad-left', 'btn-mix', .1);
   this.addUnit_('pad-right', 'btn-mix', .1);
+
+  this.addUnit_('pad-left', 'btn-sm', .75);
 };
 
 BtnElement.prototype.setLineDirection = function(direction) {

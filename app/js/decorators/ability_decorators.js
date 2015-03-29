@@ -5,9 +5,23 @@ AbilityDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'ability');
 };
 
+AbilityDecorators.prototype.decorateTank_ = function(obj, spec) {
+  this.util_.spec(obj, 'ability', spec, {
+    def: 1
+  });
+
+  switch(spec.power) {
+  case 3:
+  case 2:
+    obj.collision.dmg = 0;
+  case 1:
+    this.util_.mod(obj, 'def', obj.utility.def);
+  }
+};
+
 AbilityDecorators.prototype.decorateShield_ = function(obj, spec) {
-  _.spec(obj, 'ability', spec, {
-    cooldown: 6,
+  this.util_.spec(obj, 'ability', spec, {
+    cooldown: 9,
     effect: 'shield',
     duration: 1000,
     charges: 1,
@@ -37,7 +51,7 @@ AbilityDecorators.prototype.decorateShield_ = function(obj, spec) {
 };
 
 AbilityDecorators.prototype.decorateReflect_ = function(obj, spec) {
-  _.spec(obj, 'ability', spec, {
+  this.util_.spec(obj, 'ability', spec, {
     cooldown: 6,
     effect: 'reflect',
     duration: 1,
@@ -62,8 +76,8 @@ AbilityDecorators.prototype.decorateReflect_ = function(obj, spec) {
 };
 
 AbilityDecorators.prototype.decorateHaze_ = function(obj, spec) {
-  _.spec(obj, 'ability', spec, {
-    speed: 200,
+  this.util_.spec(obj, 'ability', spec, {
+    speed: Speed.SLOW,
     seek: _.radians(85),
     radius: 4,
     accuracy: 0,
@@ -96,12 +110,12 @@ AbilityDecorators.prototype.decorateHaze_ = function(obj, spec) {
 };
 
 AbilityDecorators.prototype.decorateKnockback_ = function(obj, spec) {
-  _.spec(obj, 'ability', spec, {
+  this.util_.spec(obj, 'ability', spec, {
     speed: 300,
     cooldown: 6,
-    duration: .25,
+    duration: .75,
     effect: 'stunned',
-    knockback: 500,
+    knockback: 550,
     grow: 500,
     growDuration: .1,
     range: 100

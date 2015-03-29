@@ -2,9 +2,10 @@ var GameModel = di.service('GameModel');
 
 GameModel.prototype.init = function() {
   this.player = [];
-  this.playerLevel = 0;
   this.inventory = [];
-  this.world = [];
+  this.worlds = [];
+
+  this.world = {};
   this.level = {};
 
   this.entities = new List();

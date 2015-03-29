@@ -8,6 +8,10 @@ _.radians = function(degrees) {
   return degrees * Math.PI / 180;
 };
 
+_.degrees = function(radians) {
+  return radians * 180 / Math.PI;
+};
+
 _.plural = function(string, num) {
   return num == 1 ? string : string + 's';
 };
@@ -67,6 +71,85 @@ _.pseudorandomSeed = function(opt_seed) {
     return opt_seed + 1;
   }
   return Math.random() * (Math.PI / 2);
+};
+
+_.sum = function(arr) {
+  return arr.reduce(function(p, c) { return p + c; });
+};
+
+_.return = function(v) {
+  return function() { return v; };
+};
+
+_.repeat = function(fn, times) {
+  for (var i = 0; i < times; i++) {
+    fn(i);
+  }
+};
+
+_.swap = function(arr, i1, i2) {
+  if (i1 == i2) return arr;
+  var temp = arr[i1];
+  arr[i1] = arr[i2];
+  arr[i2] = temp;
+};
+
+// Returns a normalized, random array of values.
+_.randomSplit = function(size, opt_total) {
+  return _.normalize(_.generate(Math.random, size), opt_total || 1);
+};
+
+_.intRandomSplit = function(size, opt_total, opt_max) {
+  var total = _.orDef(opt_total, 1);
+  if (opt_max) {
+    if (opt_max * size <= total) return _.generate(_.return(opt_max), size);
+    var split = _.generate(_.return(0), size);
+    var totalSoFar = 0;
+    var capped = {};
+    while (totalSoFar < total) {
+      var index = _.r.nextInt(0, size - 1);
+      while (capped[index]) index = (index + 1) % split.length;
+      split[index]++;
+      totalSoFar++;
+      if (split[index] >= opt_max) capped[index] = true;
+    }
+    return split;
+  } else {
+    return _.intNormalize(_.generate(Math.random, size), total);
+  }
+};
+
+_.normalize = function(arr, opt_total) {
+  var sum = _.sum(arr);
+  return arr.map(function(v) { return (opt_total || 1) * v / sum; });
+};
+
+_.intNormalize = function(arr, opt_total) {
+  var sum = _.sum(arr);
+  var remainder = 0;
+  return arr.map(function(v) {
+    var normalized = (opt_total || 1) * v / sum;
+    var int = Math.floor(normalized);
+    remainder += normalized - int;
+    if (remainder >= .999999) {
+      int++;
+      remainder--;
+    }
+    return int;
+  });
+};
+
+// Split a line of text in half at the whitespace.
+_.splitText = function(text) {
+  var half = Math.floor(text.length / 2);
+  var split = half;
+  for (var i = half + 3; i >= 0; i--) {
+    if (text[i] == ' ') {
+      split = i;
+      break;
+    }
+  }
+  return [text.slice(0, i), text.slice(i + 1)];
 };
 
 _.assert = function(truth, msg) {
@@ -248,6 +331,14 @@ _.generate = function(generator, length, opt_thisObj) {
   return list;
 };
 
+_.newSet = function(values) {
+  var set = {};
+  for (var i = 0; i < values.length; i++) {
+    set[values[i]] = i + 1;
+  }
+  return set;
+};
+
 _.newList = function(list, generator, opt_thisObj) {
   var result = new Array();
   for (var i = 0; i < list.length; i++) {
@@ -278,16 +369,6 @@ _.between = function(value, min, max) {
 
 _.options = function(overrides, defaults) {
   return _.defaults(_.clone(overrides) || {}, defaults);
-};
-
-_.spec = function(obj, name, overrides, defaults) {
-  if (arguments.length == 2) {
-    return _.options(obj /* overrides */, name /* defaults */);
-  } else {
-    obj[name] = _.defaults(_.clone(overrides) || {}, defaults);
-    obj[name].name = name;
-    return obj[name];
-  }
 };
 
 _.orDef = function(value, valueWhenUndefined) {

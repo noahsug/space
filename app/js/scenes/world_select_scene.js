@@ -1,13 +1,13 @@
-var MainScene = di.service('MainScene', [
+var WorldSelectScene = di.service('WorldSelectScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'RoundBtnElement',
   'EntityElement', 'World']);
 
-MainScene.prototype.init = function() {
+WorldSelectScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('main'));
 };
 
-MainScene.prototype.addEntities_ = function() {
-  this.entityElement_.create('mainSplash');
+WorldSelectScene.prototype.addEntities_ = function() {
+  //this.entityElement_.create('worldSelectSplash');
 
   var layouts = [];
   for (var row = 0; row < World.ROWS; row++) {
@@ -20,14 +20,18 @@ MainScene.prototype.addEntities_ = function() {
     }
   }
 
-  this.layout_ = this.layoutElement_.create({direction: 'vertical'});
-  this.layout_.setPadding(10, 0);
-  _.each(layouts, function(layout) {
-    this.layout_.add(layout);
-  }, this);
+  this.layout_ = this.layoutElement_.create({direction: 'horizontal'});
+
+  var worldLayout = this.layoutElement_.create({direction: 'vertical'});
+  worldLayout.layout.flex = 1;
+
+
+
+  var miscLayout = this.layoutElement_.create({direction: 'vertical'});
+  miscLayout.layout.flex = 2;
 };
 
-MainScene.prototype.createBtn_ = function(row, col) {
+WorldSelectScene.prototype.createBtn_ = function(row, col) {
   var btn = this.roundBtnElement_.create();
   btn.padding.right = 20;
   btn.setSize('level');
@@ -44,6 +48,6 @@ MainScene.prototype.createBtn_ = function(row, col) {
   return btn;
 };
 
-MainScene.prototype.update_ = function(dt, state) {
+WorldSelectScene.prototype.update_ = function(dt, state) {
   this.layout_.update();
 };

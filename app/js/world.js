@@ -10,7 +10,12 @@ World.LEVELS = World.COLS * World.ROWS;
 World.prototype.create = function() {
   this.gm_.world = _.generate(function(i) {
     var startIndex = this.idx_.apply(this, World.START);
-    var level = i && Math.floor(i / 5 + Math.random() * (2 + i / 5));
+    var level = Game.MAX_LEVEL * i / (World.LEVELS - 1);
+    if (i != 0 && i != World.LEVELS - 1) {
+      level = Math.round(level * .5 + Math.random() * (level * .5));
+      if (level < Game.MAX_LEVEL && Math.random() < .5) level++;
+      if (level < Game.MAX_LEVEL && Math.random() < .5) level++;
+    }
     return {
       type: level,
       state: i == startIndex ? 'unlocked' : 'locked',
@@ -29,10 +34,15 @@ World.prototype.idx_ = function(row, col) {
   return row * World.COLS + col;
 };
 
+World.prototype.rowCol_ = function(index) {
+  var col = index % World.COLS;
+  var row = (index - col) / World.COLS;
+  return [row, col];
+};
+
 World.prototype.unlockAdjacent = function(level) {
-  var col = level.index % World.COLS;
-  var row = (level.index - col) / World.COLS;
-  this.neighbors_(row, col).forEach(function(rowCol) {
+  var rowCol = this.rowCol_(level.index);
+  this.neighbors_(rowCol[0], rowCol[1]).forEach(function(rowCol) {
     if (!this.isValid_(rowCol[0], rowCol[1])) return;
     var level = this.get.apply(this, rowCol);
     if (level.state == 'locked') level.state = 'unlocked';
@@ -44,14 +54,14 @@ World.prototype.won = function() {
 };
 
 World.prototype.lost = function() {
-  return this.gm_.world.some(function(level) {
+  return !this.gm_.world.some(function(level) {
     return level.state == 'unlocked';
-  });
+  }, this);
 };
 
 World.prototype.isValid_ = function(row, col) {
   return _.between(row, 0, World.ROWS - 1) &&
-    _.between(col, 0, World.COLS - 1);
+      _.between(col, 0, World.COLS - 1);
 };
 
 World.prototype.neighbors_ = function(row, col) {

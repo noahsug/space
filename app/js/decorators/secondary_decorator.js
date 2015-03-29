@@ -8,13 +8,9 @@ SecondaryDecorators.prototype.init = function() {
 };
 
 SecondaryDecorators.prototype.decoratePistol_ = function(obj, spec) {
-  _.spec(obj, 'secondary', spec, {
-    dmg: 3,
-    speed: 300,
-    accuracy: _.radians(10),
-    cooldown: 1.25,
+  this.util_.spec(obj, 'secondary', spec, {
     length: 6 + 16,
-    range: 300
+    speed: Speed.DEFAULT
   });
 
   switch(spec.power) {
@@ -31,21 +27,17 @@ SecondaryDecorators.prototype.decoratePistol_ = function(obj, spec) {
 };
 
 SecondaryDecorators.prototype.decorateStun_ = function(obj, spec) {
-  _.spec(obj, 'secondary', spec, {
-    dmg: 1,
-    speed: 300,
-    accuracy: _.radians(10),
-    cooldown: 1.5,
+  this.util_.spec(obj, 'secondary', spec, {
     length: 4 + 16,
+    speed: Speed.DEFAULT,
     duration: 1,
     style: 'effect',
-    effect: 'stunned disabled',
-    range: 150
+    effect: 'stunned disabled'
   });
 
   switch(spec.power) {
   case 1:
-    obj.secondary.duration *= 1.3;
+    obj.secondary.duration *= 1.4;
   }
 
   var stopMovement = function(obj) {
@@ -57,22 +49,18 @@ SecondaryDecorators.prototype.decorateStun_ = function(obj, spec) {
 };
 
 SecondaryDecorators.prototype.decorateEmp_ = function(obj, spec) {
-  _.spec(obj, 'secondary', spec, {
-    dmg: 1,
-    speed: 200,
-    accuracy: _.radians(10),
-    cooldown: 1.5,
+  this.util_.spec(obj, 'secondary', spec, {
     radius: 15,
+    speed: Speed.SLOW,
     duration: 1.2,
     style: 'effect',
-    effect: 'stunned disabled',
-    range: 150
+    effect: 'stunned disabled'
   });
 
   switch(spec.power) {
   case 1:
     obj.secondary.duration *= 1.3;
-    obj.secondary.radius *= 1.3;
+    obj.secondary.radius *= 1.1;
   }
 
   this.util_.addEffectWeapon_(obj,
@@ -81,19 +69,19 @@ SecondaryDecorators.prototype.decorateEmp_ = function(obj, spec) {
 };
 
 SecondaryDecorators.prototype.decorateCharge_ = function(obj, spec) {
-  _.spec(obj, 'secondary', spec, {
-    speed: 400,
-    accuracy: _.radians(10),
-    range: 200,
+  this.util_.spec(obj, 'secondary', spec, {
     minRange: 100,
+    speed: 500,
+    duration: 1.2,
+    range: 200,
     cooldown: 4,
-    stunReduction: 2
+    stunReduction: 2,
+    def: 1
   });
 
   switch(spec.power) {
   case 1:
-    obj.secondary.speed *= 1.3;
-    obj.secondary.cooldown *= .8;
+    obj.secondary.def = 1.5;
   }
 
   var ratio = obj.secondary.speed / (obj.movement.speed || 1);
@@ -103,36 +91,40 @@ SecondaryDecorators.prototype.decorateCharge_ = function(obj, spec) {
     obj.movement.speed *= ratio;
     var collisionRatio = .00001;
     obj.collision.dmg *= collisionRatio;
-    obj.collision.stunDuration /= obj.movement.stunReduction;
+    obj.collision.stunDuration /= obj.secondary.stunReduction;
     var duration = obj.secondary.range * 1.2 / obj.movement.speed;
     obj.secondary.charging = true;
+    obj.def *= obj.secondary.def;
 
-    obj.addEffect('stunned', duration, function() {
+    obj.secondary.stopCharge = function() {
       obj.secondary.charging = false;
       obj.movement.speed /= ratio;
       obj.collision.dmg /= collisionRatio;
-      obj.collision.stunDuration /= obj.movement.stunReduction;
-    });
+      obj.collision.stunDuration /= obj.secondary.stunReduction;
+      obj.def /= obj.secondary.def;
+    };
+
+    obj.addEffect('stunned', duration, obj.secondary.stopCharge);
   });
 };
 
 SecondaryDecorators.prototype.decorateTracker_ = function(obj, spec) {
-  _.spec(obj, 'secondary', spec, {
+  this.util_.spec(obj, 'secondary', spec, {
     dmg: 1,
-    speed: 300,
-    accuracy: _.radians(10),
-    cooldown: 1.5,
+    speed: Speed.DEFAULT,
+    cooldown: 3,
     length: 4 + 16,
     duration: 1000,
     style: 'effect',
     effect: 'tagged',
-    taggedSeek: _.radians(70),
+    seekMod: _.radians(360),
+    dmgMod: 1.25,
     range: 300
   });
 
   switch(spec.power) {
   case 1:
-    obj.secondary.taggedSeek *= 1.3;
+    obj.secondary.dmgMod += .25;
   }
 
   this.util_.addEffectWeapon_(obj,
@@ -142,7 +134,8 @@ SecondaryDecorators.prototype.decorateTracker_ = function(obj, spec) {
   obj.maybeTrackTarget = function(projectile, spec) {
     if (projectile.target.effect.tagged && spec.name == 'primary') {
       projectile.target.effect.tagged = 0;
-      this.util_.set(projectile, 'movement.seek', obj.secondary.taggedSeek);
+      this.util_.set(projectile, 'movement.seek', obj.secondary.seekMod);
+      this.util_.mod(projectile, 'dmg', obj.secondary.dmgMod);
     }
   }.bind(this);
 };

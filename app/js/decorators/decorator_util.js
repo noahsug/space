@@ -5,13 +5,25 @@ DecoratorUtil.prototype.init = function() {
   this.d_ = this.entityDecorator_.getDecorators();
 };
 
+DecoratorUtil.prototype.spec = function(obj, name, overrides, defaults) {
+  if (arguments.length == 2) {
+    return _.options(obj /* overrides */, name /* defaults */);
+  } else {
+    obj[name] = _.defaults(_.clone(overrides) || {}, defaults);
+    obj[name].name = name;
+    obj[name].speed = obj[name].speed || Speed.DEFAULT;
+    obj[name].accuracy = obj[name].accuracy || Accuracy.DEFAULT;
+    return obj[name];
+  }
+};
+
 DecoratorUtil.prototype.addEffectWeapon_ = function(
     obj, spec, fire, opt_onCollide) {
   this.addWeapon(obj, spec, function() {
     var projectile = fire(obj, spec);
     spec.collide = function(proj, target) {
       target.addEffect(spec.effect, spec.duration);
-      if (spec.dmg) target.dmg(spec.dmg);
+      if (spec.dmg) target.dmg(spec.dmg, obj);
       opt_onCollide && opt_onCollide(proj);
       proj.dead = true;
     }.bind(this);
@@ -48,6 +60,7 @@ DecoratorUtil.prototype.addEffectAbility = function(obj, spec) {
 DecoratorUtil.prototype.addAbility = function(obj, spec, ability) {
   this.addCooldown(obj, function() {
     if (obj.dead || obj.effect.silenced) return 0;
+    // Ship can't use targeted abilities while it has no target.
     if (obj.effect.targetlessActive && !spec.targetless) return 0;
     if (spec.range && obj.c.targetDis > spec.range) return 0;
     if (obj.c.targetDis < spec.minRange) return 0;
@@ -125,7 +138,7 @@ DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
 };
 
 DecoratorUtil.prototype.initCooldown = function(cooldown) {
-  return this.random_.nextFloat(.5) * cooldown;
+  return this.random_.nextFloat(.3, .5) * cooldown;
 };
 
 DecoratorUtil.prototype.randomCooldown = function(cooldown) {

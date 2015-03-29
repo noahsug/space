@@ -1,6 +1,6 @@
 var Renderer = di.service('Renderer', [
   'GameModel as gm', 'Screen', 'ctx', 'Gfx', 'Background', 'Font',
-  'Inventory']);
+  'ItemService', 'Inventory']);
 
 Renderer.prototype.init = function() {
   this.initFns_ = _.pickFunctions(this, {prefix: 'init', suffix: '_'});
@@ -118,46 +118,45 @@ Renderer.prototype.drawIntroSplash_ = function() {
 Renderer.prototype.drawMainSplash_ = function() {
 };
 
+var SCREEN_LEFT_PADDING = .13;
 Renderer.prototype.drawResultSplash_ = function(entity) {
   this.ctx_.textAlign = 'left';
   this.ctx_.textBaseline = 'top';
   var result = this.gm_.level.state == 'won' ? 'victory' : 'defeat';
-  this.drawHeading_(result, 70, this.screen_.width * .14, 30 - 12);
+  this.drawHeading_(result, 70,
+                    this.screen_.width * SCREEN_LEFT_PADDING, 20 - 30);
 
+  this.ctx_.textAlign = 'left';
   if (this.gm_.level.state == 'won') {
     var text = entity.rewardExists ? 'select reward:' : 'no reward';
-    this.drawText_(text, 16, this.screen_.width * .14, 140);
+    this.drawText_(text, 12, this.screen_.width * SCREEN_LEFT_PADDING, 110);
   }
 };
 
 Renderer.prototype.drawEquipOptionsSplash_ = function() {
-  var outerPadding = 30;
-
-  this.ctx_.fillStyle = '#000000';
   this.ctx_.strokeStyle = '#FFFFFF';
   this.ctx_.lineWidth = 1;
-  var x = outerPadding;
-  var y = 40;
-  var width = this.screen_.width - outerPadding * 2;
-  var height = 120;
-  this.ctx_.fillRect(x, y, width, height);
-  this.ctx_.strokeRect(x, y, width, height);
+  var x = this.screen_.width * SCREEN_LEFT_PADDING;
+  var y = x;
 
   this.ctx_.textAlign = 'left';
   this.ctx_.textBaseline = 'top';
-  this.drawText_('target:', 16, outerPadding, 18);
+  this.drawText_('target: Rank ' + this.getEnemyRank_(this.gm_.level),
+                 12, x, y);
 
-  x = outerPadding + 15;
-  y = 50;
-  _.each(this.gm_.level.enemy, function(item, i) {
-    var color = this.inventory_.hasItem(item) ?
-        Gfx.Color.WHITE : Gfx.Color.ACTIVE;
-    this.drawText_(item.name, 18, x, y + 25 * i, {color: color});
+  x += 15;
+  y += 25;
+  var index = 0;
+  _.each(Game.ITEM_TYPES, function(type, i) {
+    var item = this.itemService_.getEnemyEquipped(type);
+    if (item) this.drawText_('- ' + item.name, 12, x, y + 25 * index++);
   }, this);
 };
 
 Renderer.prototype.drawEquipSplash_ = function() {
-  this.topLeftHeading_(Strings.ItemType[this.gm_.equipping]);
+  var text = 'equip ' + Strings.ItemType[this.gm_.equipping];
+  this.drawText_(text, 12, this.screen_.width * SCREEN_LEFT_PADDING,
+                 this.screen_.width * SCREEN_LEFT_PADDING);
 };
 
 Renderer.prototype.drawWonSplash_ = function() {
@@ -176,6 +175,48 @@ Renderer.prototype.drawLostSplash_ = function() {
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
+var DESC_ONLY = _.newSet(['charge', 'charge II', 'tracker']);
+Renderer.prototype.drawItemDesc_ = function(entity) {
+  var size = 12;
+  if (!entity.item) return;
+  this.ctx_.textAlign = 'left';
+  this.ctx_.textBaseline = 'middle';
+
+  var tier = Game.MAX_ITEM_LEVEL - entity.item.level + 1;
+  var desc = 'Tier ' + tier + ': ' + entity.item.desc;
+
+  var textLines = [desc];
+  var type = entity.item.category;
+  if ((type == 'primary' || type == 'secondary') &&
+      !(entity.item.name in DESC_ONLY)) {
+    var spec = entity.item.spec;
+    var dps = spec.dmg / spec.cooldown;
+    var stats = 'DPS: ' + dps.toFixed(1);
+    if (spec.projectiles > 1) stats += ' x' + spec.projectiles;
+    stats += '  Range: ' + spec.range / 10;
+    if (spec.seek > 10) stats += '  Seek: ' + spec.seek.toFixed(1);
+    textLines[1] = stats;
+  } else {
+    var width = this.font_.width(desc, size);
+    if (width > this.screen_.width * (1 - SCREEN_LEFT_PADDING * 2)) {
+      textLines = _.splitText(desc);
+    }
+  }
+
+  if (textLines.length == 2) {
+    this.drawText_(textLines[0], size,
+                   this.screen_.width * SCREEN_LEFT_PADDING,
+                   entity.render.pos.y - size / 2 - 2);
+    this.drawText_(textLines[1], size,
+                   this.screen_.width * SCREEN_LEFT_PADDING,
+                   entity.render.pos.y + size / 2 + 2);
+  } else {
+    this.drawText_(textLines[0], size,
+                   this.screen_.width * SCREEN_LEFT_PADDING,
+                   entity.render.pos.y);
+  }
+};
+
 Renderer.prototype.topLeftHeading_ = function(text) {
   this.ctx_.textAlign = 'left';
   this.ctx_.textBaseline = 'top';
@@ -190,6 +231,8 @@ Renderer.prototype.topLeftSubHeading_ = function(text, opt_color) {
 
 // TODO: Animate level state changes.
 Renderer.prototype.drawRoundBtn_ = function(entity) {
+  if (entity.style == 'hidden') return;
+
   // Draw circle.
   var color = '#FFFFFF';
   if (entity.level) {
@@ -202,13 +245,15 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
     }
   } else if (entity.item) {
     if (entity.rewardBtn) {
-      if (!entity.item.name || this.inventory_.isEquipped(entity.item)) {
+      if (!entity.item.name) {
         color = Gfx.Color.LOCKED;
       } else if (entity.style == 'active') {
         color = Gfx.Color.ACTIVE;
       }
     } else if (!this.inventory_.has(entity.item.category)) {
       color = Gfx.Color.LOCKED;
+    } else if (entity.style == 'equipped') {
+      color = Gfx.Color.ACTIVE;
     }
   }
   this.ctx_.strokeStyle = color;
@@ -226,15 +271,20 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
   if (entity.level) {
     if (entity.level.state == 'won') return;
     textSize = 20;
-    text = entity.level.type;
+    text = this.getEnemyRank_(entity.level);
   } else if (entity.item) {
     text = entity.item.name || 'none';
-    textSize = 16;
+    textSize = 12;
   }
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'middle';
   this.drawText_(text, textSize, entity.render.pos.x, entity.render.pos.y,
                  {color: color});
+};
+
+var RANKS = ['E', 'D', 'C', 'B', 'A', 'S'];
+Renderer.prototype.getEnemyRank_ = function(level) {
+  return RANKS[Math.round((RANKS.length - 1) * level.type / Game.MAX_LEVEL)];
 };
 
 Renderer.prototype.drawBtn_ = function(entity) {
