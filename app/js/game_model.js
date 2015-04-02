@@ -8,8 +8,8 @@ GameModel.prototype.init = function() {
   this.world = {};
   this.level = {};
 
-  this.entities = new List();
   this.scenes = {};
+  this.entities = new List();
 
   this.gameSpeed = 1;
   this.time = 0;

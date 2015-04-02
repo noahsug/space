@@ -6,8 +6,9 @@ RoundBtnElement.prototype.init = function() {
   _.decorate(this.entity_, this.d_.clickable);
   _.decorate(this.entity_, this.d_.shape.circle, {radius: 20});
 
+  this.addUnit_('size', 'world', 90);
+  this.addUnit_('size', 'item', 90);
   this.addUnit_('size', 'level', 60);
-  this.addUnit_('size', 'item', .33);
 };
 
 RoundBtnElement.prototype.setSize = function(size) {

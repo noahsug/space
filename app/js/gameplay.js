@@ -23,36 +23,31 @@ Health = {
   PLAYER_HEALTH: 65
 };
 
-Worlds = [
+Gameplay.prototype.worlds = [
   {
     rows: 4,
     cols: 1,
-    lives: 5
+    lives: 100
+  },
+  {
+    rows: 3,
+    cols: 2
   },
   {
     rows: 4,
-    cols: 2,
-    lives: 4
+    cols: 2
   },
   {
     rows: 3,
-    cols: 3,
-    lives: 3
+    cols: 3
   },
   {
-    rows: 3,
-    cols: 4,
-    lives: 3
+    rows: 4,
+    cols: 3
   },
   {
-    rows: 3,
-    cols: 5,
-    lives: 2
-  },
-  {
-    rows: 3,
-    cols: 6,
-    lives: 1
+    rows: 5,
+    cols: 3
   }
 ];
 
@@ -86,6 +81,12 @@ di.constant('gameplayFile', {
   inventory: [
     'shotgun',
     'pistol',
+    'basic laser',
+    'burst laser',
+    'grenade',
+    'razors',
+    'sniper',
+    'missiles'
   ],
 
   bosses: [
@@ -318,15 +319,15 @@ di.constant('gameplayFile', {
       level: 3},
     'rock': {
       desc: '15% less damage.',
-      id: 'utility.tank', spec: {power: 1, def: 1.15},
+      id: 'ability.tank', spec: {power: 1, def: 1.15},
       level: 1},
     'steel': {
       desc: '30% less damage.',
-      id: 'utility.tank', spec: {power: 2, def: 1.3},
+      id: 'ability.tank', spec: {power: 2, def: 1.3},
       level: 4},
     'diamond': {
       desc: '40% less damage & no collision damage.',
-      id: 'utility.tank', spec: {power: 3, def: 1.4},
+      id: 'ability.tank', spec: {power: 3, def: 1.4},
       level: 5}
     //'zombie': {
     //  desc: 'Stay alive for a few seconds after death.',

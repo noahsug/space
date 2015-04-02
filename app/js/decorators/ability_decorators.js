@@ -15,7 +15,7 @@ AbilityDecorators.prototype.decorateTank_ = function(obj, spec) {
   case 2:
     obj.collision.dmg = 0;
   case 1:
-    this.util_.mod(obj, 'def', obj.utility.def);
+    this.util_.mod(obj, 'def', obj.ability.def);
   }
 };
 

@@ -27,7 +27,18 @@ ResultScene.prototype.addEntities_ = function() {
   if (this.gm_.level.state == 'won') this.continueBtn_.setStyle('locked');
   this.continueBtn_.onClick(function() {
     if (this.continueBtn_.getStyle() == 'locked') return;
-    this.transition_('main');
+    if (this.selectedReward_) {
+      this.gm_.world.aquired.push(this.selectedReward_.getProp('item'));
+    }
+    if (this.gm_.level.state == 'lost' && this.gm_.world.lives > 0) {
+      this.gm_.level.state = 'unlocked';
+      this.gm_.world.lives--;
+    }
+    if (this.world_.won()) {
+      this.transition_('won');
+    } else {
+      this.transition_('main');
+    }
   }.bind(this));
 
   this.layout_ = this.layoutElement_.create({
@@ -95,7 +106,6 @@ ResultScene.prototype.selectReward_ = function(btn) {
     }
     this.selectedReward_.setStyle('');
     this.inventory_.remove(this.selectedReward_.getProp('item'));
-    this.inventory_.unequip(this.selectedReward_.getProp('item'));
   }
   this.selectedReward_ = btn;
   this.selectedReward_.setStyle('active');
@@ -108,7 +118,7 @@ ResultScene.prototype.selectReward_ = function(btn) {
 
 ResultScene.prototype.getRewardRow_ = function(btn1, btn2) {
   var rewardRow = this.layoutElement_.create();
-  rewardRow.childHeight = btn1.entity_.radius * 2;
+  rewardRow.childHeight = btn1.getProp('radius') * 2;
   rewardRow.add(btn1);
   btn1.padding.right = btn2.padding.right = ITEM_PADDING;
   rewardRow.add(btn2);

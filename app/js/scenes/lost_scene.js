@@ -1,5 +1,5 @@
 var LostScene = di.service('LostScene', [
-  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement']);
+  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement', 'World']);
 
 LostScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('lost'));
@@ -11,7 +11,7 @@ LostScene.prototype.addEntities_ = function() {
   var continueBtn = this.btnElement_.create();
   continueBtn.setText('exit', {size: 'btn-sm'});
   continueBtn.onClick(function() {
-    this.transition_('intro');
+    this.transition_('worldSelect');
   }.bind(this));
 
   this.layout_ = this.layoutElement_.create({
@@ -21,10 +21,16 @@ LostScene.prototype.addEntities_ = function() {
   this.layout_.add(continueBtn);
 };
 
-LostScene.prototype.update_ = function(dt, state) {
-  this.layout_.update();
+LostScene.prototype.start_ = function() {
+  _.each(this.gm_.world.aquired, function(item) {
+    this.gm_.inventory.remove(item);
+  }, this);
+  if (!this.gm_.inventory.has('primary')) {
+    this.gm_.inventory.equip(this.gm_.inventory.get('primary')[0]);
+  }
+  this.world_.resetProgress();
 };
 
-LostScene.prototype.end_ = function() {
-  this.restartGame_();
+LostScene.prototype.update_ = function(dt, state) {
+  this.layout_.update();
 };

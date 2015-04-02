@@ -39,9 +39,13 @@ BtnElement.prototype.setText = function(text, spec) {
   this.entity_.height = spec.size + 4;
 };
 
+BtnElement.prototype.setWidth = function(width) {
+  this.width_ = width;
+};
+
 BtnElement.prototype.calcChildWidthHeight_ = function() {
   this.label_.update();
-  this.childWidth = this.label_.childWidth;
+  this.childWidth = this.width_ || this.label_.childWidth;
   this.childHeight = this.label_.childHeight;
 };
 

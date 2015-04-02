@@ -5,13 +5,15 @@ describe('A world', function() {
   beforeEach(function() {
     world = di.get('World');
     gm = di.get('GameModel');
+    di.get('Game').initGameModel_();
+    gm.world = _.last(gm.worlds);
   });
 
   function expectUnlocked(var_unlockedRowCol) {
     var unlocked = _.map(arguments, function(rowCol) {
-      return rowCol[0] * World.COLS + rowCol[1];
+      return rowCol[0] * gm.world.cols + rowCol[1];
     });
-    gm.world.forEach(function(level) {
+    gm.world.levels.forEach(function(level) {
       if (_.contains(unlocked, level.index)) {
         expect(level.state).toBe('unlocked');
       } else {
@@ -21,24 +23,23 @@ describe('A world', function() {
   };
 
   it('can be created', function() {
-    expect(gm.world.length).toBe(0);
-    world.create();
-    expect(gm.world.length).toBe(World.LEVELS);
+    world.create(gm.world);
+    expect(gm.world.levels.length).toBe(gm.world.rows * gm.world.cols);
   });
 
   it('can get a level by (row, col)', function() {
-    world.create();
-    expect(world.get(2, 3).index).toBe(2 * World.COLS + 3);
+    world.create(gm.world);
+    expect(world.get(2, 3).index).toBe(2 * gm.world.cols + 3);
   });
 
   it('all levels but the first are initially locked', function() {
-    world.create();
-    expectUnlocked(World.START);
+    world.create(gm.world);
+    expectUnlocked([0, 0]);
   });
 
   // Ensure world is 6x3 for this test to pass.
   it('can unlock adjacent levels', function() {
-    world.create();
+    world.create(gm.world);
 
     world.unlockAdjacent(world.get(0, 0));
     expectUnlocked(World.START,
@@ -57,19 +58,19 @@ describe('A world', function() {
   });
 
   it('can detect when the game is won', function() {
-    world.create();
+    world.create(gm.world);
     expect(world.won()).toBe(false);
-    world.get.apply(world, World.END).state = 'won';
+    world.get.apply(world, world.end()).state = 'won';
     expect(world.won()).toBe(true);
   });
 
-  xit('can detect when the game is lost', function() {
-    world.create();
+  it('can detect when the game is lost', function() {
+    world.create(gm.world);
     expect(world.lost()).toBe(false);
 
-    for (var col = 0; col < World.COLS; col++) {
-      world.get(1, col).state = 'lost';
-    }
-    expect(world.lost()).toBe(true);
+    //for (var col = 0; col < gm.world.cols; col++) {
+    //  world.get(1, col).state = 'lost';
+    //}
+    //expect(world.lost()).toBe(true);
   });
 });

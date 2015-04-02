@@ -1,7 +1,7 @@
 var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene', 'MainScene',
   'EquipOptionsScene', 'EquipScene', 'ResultScene', 'WonScene', 'LostScene',
-  'Gameplay', 'World', 'BattleRewards']);
+  'Gameplay', 'World', 'BattleRewards', 'WorldSelectScene']);
 
 Game.UPDATE_RATE = .06;
 
@@ -15,41 +15,31 @@ Game.prototype.start = function() {
   this.scenes_ = [
     /* 0 */ this.loadingScene_,
     /* 1 */ this.introScene_,
-    /* 2 */ this.mainScene_,
-    /* 3 */ this.battleScene_,
-    /* 4 */ this.resultScene_,
-    /* 5 */ this.equipOptionsScene_,
-    /* 6 */ this.equipScene_,
-    /* 7 */ this.wonScene_,
-    /* 8 */ this.lostScene_
+    /* 2 */ this.worldSelectScene_,
+    /* 3 */ this.mainScene_,
+    /* 4 */ this.equipOptionsScene_,
+    /* 5 */ this.equipScene_,
+    /* 6 */ this.battleScene_,
+    /* 7 */ this.resultScene_,
+    /* 8 */ this.wonScene_,
+    /* 9 */ this.lostScene_
   ];
 
   // DEBUG
-  //this.gm_.level = this.gm_.world[0];
+  this.gm_.world = this.gm_.worlds[0];
+  //this.gm_.level = this.gm_.world.levels[0];
   //this.gm_.level.state = 'won';
   //this.battleRewards_.calculateRewards();
-  //this.gm_.equipping = 'primary';
+  this.gm_.equipping = 'primary';
 
-  this.scenes_[1].start();
-};
-
-Game.prototype.restart_ = function() {
-  var scenes = this.gm_.scenes;
-  var entities = this.gm_.entities;
-  this.gm_.init();
-  this.gm_.scenes = scenes;
-  this.gm_.entities = entities;
-  this.initGameModel_();
+  this.scenes_[5].start();
 };
 
 Game.prototype.initGameModel_ = function() {
-  this.setPlayerItems_();
-  this.world_.create();
-};
-
-Game.prototype.setPlayerItems_ = function() {
   this.gm_.inventory = this.gameplay_.inventory;
   this.gm_.player = this.gameplay_.player;
+  this.gm_.worlds = this.gameplay_.worlds;
+  this.world_.createWorlds();
 };
 
 Game.prototype.update = function(dt) {
@@ -60,13 +50,9 @@ Game.prototype.update = function(dt) {
   if (this.gm_.scenes['battle'] == 'start') {
     this.nextAction_ = 0;
   }
-  var requestRestart = false;
   for (var i = 0; i < this.scenes_.length; i++) {
     this.scenes_[i].resolve(dt);
-    requestRestart |= this.scenes_[i].requestRestart;
-    this.scenes_[i].requestRestart = false;
   }
-  if (requestRestart) this.restart_();
 };
 
 Game.prototype.updateEntities_ = function(dt) {

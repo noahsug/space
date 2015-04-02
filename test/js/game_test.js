@@ -24,7 +24,7 @@ describe('A game', function() {
     });
   });
 
-  it('watch', function() {
+  xit('watch', function() {
     screen.setSurfaceArea(Screen.DESIRED_SURFACE_AREA);
     document.getElementById('hide-canvas').style.display = "";
     var seed = 2006309135.2142427;

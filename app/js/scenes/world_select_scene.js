@@ -1,48 +1,65 @@
 var WorldSelectScene = di.service('WorldSelectScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'RoundBtnElement',
-  'EntityElement', 'World']);
+  'LabelElement', 'World']);
 
 WorldSelectScene.prototype.init = function() {
-  _.class.extend(this, this.scene_.create('main'));
+  _.class.extend(this, this.scene_.create('worldSelect'));
 };
 
 WorldSelectScene.prototype.addEntities_ = function() {
-  //this.entityElement_.create('worldSelectSplash');
+  this.layout_ = this.layoutElement_.create({direction: 'vertical'});
+  this.layout_.padding.top = -Size.TEXT - Padding.SM + Padding.MD + Size.LEVEL;
 
-  var layouts = [];
-  for (var row = 0; row < World.ROWS; row++) {
-    var layout = this.layoutElement_.create();
-    layout.layout.flex = 1;
-    layout.layout.align = 'center';
-    layouts.push(layout);
-    for (var col = 0; col < World.COLS; col++) {
-      layout.add(this.createBtn_(row, col));
-    }
+  // World select label.
+  var labelRow = this.layout_.addNew(this.layoutElement_);
+  labelRow.layout.align = 'top';
+  labelRow.childHeight = Size.TEXT + Padding.SM;
+  var worldLabel = labelRow.addNew(this.labelElement_);
+  worldLabel.setText('select world:',
+                     {size: Size.TEXT, align: 'left', baseline: 'top'});
+  labelRow.addGap(Padding.SM * 2 + Size.LEVEL * 3);
+
+  // Worlds.
+  for (var i = 0; i < this.gm_.worlds.length; i += 3) {
+    if (i) this.layout_.addGap(Padding.SM);
+    var row = this.layout_.addNew(this.layoutElement_);
+    row.add(this.createWorldBtn_(this.gm_.worlds[i]));
+    row.addGap(Padding.SM);
+    row.add(this.createWorldBtn_(this.gm_.worlds[i + 1]));
+    row.addGap(Padding.SM);
+    row.add(this.createWorldBtn_(this.gm_.worlds[i + 2]));
+    row.childHeight = Size.LEVEL;
   }
 
-  this.layout_ = this.layoutElement_.create({direction: 'horizontal'});
+  this.layout_.addGap(Padding.MD);
 
-  var worldLayout = this.layoutElement_.create({direction: 'vertical'});
-  worldLayout.layout.flex = 1;
+  // Sandbox + ranked.
+  var row = this.layout_.addNew(this.layoutElement_);
+  row.setPadding(0, Padding.LEVEL);
+  row.addFlex();
+  var sandboxBtn = row.addNew(this.roundBtnElement_);
+  sandboxBtn.setSize(Size.LEVEL);
+  sandboxBtn.setProp('text', 'sandbox');
 
+  row.addFlex();
 
-
-  var miscLayout = this.layoutElement_.create({direction: 'vertical'});
-  miscLayout.layout.flex = 2;
+  var rankedBtn = row.addNew(this.roundBtnElement_);
+  rankedBtn.setSize(Size.LEVEL);
+  rankedBtn.setProp('text', 'ranked');
+  row.childHeight = Size.LEVEL;
+  row.addFlex();
 };
 
-WorldSelectScene.prototype.createBtn_ = function(row, col) {
+WorldSelectScene.prototype.createWorldBtn_ = function(world) {
   var btn = this.roundBtnElement_.create();
-  btn.padding.right = 20;
+  btn.setStyle('world');
   btn.setSize('level');
+  btn.setProp('level', world);
 
-  var level = this.world_.get(row, col);
-  btn.setProp('level', level);
-
-  if (level.state == 'unlocked') {
+  if (world.state != 'locked') {
     btn.onClick(function() {
-      this.gm_.level = level;
-      this.transition_('equipOptions');
+      this.gm_.world = world;
+      this.transition_('main');
     }.bind(this));
   }
   return btn;

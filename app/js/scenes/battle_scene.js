@@ -55,16 +55,12 @@ BattleScene.prototype.freezeEntities_ = function() {
 BattleScene.prototype.transitionOver_ = function() {
   this.removeEntities_();
   this.gm_.level.state == 'won' ? this.handleWin_() : this.handleLoss_();
-  this.battleRewards_.calculateRewards();
   this.gm_.equipping = null;
 };
 
 BattleScene.prototype.handleWin_ = function() {
-  if (this.world_.won()) {
-    this.transition_('won');
-  } else {
-    this.world_.unlockAdjacent(this.gm_.level);
-  }
+  this.battleRewards_.calculateRewards();
+  this.world_.unlockAdjacent(this.gm_.level);
 };
 
 BattleScene.prototype.handleLoss_ = function() {

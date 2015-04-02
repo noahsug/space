@@ -153,12 +153,6 @@ Renderer.prototype.drawEquipOptionsSplash_ = function() {
   }, this);
 };
 
-Renderer.prototype.drawEquipSplash_ = function() {
-  var text = 'equip ' + Strings.ItemType[this.gm_.equipping];
-  this.drawText_(text, 12, this.screen_.width * SCREEN_LEFT_PADDING,
-                 this.screen_.width * SCREEN_LEFT_PADDING);
-};
-
 Renderer.prototype.drawWonSplash_ = function() {
   var fontSize = 50;
   this.ctx_.textAlign = 'center';
@@ -175,7 +169,7 @@ Renderer.prototype.drawLostSplash_ = function() {
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
-var DESC_ONLY = _.newSet(['charge', 'charge II', 'tracker']);
+var DESC_ONLY = _.newSet(['charge', 'charge II', 'tracker', 'tracker II']);
 Renderer.prototype.drawItemDesc_ = function(entity) {
   var size = 12;
   if (!entity.item) return;
@@ -196,11 +190,12 @@ Renderer.prototype.drawItemDesc_ = function(entity) {
     stats += '  Range: ' + spec.range / 10;
     if (spec.seek > 10) stats += '  Seek: ' + spec.seek.toFixed(1);
     textLines[1] = stats;
-  } else {
-    var width = this.font_.width(desc, size);
-    if (width > this.screen_.width * (1 - SCREEN_LEFT_PADDING * 2)) {
-      textLines = _.splitText(desc);
-    }
+  }
+
+  var width = this.font_.width(desc, size);
+  if (width > this.screen_.width * (1 - SCREEN_LEFT_PADDING * 2)) {
+    if (textLines[1]) desc += ' ' + textLines[1];
+    textLines = _.splitText(desc);
   }
 
   if (textLines.length == 2) {
@@ -238,6 +233,9 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
   if (entity.level) {
     switch (entity.level.state) {
       case 'won':
+        if (entity.style != 'world') return;
+        color = Gfx.Color.BEATEN;
+        break;
       case 'lost': return;
       case 'locked': color = Gfx.Color.LOCKED; break;
       case 'unlocked': color = '#FFFFFF'; break;
@@ -266,25 +264,36 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
   this.ctx_.stroke();
 
   // Draw text.
-  var text = '';
+  var text = entity.text;
   var textSize;
   if (entity.level) {
-    if (entity.level.state == 'won') return;
     textSize = 20;
-    text = this.getEnemyRank_(entity.level);
+    if (entity.style == 'world') text = entity.level.index + 1;
+    else text = this.getEnemyRank_(entity.level);
   } else if (entity.item) {
     text = entity.item.name || 'none';
     textSize = 12;
   }
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'middle';
-  this.drawText_(text, textSize, entity.render.pos.x, entity.render.pos.y,
-                 {color: color});
+  if (this.font_.width(text, textSize) > Size.ITEM - 4) {
+    var lines = _.splitText(text);
+    this.drawText_(lines[0], textSize, entity.render.pos.x,
+                   entity.render.pos.y - Size.TEXT / 2 - 2,
+                   {color: color});
+    this.drawText_(lines[1], textSize, entity.render.pos.x,
+                   entity.render.pos.y + Size.TEXT / 2 + 2,
+                   {color: color});
+  } else {
+    this.drawText_(text, textSize, entity.render.pos.x, entity.render.pos.y,
+                   {color: color});
+  }
 };
 
 var RANKS = ['E', 'D', 'C', 'B', 'A', 'S'];
 Renderer.prototype.getEnemyRank_ = function(level) {
-  return RANKS[Math.round((RANKS.length - 1) * level.type / Game.MAX_LEVEL)];
+  return Math.round((level.type / Game.MAX_LEVEL) * 9 + 1);
+  //return RANKS[Math.round((RANKS.length - 1) * level.type / Game.MAX_LEVEL)];
 };
 
 Renderer.prototype.drawBtn_ = function(entity) {

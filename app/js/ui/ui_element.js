@@ -1,6 +1,19 @@
 var UiElement = di.factory('UiElement', [
   'Entity', 'EntityDecorator', 'Screen']);
 
+Padding = {
+  LEVEL: 30,
+  SM: 15,
+  MD: 25,
+  BOT: 30
+};
+
+Size = {
+  LEVEL: 60,
+  ITEM: 60,
+  TEXT: 12
+};
+
 UiElement.prototype.init = function() {
   this.layout = {align: 'center'};
   this.padding = {};

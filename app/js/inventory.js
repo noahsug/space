@@ -23,6 +23,7 @@ Inventory.prototype.isEquipped = function(item) {
 
 Inventory.prototype.equip = function(item) {
   this.gm_.player.push(item);
+  _.sortBy(this.gm_.player, 'level');
 };
 
 Inventory.prototype.add = function(item) {
@@ -34,6 +35,7 @@ Inventory.prototype.remove = function(item) {
   if (!this.hasItem(item)) return;
   var index = _.findIndexWhere(this.gm_.inventory, {name: item.name});
   this.gm_.inventory.splice(index, 1);
+  this.unequip(item);
 };
 
 Inventory.prototype.unequip = function(item) {
@@ -41,12 +43,12 @@ Inventory.prototype.unequip = function(item) {
   if (equipIndex >= 0) this.gm_.player.splice(equipIndex, 1);
 };
 
-Inventory.prototype.getUnequippedByLevel = function(level) {
+Inventory.prototype.getUnownedByLevel = function(level) {
   var levels = _.range(0, level + 1).reverse().
       concat(_.range(level + 1, Game.MAX_LEVEL + 1));
   for (var i = 0; i < levels.length; i++) {
     var items = _.filter(this.itemService_.getByLevel(levels[i]),
-                         _.negate(this.isEquipped.bind(this)));
+                         _.negate(this.hasItem.bind(this)));
     if (items.length) return items;
   }
   // The player has every item!

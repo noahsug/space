@@ -22,6 +22,11 @@ LayoutElement.prototype.init = function(opt_options) {
   this.addUnit_('pad-bot', 'btn-crowded', .1);
   this.addUnit_('pad-left', 'btn-lg', .6);
   this.addUnit_('pad-top', 'btn-lg', .2);
+
+  this.addUnit_('pad-top', 'body', Padding.BODY);
+  this.addUnit_('pad-bot', 'body', Padding.BODY);
+  this.addUnit_('pad-right', 'body', Padding.BODY);
+  this.addUnit_('pad-left', 'body', Padding.BODY);
 };
 
 LayoutElement.Direction = {
@@ -65,17 +70,35 @@ LayoutElement.prototype.setAlign = function(align) {
 
 LayoutElement.prototype.addFlex = function(opt_flex) {
   var e = this.uiElement_.create();
-  this.add(e, {flex: opt_flex || 1});
+  return this.add(e, {flex: opt_flex || 1});
+};
+
+LayoutElement.prototype.addGap = function(size) {
+  var e = this.uiElement_.create();
+  if (this.direction_ == 'vertical') e.childHeight = size;
+  if (this.direction_ == 'horizontal') e.childWidth = size;
+  return this.add(e);
+};
+
+LayoutElement.prototype.addNew = function(element, opt_typeOrOptions) {
+  var e = element.create(opt_typeOrOptions);
+  return this.add(e);
 };
 
 LayoutElement.prototype.add = function(element, opt_options) {
   this.elements_.push(element);
-  if (!opt_options) return;
-  if (_.isDef(opt_options.flex)) element.layout.flex = opt_options.flex;
-  if (_.isDef(opt_options.align))
-    element.layout.align = opt_options.align;
-  if (_.isDef(opt_options.padding))
-    element.setPadding.apply(element, opt_options.padding);
+  if (opt_options) {
+    if (_.isDef(opt_options.flex)) element.layout.flex = opt_options.flex;
+    if (_.isDef(opt_options.align))
+      element.layout.align = opt_options.align;
+    if (_.isDef(opt_options.padding))
+      element.setPadding.apply(element, opt_options.padding);
+  }
+  return element;
+};
+
+LayoutElement.prototype.child = function(opt_index) {
+  return this.elements_[opt_index || 0];
 };
 
 LayoutElement.prototype.positionChild_ = function(x, y) {

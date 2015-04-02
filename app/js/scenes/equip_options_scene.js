@@ -69,7 +69,7 @@ EquipOptionsScene.prototype.goToEquip_ = function(type) {
 
 EquipOptionsScene.prototype.getEquipRow_ = function(btn1, btn2) {
   var equipRow = this.layoutElement_.create();
-  equipRow.childHeight = btn1.getEntity().radius * 2;
+  equipRow.childHeight = btn1.getProp('radius') * 2;
   equipRow.add(btn1);
   btn1.padding.right = btn2.padding.right = ITEM_PADDING;
   equipRow.add(btn2);

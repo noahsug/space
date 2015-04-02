@@ -459,6 +459,10 @@ _.geometry.aimPosition = function(source, target, targetVector, targetSpeed,
   };
 };
 
+_.deepClone = function(o) {
+  return JSON.parse(JSON.stringify(o));
+};
+
 _.vector = {};
 
 _.vector.cartesian = function(v) {

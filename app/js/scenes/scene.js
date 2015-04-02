@@ -80,7 +80,3 @@ Scene.prototype.removeEntities_ = function() {
 };
 
 Scene.prototype.end_ = _.emptyFn;
-
-Scene.prototype.restartGame_ = function() {
-  this.requestRestart = true;
-};

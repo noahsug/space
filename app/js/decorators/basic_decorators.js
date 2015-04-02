@@ -69,8 +69,12 @@ BasicDecorators.prototype.decorateSelectTarget_ = function(obj, spec) {
     return obj;
   };
 
+  var selectTime = 0;
   obj.act(function(dt) {
-    obj.target = selectClosestTarget();
+    if (obj.target.dead || this.gm_.time - selectTime > 10) {
+      obj.target = selectClosestTarget();
+      selectTime = this.gm_.time;
+    }
   });
 
   function selectClosestTarget() {

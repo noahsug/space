@@ -1,15 +1,51 @@
 var EquipScene = di.service('EquipScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'BtnElement', 'EntityElement',
-  'UiElement', 'Inventory', 'RoundBtnElement']);
+  'LabelElement', 'Inventory', 'RoundBtnElement']);
 
 EquipScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('equip'));
 };
 
+var COLS = 3;  // Number of columns in the item grid.
 EquipScene.prototype.addEntities_ = function() {
-  this.entityElement_.create('equipSplash');
+  this.layout_ = this.layoutElement_.create({direction: 'vertical'});
+  this.layout_.padding.top = -Padding.SM + Padding.BOT;
 
-  var itemDesc = this.entityElement_.create('itemDesc');
+  this.layout_.addFlex();
+
+  // Label.
+  var labelRow = this.layout_.addNew(this.layoutElement_);
+  labelRow.layout.align = 'top';
+  labelRow.childHeight = Size.TEXT + Padding.SM;
+  var label = labelRow.addNew(this.labelElement_);
+  label.setText('equip ' + Strings.ItemType[this.gm_.equipping] + ':',
+                     {size: Size.TEXT, align: 'left'});
+  labelRow.addGap(Padding.SM * 2 + Size.LEVEL * 3);
+
+  // Levels.
+  var row;
+  var items = this.inventory_.get(this.gm_.equipping);
+  for (var i = 0; i < items.length || i % COLS; i++) {
+    var item = items[i];
+    var pos = i % COLS;
+    // Gap between rows.
+    if (pos == 0 && i) this.layout_.addGap(Padding.SM);
+    // New row.
+    if (pos == 0) {
+      row = this.layout_.addNew(this.layoutElement_);
+      row.childHeight = Size.LEVEL;
+    }
+    // Gap between btns.
+    if (pos) row.addGap(Padding.SM);
+    // The btn or gap where the btn would be.
+    if (item) row.add(this.createItemBtn_(item));
+    else row.addGap(Size.LEVEL);
+  }
+
+  this.layout_.addGap(Padding.MD);
+
+  // Item Description.
+  var itemDesc = this.layout_.addNew(this.entityElement_, 'itemDesc');
   itemDesc.childHeight = 32;
   itemDesc.getEntity().update(function() {
     if (this.equippedBtn_) {
@@ -17,49 +53,26 @@ EquipScene.prototype.addEntities_ = function() {
     }
   }.bind(this));
 
-  var itemBtns = [];
-  this.equippedBtn_ = null;
-  _.each(this.inventory_.get(this.gm_.equipping), function(item, i) {
-    var btn = this.createItemBtn_(item);
-    itemBtns[i] = btn;
-  }, this);
-
-  var continueBtn = this.btnElement_.create();
-  continueBtn.setText('back', {size: 'btn-sm'});
-  continueBtn.onClick(function() {
-    this.transitionFast_(this.gm_.transition.prev);
-  }.bind(this));
-
-  this.layout_ = this.layoutElement_.create({
-    direction: 'vertical', align: 'top'});
-  this.layout_.padding.top = 50;
-  this.layout_.padding.bottom = 30;
-
-  for (var i = 0; i < itemBtns.length; i+= 2) {
-    var btn1 = itemBtns[i];
-    var btn2 = itemBtns[i + 1] || this.createItemBtn_({name: ''});
-    var itemRow = this.layoutElement_.create();
-    itemRow.childHeight = btn1.getEntity().radius * 2;
-    itemRow.padding.bottom = 20;
-    itemRow.add(btn1);
-    itemRow.add(btn2);
-    btn1.padding.right = btn2.padding.right = 20;
-    this.layout_.add(itemRow);
-  }
-
   this.layout_.addFlex();
 
-  this.layout_.add(itemDesc);
-
-  this.layout_.add(continueBtn);
-  continueBtn.layout.align = 'top';
-  continueBtn.padding.top = 25;
-  continueBtn.padding.left = 'btn-sm';
+  // Back button.
+  var btnRow = this.layout_.addNew(this.layoutElement_);
+  btnRow.layout.align = 'top';
+  btnRow.childHeight = Size.TEXT + Padding.BOT;
+  var backBtn = btnRow.addNew(this.btnElement_);
+  backBtn.layout.align = 'left';
+  backBtn.padding.left = Padding.MD;
+  backBtn.setText('back', {size: Size.TEXT});
+  backBtn.setLineDirection('left');
+  backBtn.onClick(function() {
+    this.transitionFast_(this.gm_.transition.prev);
+  }.bind(this));
+  btnRow.addFlex(1);
 };
 
 EquipScene.prototype.createItemBtn_ = function(item) {
   var btn = this.roundBtnElement_.create();
-  btn.setSize('item');
+  btn.setSize(Size.ITEM);
   btn.setProp('item', item);
   if (this.inventory_.isEquipped(item)) {
     btn.setStyle('equipped');

@@ -26,7 +26,8 @@ Gfx.Color = {
   LESS_OPAC_GRAY: 'rgba(50, 50, 50, .8)',
 
   ACTIVE: '#FFFFAA',
-  LOCKED: '#666'
+  LOCKED: '#666',
+  BEATEN: '#AAA'
 };
 
 Gfx.DrawFn = {
