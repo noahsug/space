@@ -1,30 +1,89 @@
 var ResultScene = di.service('ResultScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'BtnElement', 'EntityElement',
-  'RoundBtnElement', 'ItemService', 'Inventory', 'BattleRewards']);
+  'RoundBtnElement', 'ItemService', 'Inventory', 'BattleRewards', 'World',
+  'LabelElement']);
 
 ResultScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('result'));
 };
 
-ResultScene.prototype.start_ = function() {
-  this.selectedReward_ = undefined;
-};
-
-var ITEM_PADDING = 20;
 ResultScene.prototype.addEntities_ = function() {
-  var splash = this.entityElement_.create('resultSplash');
+  var COLS = 4;  // Number of columns in the item grid.
 
-  var itemDesc = this.entityElement_.create('itemDesc');
-  itemDesc.childHeight = 32;
-  itemDesc.getEntity().update(function() {
-    if (this.selectedReward_) {
-      itemDesc.setProp('item', this.selectedReward_.getProp('item'));
-    }
-  }.bind(this));
-
+  this.selectedReward_ = undefined;
   this.continueBtn_ = this.btnElement_.create();
-  this.continueBtn_.setText('continue', {size: 'btn-sm'});
   if (this.gm_.level.state == 'won') this.continueBtn_.setStyle('locked');
+  this.layout_ = this.layoutElement_.create({direction: 'vertical'});
+  this.layout_.padding.top = -Padding.ITEM + Padding.BOT;
+
+  // Result splash.
+  var splashRow = this.layout_.addNew(this.layoutElement_);
+  splashRow.layout.align = 'top';
+  splashRow.padding.top = Padding.MD;
+  var resultSplash = splashRow.addNew(this.entityElement_, 'resultSplash');
+  splashRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+
+  this.layout_.addFlex();
+
+  if (this.gm_.level.state == 'won') {
+    // Reward label.
+    var rewardRow = this.layout_.addNew(this.layoutElement_);
+    rewardRow.layout.align = 'top';
+    rewardRow.childHeight = Size.TEXT + Padding.ITEM;
+    var rewardLabel = rewardRow.addNew(this.labelElement_);
+    var selectText = this.battleRewards_.numItems() > 1 ?
+        'Select reward: ' : 'Reward: ';
+    rewardLabel.getEntity().update(function() {
+      var rewardType = this.selectedReward_ ?
+          Strings.ItemType[this.selectedReward_.getProp('item').category] : '';
+      rewardLabel.setText(selectText + rewardType,
+                          {size: Size.TEXT, align: 'left', baseline: 'top'});
+    }.bind(this));
+    rewardRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+
+    // Rewards.
+    var row;
+    _.each(Game.ITEM_TYPES, function(type, i) {
+      var pos = i % COLS;
+      // Gap between rows.
+      if (pos == 0 && i) this.layout_.addGap(Padding.ITEM);
+      // New row.
+      if (pos == 0) {
+        row = this.layout_.addNew(this.layoutElement_);
+        row.childHeight = Size.ITEM;
+      }
+      // Gap between btns.
+      if (pos) row.addGap(Padding.ITEM);
+      // The btn.
+      row.add(this.createRewardButton_(type));
+    }, this);
+
+    this.layout_.addGap(Padding.MD);
+
+    // Item Description.
+    var itemDescRow = this.layout_.addNew(this.layoutElement_);
+    var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');
+    itemDesc.childHeight = Size.TEXT * 2 + 4;
+    itemDesc.getEntity().update(function() {
+      if (this.selectedReward_) {
+        itemDesc.setProp('item', this.selectedReward_.getProp('item'));
+      }
+    }.bind(this));
+    itemDescRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+    itemDescRow.childHeight = itemDesc.childHeight;
+  }
+
+  this.layout_.addFlex();
+
+  // Continue button.
+  var btnRow = this.layout_.addNew(this.layoutElement_);
+  btnRow.setAlign('right');
+  btnRow.layout.align = 'top';
+  btnRow.childHeight = Size.TEXT + Padding.BOT;
+  btnRow.add(this.continueBtn_);
+  this.continueBtn_.layout.align = 'left';
+  this.continueBtn_.padding.right = Padding.MD;
+  this.continueBtn_.setText('continue', {size: Size.TEXT});
   this.continueBtn_.onClick(function() {
     if (this.continueBtn_.getStyle() == 'locked') return;
     if (this.selectedReward_) {
@@ -40,48 +99,12 @@ ResultScene.prototype.addEntities_ = function() {
       this.transition_('main');
     }
   }.bind(this));
-
-  this.layout_ = this.layoutElement_.create({
-    direction: 'vertical', align: 'top'});
-  this.continueBtn_.layout.align = 'top';
-
-  if (this.gm_.level.state == 'won') {
-    var numRewards = this.battleRewards_.numItems();
-    splash.setProp('rewardExists', numRewards);
-    this.layout_.padding.top = 120 - ITEM_PADDING;
-
-    this.layout_.addFlex();
-
-    var rewardBtns = _.map(Game.ITEM_TYPES, this.createRewardButton_, this);
-    var rewardRow1 = this.getRewardRow_(rewardBtns[0], rewardBtns[1]);
-    this.layout_.add(rewardRow1);
-    rewardRow1.padding.bottom = ITEM_PADDING * 2;
-    var rewardRow2 = this.getRewardRow_(rewardBtns[2], rewardBtns[3]);
-    this.layout_.add(rewardRow2);
-
-    this.layout_.addFlex();
-
-    this.layout_.add(itemDesc);
-
-    this.layout_.addFlex();
-
-    this.layout_.add(this.continueBtn_, {align: 'top'});
-    this.continueBtn_.padding.left = 'btn-sm';
-
-    this.layout_.addFlex();
-
-  } else if (this.gm_.level.state == 'lost') {
-    this.layout_.addFlex();
-    this.layout_.padding.left = 'btn';
-    this.layout_.padding.bottom = 'btn';
-    this.layout_.add(this.continueBtn_);
-    this.continueBtn_.padding.bottom = 'btn';
-  } else _.fail('invalid state: ' + this.gm_state);
 };
 
 ResultScene.prototype.createRewardButton_ = function(type) {
   var btn = this.roundBtnElement_.create();
-  btn.setSize('item');
+  btn.setStyle('reward');
+  btn.setSize(Size.ITEM);
   btn.setProp('rewardBtn', true);
   var item = this.battleRewards_.getReward(type);
   btn.setProp('item', item);
@@ -99,11 +122,12 @@ ResultScene.prototype.createRewardButton_ = function(type) {
 ResultScene.prototype.selectReward_ = function(btn) {
   var item = btn.getProp('item');
   if (this.selectedReward_) {
-    if (btn.getStyle() == 'active') {
-      this.gm_.equipping = item.category;
-      this.transitionFast_('equip');
-      return;
-    }
+    // Note: Uncomment this to allow equipping items in result screen.
+    //if (btn.getStyle() == 'active') {
+    //  this.gm_.equipping = item.category;
+    //  this.transitionFast_('equip');
+    //  return;
+    //}
     this.selectedReward_.setStyle('');
     this.inventory_.remove(this.selectedReward_.getProp('item'));
   }
@@ -114,15 +138,6 @@ ResultScene.prototype.selectReward_ = function(btn) {
     this.inventory_.equip(item);
   }
   this.continueBtn_.setStyle('');
-};
-
-ResultScene.prototype.getRewardRow_ = function(btn1, btn2) {
-  var rewardRow = this.layoutElement_.create();
-  rewardRow.childHeight = btn1.getProp('radius') * 2;
-  rewardRow.add(btn1);
-  btn1.padding.right = btn2.padding.right = ITEM_PADDING;
-  rewardRow.add(btn2);
-  return rewardRow;
 };
 
 ResultScene.prototype.update_ = function(dt, state) {

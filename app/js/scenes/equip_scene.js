@@ -6,21 +6,23 @@ EquipScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('equip'));
 };
 
-var COLS = 3;  // Number of columns in the item grid.
 EquipScene.prototype.addEntities_ = function() {
+  var COLS = 4;  // Number of columns in the item grid.
+
+  this.equippedBtn_ = undefined;
   this.layout_ = this.layoutElement_.create({direction: 'vertical'});
-  this.layout_.padding.top = -Padding.SM + Padding.BOT;
+  this.layout_.padding.top = -Padding.ITEM + Padding.BOT;
 
   this.layout_.addFlex();
 
   // Label.
   var labelRow = this.layout_.addNew(this.layoutElement_);
   labelRow.layout.align = 'top';
-  labelRow.childHeight = Size.TEXT + Padding.SM;
+  labelRow.childHeight = Size.TEXT + Padding.ITEM;
   var label = labelRow.addNew(this.labelElement_);
   label.setText('equip ' + Strings.ItemType[this.gm_.equipping] + ':',
-                     {size: Size.TEXT, align: 'left'});
-  labelRow.addGap(Padding.SM * 2 + Size.LEVEL * 3);
+                {size: Size.TEXT, align: 'left', baseline: 'top'});
+  labelRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
 
   // Levels.
   var row;
@@ -29,34 +31,38 @@ EquipScene.prototype.addEntities_ = function() {
     var item = items[i];
     var pos = i % COLS;
     // Gap between rows.
-    if (pos == 0 && i) this.layout_.addGap(Padding.SM);
+    if (pos == 0 && i) this.layout_.addGap(Padding.ITEM);
     // New row.
     if (pos == 0) {
       row = this.layout_.addNew(this.layoutElement_);
-      row.childHeight = Size.LEVEL;
+      row.childHeight = Size.ITEM;
     }
     // Gap between btns.
-    if (pos) row.addGap(Padding.SM);
+    if (pos) row.addGap(Padding.ITEM);
     // The btn or gap where the btn would be.
     if (item) row.add(this.createItemBtn_(item));
-    else row.addGap(Size.LEVEL);
+    else row.addGap(Size.ITEM);
   }
 
   this.layout_.addGap(Padding.MD);
 
   // Item Description.
-  var itemDesc = this.layout_.addNew(this.entityElement_, 'itemDesc');
-  itemDesc.childHeight = 32;
+  var itemDescRow = this.layout_.addNew(this.layoutElement_);
+  var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');
+  itemDesc.childHeight = Size.TEXT * 2 + 4;
   itemDesc.getEntity().update(function() {
     if (this.equippedBtn_) {
       itemDesc.setProp('item', this.equippedBtn_.getProp('item'));
     }
   }.bind(this));
+  itemDescRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+  itemDescRow.childHeight = itemDesc.childHeight;
 
   this.layout_.addFlex();
 
   // Back button.
   var btnRow = this.layout_.addNew(this.layoutElement_);
+  btnRow.setAlign('left');
   btnRow.layout.align = 'top';
   btnRow.childHeight = Size.TEXT + Padding.BOT;
   var backBtn = btnRow.addNew(this.btnElement_);
@@ -67,7 +73,6 @@ EquipScene.prototype.addEntities_ = function() {
   backBtn.onClick(function() {
     this.transitionFast_(this.gm_.transition.prev);
   }.bind(this));
-  btnRow.addFlex(1);
 };
 
 EquipScene.prototype.createItemBtn_ = function(item) {

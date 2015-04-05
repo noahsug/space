@@ -23,5 +23,9 @@ Strings = {
     ability: 'ability',
     utility: 'specialty',
     mod: 'boost'
+  },
+
+  rank: function(level) {
+    return Math.round((level / Game.MAX_LEVEL) * 9 + 1);
   }
 };

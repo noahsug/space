@@ -2,16 +2,19 @@ var UiElement = di.factory('UiElement', [
   'Entity', 'EntityDecorator', 'Screen']);
 
 Padding = {
-  LEVEL: 30,
-  SM: 15,
+  LEVEL: 8,
+  WORLD: 10,
+  ITEM: 10,
   MD: 25,
   BOT: 30
 };
 
 Size = {
-  LEVEL: 60,
-  ITEM: 60,
-  TEXT: 12
+  WORLD: 50,
+  LEVEL: 40,
+  ITEM: 54,
+  TEXT: 12,
+  ITEM_TEXT: 8
 };
 
 UiElement.prototype.init = function() {

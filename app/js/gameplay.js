@@ -24,30 +24,54 @@ Health = {
 };
 
 Gameplay.prototype.worlds = [
-  {
+  {  // 0
     rows: 4,
     cols: 1,
     lives: 100
   },
-  {
+  {  // 1
     rows: 3,
     cols: 2
   },
-  {
+  {  // 2
     rows: 4,
     cols: 2
   },
-  {
+  {  // 3
     rows: 3,
     cols: 3
   },
-  {
+  {  // 4
     rows: 4,
     cols: 3
   },
-  {
-    rows: 5,
+  {  // 5
+    rows: 4,
     cols: 3
+  },
+  {  // 6
+    rows: 4,
+    cols: 3
+  },
+  {  // 7
+    rows: 4,
+    cols: 3
+  },
+  {  // 8
+    rows: 4,
+    cols: 3
+  },
+  {  // 9
+    rows: 4,
+    cols: 3
+  },
+  {  // 10
+    rows: 4,
+    cols: 3
+  },
+  {  // 11
+    rows: 8,
+    cols: 5
   }
 ];
 

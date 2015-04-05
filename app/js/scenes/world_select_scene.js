@@ -7,56 +7,56 @@ WorldSelectScene.prototype.init = function() {
 };
 
 WorldSelectScene.prototype.addEntities_ = function() {
+  var COLS = 4;  // Number of columns in the world grid.
+
   this.layout_ = this.layoutElement_.create({direction: 'vertical'});
-  this.layout_.padding.top = -Size.TEXT - Padding.SM + Padding.MD + Size.LEVEL;
 
   // World select label.
   var labelRow = this.layout_.addNew(this.layoutElement_);
   labelRow.layout.align = 'top';
-  labelRow.childHeight = Size.TEXT + Padding.SM;
+  labelRow.childHeight = Size.TEXT + Padding.WORLD * 1.5;
   var worldLabel = labelRow.addNew(this.labelElement_);
   worldLabel.setText('select world:',
                      {size: Size.TEXT, align: 'left', baseline: 'top'});
-  labelRow.addGap(Padding.SM * 2 + Size.LEVEL * 3);
+  labelRow.addGap(Padding.WORLD * (COLS - 1) + Size.WORLD * COLS);
 
   // Worlds.
-  for (var i = 0; i < this.gm_.worlds.length; i += 3) {
-    if (i) this.layout_.addGap(Padding.SM);
+  for (var i = 0; i < this.gm_.worlds.length; i += COLS) {
+    if (i) this.layout_.addGap(Padding.WORLD);
     var row = this.layout_.addNew(this.layoutElement_);
     row.add(this.createWorldBtn_(this.gm_.worlds[i]));
-    row.addGap(Padding.SM);
+    row.addGap(Padding.WORLD);
     row.add(this.createWorldBtn_(this.gm_.worlds[i + 1]));
-    row.addGap(Padding.SM);
+    row.addGap(Padding.WORLD);
     row.add(this.createWorldBtn_(this.gm_.worlds[i + 2]));
-    row.childHeight = Size.LEVEL;
+    row.addGap(Padding.WORLD);
+    row.add(this.createWorldBtn_(this.gm_.worlds[i + 3]));
+    row.childHeight = Size.WORLD;
   }
 
-  this.layout_.addGap(Padding.MD);
+  this.layout_.addGap(Padding.WORLD * 3);
 
   // Sandbox + ranked.
-  var row = this.layout_.addNew(this.layoutElement_);
-  row.setPadding(0, Padding.LEVEL);
-  row.addFlex();
-  var sandboxBtn = row.addNew(this.roundBtnElement_);
-  sandboxBtn.setSize(Size.LEVEL);
+  var btnRow = this.layout_.addNew(this.layoutElement_);
+  var sandboxBtn = btnRow.addNew(this.roundBtnElement_);
+  sandboxBtn.setSize(Size.WORLD);
   sandboxBtn.setProp('text', 'sandbox');
 
-  row.addFlex();
+  btnRow.addGap(Size.WORLD);
 
-  var rankedBtn = row.addNew(this.roundBtnElement_);
-  rankedBtn.setSize(Size.LEVEL);
+  var rankedBtn = btnRow.addNew(this.roundBtnElement_);
+  rankedBtn.setSize(Size.WORLD);
   rankedBtn.setProp('text', 'ranked');
-  row.childHeight = Size.LEVEL;
-  row.addFlex();
+  btnRow.childHeight = Size.WORLD;
 };
 
 WorldSelectScene.prototype.createWorldBtn_ = function(world) {
   var btn = this.roundBtnElement_.create();
   btn.setStyle('world');
-  btn.setSize('level');
+  btn.setSize(Size.WORLD);
   btn.setProp('level', world);
 
-  if (world.state != 'locked') {
+  if (world.state == 'unlocked') {
     btn.onClick(function() {
       this.gm_.world = world;
       this.transition_('main');

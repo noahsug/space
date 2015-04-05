@@ -27,7 +27,7 @@ BattleRewards.prototype.getRandomItem_ = function(level) {
   if (level && r < .52) level--;
   if (level && r < .25) level--;
   if (level && r < .11) level--;
-  return _.sample(this.inventory_.getUnequippedByLevel(level));
+  return _.sample(this.inventory_.getUnownedByLevel(level));
 };
 
 BattleRewards.prototype.numItems = function() {

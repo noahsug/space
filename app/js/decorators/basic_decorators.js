@@ -75,7 +75,7 @@ BasicDecorators.prototype.decorateSelectTarget_ = function(obj, spec) {
       obj.target = selectClosestTarget();
       selectTime = this.gm_.time;
     }
-  });
+  }.bind(this));
 
   function selectClosestTarget() {
     if (!obj.target.clones.length) return obj.target;
