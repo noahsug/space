@@ -48,7 +48,7 @@ AiMovement.prototype.wonder_ = function(obj) {
 
 AiMovement.prototype.think_ = function(obj) {
   //console.log('----- think ' + obj.style + ' -----');
-  obj.movement.desiredDistance = this.getDesiredDistance_(obj) - 20;
+  obj.movement.desiredDistance = this.getDesiredDistance_(obj) - 15;
   this.maybeUseDash_(obj);
   this.maybeUseTeleport_(obj);
   this.setDesiredVector_(obj);
@@ -57,11 +57,25 @@ AiMovement.prototype.think_ = function(obj) {
 
 AiMovement.prototype.getDesiredDistance_ = function(obj) {
   this.c_.rangeInfo_(obj);
-  var targetIndex = 0;
-  var numAttacks = 0;
-  var bestNumAttacks = -9;
-  var bestDistance = 2000;
 
+  var maxDis = this.computeMaxDistance_(obj);
+  if (!obj.movement.maxDis ||
+      maxDis < obj.movement.maxDis ||
+      obj.movement.maxDisTime < this.gm_.time) {
+    obj.movement.maxDis = maxDis;
+    obj.movement.maxDisTime = this.gm_.time + 5;
+  }
+
+  var bestDistance = this.computeBestDistance_(obj);
+  if (!bestDistance) {
+    obj.movement.maxDis = Infinity;
+    bestDistance = this.computeBestDistance_(obj);
+  }
+
+  return bestDistance || 1;
+};
+
+AiMovement.prototype.computeMaxDistance_ = function(obj) {
   var backAngle = obj.c.targetAngle + _.RADIANS_180;
   var backAngleX = Math.cos(backAngle);
   var xDis = (backAngleX < 0 ? obj.c.wallDisW : obj.c.wallDisE) /
@@ -70,22 +84,24 @@ AiMovement.prototype.getDesiredDistance_ = function(obj) {
   var yDis = (backAngleY < 0 ? obj.c.wallDisN : obj.c.wallDisS) /
         Math.abs(backAngleY);
   var maxDis = _.distance({x: xDis, y: yDis});
+  return Math.max(1, maxDis - maxDis % 50);
+};
 
-  if (!obj.movement.maxDis || maxDis < obj.movement.maxDis ||
-      obj.movement.maxDisTime < this.gm_.time) {
-    obj.movement.maxDis = maxDis;
-    obj.movement.maxDisTime = this.gm_.time + 12;
-  }
+AiMovement.prototype.computeBestDistance_ = function(obj) {
+  var targetIndex = 0;
+  var numAttacks = 0;
+  var bestNumAttacks = -Infinity;
+  var bestDistance = undefined;
 
   for (var i = 0; i < obj.c.ranges.length; i++) {
-    var self = Math.min(obj.movement.maxDis, obj.c.ranges[i]);
+    var self = obj.c.ranges[i];
+    if (self > obj.movement.maxDis) continue;
     var target = obj.c.targetRanges[targetIndex] || 0;
     if (self > target) {
       numAttacks++;
       if (numAttacks > bestNumAttacks) {
         bestNumAttacks = numAttacks;
         bestDistance = self;
-        continue;
       }
     } else if (self < target) {
       numAttacks--;
@@ -127,19 +143,27 @@ AiMovement.prototype.maybeUseTeleport_ = function(obj) {
 
 AiMovement.prototype.setDesiredVector_ = function(obj) {
   var v = {x: 0, y: 0};
-//  _.vector.add(v, this.getCurrentDirection_(obj));
-  _.vector.add(v, this.getWallXVector_(obj, 4));
-  _.vector.add(v, this.getWallYVector_(obj, 4));
-  _.vector.add(v, this.getEnemyDistanceVector_(obj, 5));
-  _.vector.add(v, this.getCloneDistanceVector_(obj, 4));
-  _.vector.add(v, this.getDodgeVector_(obj, 2));
-  _.vector.add(v, this.getFleeVector_(obj, 4));
+  var total = 0;
+  total += this.addAndGetLength_(v, this.getWallXVector_(obj, 4));
+  total += this.addAndGetLength_(v, this.getWallYVector_(obj, 4));
+  total += this.addAndGetLength_(v, this.getEnemyDistanceVector_(obj, 6));
+  total += this.addAndGetLength_(v, this.getCloneDistanceVector_(obj, 4));
+  total += this.addAndGetLength_(v, this.getDodgeVector_(obj, 2));
+  total += this.addAndGetLength_(v, this.getFleeVector_(obj, 4));
   if (!obj.effect.invisible) {
-    _.vector.add(v, this.getCurrentPerpendicularVector_(obj, 3));
-    _.vector.add(v, this.getPerpendicularVector_(obj, 2, v));
+    _.vector.add(v, this.getCurrentPerpendicularVector_(obj, 1.5));
+    _.vector.add(v, this.getPerpendicularVector_(obj, .5, v));
   }
-  _.vector.normalize(v);
+
+  var slowdown = Math.min(1, total / 6);
+  _.vector.mult(_.vector.normalize(v), slowdown);
   obj.movement.desiredVector = v;
+};
+
+AiMovement.prototype.addAndGetLength_ = function(v, result) {
+  var length = result.length;
+  _.vector.add(v, result);
+  return Math.abs(length);
 };
 
 AiMovement.prototype.getWallXVector_ = function(obj, weight) {
@@ -178,12 +202,14 @@ AiMovement.prototype.getRandomUrgeVector_ = function(obj, weight) {
 
 AiMovement.prototype.getEnemyDistanceVector_ = function(obj, weight) {
   if (!obj.movement.desiredDistance) return _.vector.EMPTY;
+  var panic = 20;
   var dd = obj.c.targetDis - obj.movement.desiredDistance;
+  var r = dd * dd / (panic * panic);
   // If we're a little too close or too far, don't panic.
-  if (dd < 0 && dd > -40) weight *= dd * dd / (40 * 40);
-  if (dd > 0 && dd < 40) weight = (weight - 5) * dd * dd / (40 * 40) + 5;
+  if (Math.abs(dd) < panic) weight *= r;
   var v = {length: weight * Math.sign(dd), angle: obj.c.targetAngle};
-  //console.log('edis:', v);
+  //if (obj.style == 'bad') console.log('edis:', v,
+  //                                     dd, obj.movement.desiredDistance);
   return v;
 };
 
@@ -300,7 +326,9 @@ AiMovement.prototype.getClosestPerpAngle_ = function(perpTo, closeTo) {
 
 AiMovement.prototype.updateVector_ = function(obj, dt) {
   if (!PROD) _.assert(_.isDef(obj.movement.desiredVector.x));
-  if (obj.effect.rooted) return;
+  if (obj.effect.rooted) {
+    return;
+  }
   var m = obj.movement;
   var dx = m.desiredVector.x - m.vector.x;
   var dy = m.desiredVector.y - m.vector.y;
@@ -328,6 +356,7 @@ AiMovement.prototype.updateVector_ = function(obj, dt) {
 };
 
 AiMovement.prototype.move_ = function(obj, dt) {
+  var m = obj.movement;
   obj.prevX = obj.x;
   obj.prevY = obj.y;
 
@@ -339,8 +368,8 @@ AiMovement.prototype.move_ = function(obj, dt) {
     mod = obj.effect.targetlessMovement ? .25 : 1;
   }
 
-  obj.x += obj.movement.vector.x * obj.movement.speed * mod * dt;
-  obj.y += obj.movement.vector.y * obj.movement.speed * mod * dt;
+  obj.x += m.vector.x * m.speed * mod * dt;
+  obj.y += m.vector.y * m.speed * mod * dt;
   this.c_.wallDis(obj);
   if (obj.c.wallDisN < 0) obj.y -= obj.c.wallDisN;
   else if (obj.c.wallDisS < 0) obj.y += obj.c.wallDisS;

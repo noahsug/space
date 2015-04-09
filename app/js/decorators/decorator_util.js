@@ -111,7 +111,7 @@ DecoratorUtil.prototype.fireBlade = function(obj, spec) {
 DecoratorUtil.prototype.fireAura = function(obj, spec) {
   var aura = this.entity_.create('aura');
   aura.style = spec.style;
-  spec.radius = obj.radius;
+  spec.radius = spec.radius || obj.radius;
   _.decorate(aura, this.d_.shape.circle, spec);
   aura.target = obj.target;
   _.decorate(aura, this.d_.movement.atPosition, {target: obj});

@@ -41,8 +41,8 @@ Background.prototype.drawSky_ = function(ctx, width, height) {
   var GRID_SIZE = 33;
   var NUM_COLS = (width / GRID_SIZE);
   var NUM_ROWS = (height / GRID_SIZE);
-  var COLOR_RANGE = .4;
-  var MIN_COLOR = .5;
+  var MIN_COLOR = .65;
+  var MAX_COLOR = .95;
   for (var col = 0; col < NUM_COLS; col++) {
     for (var row = 0; row < NUM_ROWS; row++) {
       var radius = Math.pow(_.random(4), 3) / 80 + .6;
@@ -50,7 +50,9 @@ Background.prototype.drawSky_ = function(ctx, width, height) {
           GRID_SIZE * col + radius + _.random(GRID_SIZE - radius * 2));
       var y = Math.floor(
           GRID_SIZE * row + radius + _.random(GRID_SIZE - radius * 2));
-      var color = _.generateGray(COLOR_RANGE + MIN_COLOR);
+
+      var color = _.generateGray(_.r.nextFloat(MIN_COLOR, MAX_COLOR));
+
       ctx.beginPath();
       ctx.fillStyle = color;
       ctx.arc(x, y, radius, 0, 2 * Math.PI);
@@ -60,7 +62,14 @@ Background.prototype.drawSky_ = function(ctx, width, height) {
 };
 
 Background.prototype.draw = function() {
-  this.ctx_.clearRect(0, 0, this.screen_.width, this.screen_.height);
+  //this.ctx_.clearRect(0, 0, this.screen_.width, this.screen_.height);
   this.canvas_.width = this.canvas_.width;  // Clear the canvas.
+
+  // TODO: Draw short trails behind moving objects during battle by clearing
+  // away half the alpha of shapes on the canvas.
+
+  //this.ctx_.globalCompositeOperation = "source-under";
+  //this.ctx_.fillStyle = 'rgba(0, 0, 0, .5)';
+  //this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
   _.each(this.bgLayers_, function(bg) { bg.draw(); });
 };

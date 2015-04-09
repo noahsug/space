@@ -1,12 +1,12 @@
-var PrimaryDecorators = di.service('PrimaryDecorators', [
+var PrimaryDecorator = di.service('PrimaryDecorator', [
   'EntityDecorator', 'DecoratorUtil as util']);
 
-PrimaryDecorators.prototype.init = function() {
+PrimaryDecorator.prototype.init = function() {
   this.d_ = this.entityDecorator_.getDecorators();
   this.entityDecorator_.addDecoratorObj(this, 'primary');
 };
 
-PrimaryDecorators.prototype.decorateGrenade_ = function(obj, spec) {
+PrimaryDecorator.prototype.decorateGrenade_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
     speed: Speed.SLOW,
     radius: 20
@@ -16,7 +16,7 @@ PrimaryDecorators.prototype.decorateGrenade_ = function(obj, spec) {
                           this.util_.fireBomb.bind(this.util_));
 };
 
-PrimaryDecorators.prototype.decorateBasicLaser_ = function(obj, spec) {
+PrimaryDecorator.prototype.decorateBasicLaser_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
     length: 8 + 16
   });
@@ -25,12 +25,12 @@ PrimaryDecorators.prototype.decorateBasicLaser_ = function(obj, spec) {
                           this.util_.fireLaser.bind(this.util_));
 };
 
-PrimaryDecorators.prototype.decorateShotgun_ = function(obj, spec) {
+PrimaryDecorator.prototype.decorateShotgun_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
     length: 4 + 16,
     spread: _.radians(35),
     speed: Speed.VERY_FAST,
-    style: 'bullet'
+    style: 'weak'
   });
 
   switch(spec.power) {
@@ -44,7 +44,7 @@ PrimaryDecorators.prototype.decorateShotgun_ = function(obj, spec) {
                           this.util_.fireLaser.bind(this.util_));
 };
 
-PrimaryDecorators.prototype.decorateRazors_ = function(obj, spec)  {
+PrimaryDecorator.prototype.decorateRazors_ = function(obj, spec)  {
   this.util_.spec(obj, 'primary', spec, {
     radius: 6,
     spread: _.radians(40),
@@ -60,7 +60,7 @@ PrimaryDecorators.prototype.decorateRazors_ = function(obj, spec)  {
                           this.util_.fireBlade.bind(this.util_));
 };
 
-PrimaryDecorators.prototype.decorateMissiles_ = function(obj, spec) {
+PrimaryDecorator.prototype.decorateMissiles_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
     radius: 6,
     seek: _.radians(50),
@@ -76,7 +76,7 @@ PrimaryDecorators.prototype.decorateMissiles_ = function(obj, spec) {
                           this.util_.fireBlade.bind(this.util_));
 };
 
-PrimaryDecorators.prototype.decorateSniper_ = function(obj, spec) {
+PrimaryDecorator.prototype.decorateSniper_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
     length: 20 + 16,
     speed: Speed.VERY_FAST,
@@ -87,11 +87,12 @@ PrimaryDecorators.prototype.decorateSniper_ = function(obj, spec) {
                           this.util_.fireLaser.bind(this.util_));
 };
 
-PrimaryDecorators.prototype.decorateBurstLaser_ = function(obj, spec)  {
+PrimaryDecorator.prototype.decorateBurstLaser_ = function(obj, spec)  {
   this.util_.spec(obj, 'primary', spec, {
     miniCooldown: .12,
     length: 8 + 16,
-    speed: Speed.DEFAULT
+    speed: Speed.DEFAULT,
+    style: 'weak'
   });
 
   var projectilesRemaining = 0;

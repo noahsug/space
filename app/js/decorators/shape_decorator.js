@@ -1,11 +1,11 @@
-var ShapeDecorators = di.service('ShapeDecorators', [
+var ShapeDecorator = di.service('ShapeDecorator', [
   'EntityDecorator', 'Font', 'Collision']);
 
-ShapeDecorators.prototype.init = function() {
+ShapeDecorator.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'shape');
 };
 
-ShapeDecorators.prototype.decorateCircle_ = function(obj, spec) {
+ShapeDecorator.prototype.decorateCircle_ = function(obj, spec) {
   spec = _.options(spec, {
     radius: 10
   });
@@ -26,7 +26,7 @@ ShapeDecorators.prototype.decorateCircle_ = function(obj, spec) {
   }.bind(this);
 };
 
-ShapeDecorators.prototype.decorateLine_ = function(obj, spec) {
+ShapeDecorator.prototype.decorateLine_ = function(obj, spec) {
   spec = _.options(spec, {
     length: 20
   });
@@ -55,7 +55,7 @@ ShapeDecorators.prototype.decorateLine_ = function(obj, spec) {
   });
 };
 
-ShapeDecorators.prototype.decorateText_ = function(obj, spec) {
+ShapeDecorator.prototype.decorateText_ = function(obj, spec) {
   spec = _.options(spec, {
     text: '',
     size: 10,
@@ -79,7 +79,7 @@ ShapeDecorators.prototype.decorateText_ = function(obj, spec) {
   }.bind(this);
 };
 
-ShapeDecorators.prototype.decorateRect_ = function(obj, spec) {
+ShapeDecorator.prototype.decorateRect_ = function(obj, spec) {
   spec = _.options(spec, {
     width: 0,
     height: 0

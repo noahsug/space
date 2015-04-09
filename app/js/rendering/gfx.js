@@ -88,7 +88,7 @@ Gfx.prototype.setDefaults_ = function(attrs) {
   var stroke = attrs['stroke'];
   if (stroke) {
     if (!attrs['shadow']) attrs['shadow'] = stroke;
-    if (!attrs['shadowBlur']) attrs['shadowBlur'] = 6;
+    if (!attrs['shadowBlur']) attrs['shadowBlur'] = 10;
   }
 };
 
@@ -204,6 +204,20 @@ Gfx.prototype.setCustomStyles_ = function(customStyle, opt_restoreTo) {
 };
 
 Gfx.prototype.drawCircle_ = function(x, y, radius, isFirst) {
+  // TODO: Rewrite gfx to use radial gradients that we save as images instead of
+  // shadow blur.
+
+  //var blur = 6;
+  //var gradiant = this.ctx_.createRadialGradient(x, y, radius - blur,
+  //                                              x, y, radius + blur);
+  //gradiant.addColorStop(0, 'rgba(0, 255, 0, 0)');
+  //gradiant.addColorStop(.1, 'rgba(0, 255, 0, .2)');
+  //gradiant.addColorStop(.5, 'rgba(0, 255, 0, 1)');
+  //gradiant.addColorStop(.9, 'rgba(0, 255, 0, .2)');
+  //gradiant.addColorStop(1, 'rgba(0, 255, 0, 0)');
+  //this.ctx_.strokeStyle = gradiant;
+  //this.ctx_.lineWidth = blur * 2;
+
   if (!isFirst) {
     this.ctx_.moveTo(x + radius, y);
   }
@@ -211,6 +225,15 @@ Gfx.prototype.drawCircle_ = function(x, y, radius, isFirst) {
 };
 
 Gfx.prototype.drawLine_ = function(x, y, dx, dy) {
+  //var r = Math.hypot(dx, dy) / 2;
+  //var gradiant = this.ctx_.createRadialGradient(x + dx / 2, y + dy / 2, 0,
+  //                                              x + dx / 2, y + dy / 2, r);
+  //gradiant.addColorStop(1, 'rgba(0, 255, 0, 1)');
+  //gradiant.addColorStop(.6, 'rgba(0, 255, 0, 1)');
+  //gradiant.addColorStop(.9, 'rgba(0, 255, 0, .2)');
+  //gradiant.addColorStop(1, 'rgba(0, 255, 0, 0)');
+  //this.ctx_.strokeStyle = gradiant;
+
   this.ctx_.moveTo(x, y);
   this.ctx_.lineTo(x + dx, y + dy);
 };

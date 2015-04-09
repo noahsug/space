@@ -13,6 +13,7 @@ ShipDecorator.prototype.decorate = function(obj) {
   obj.secondary = {};
   obj.utility = {};
   obj.ability = {};
+  obj.active = {};
   obj.movement = {};
 
   // Note: the order here matters.

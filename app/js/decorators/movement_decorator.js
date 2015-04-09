@@ -1,11 +1,11 @@
-var MovementDecorators = di.service('MovementDecorators', [
+var MovementDecorator = di.service('MovementDecorator', [
   'EntityDecorator', 'Random', 'SharedComputation', 'DecoratorUtil as util']);
 
-MovementDecorators.prototype.init = function() {
+MovementDecorator.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'movement');
 };
 
-//MovementDecorators.prototype.decorateRadial_ = function(obj, spec) {
+//MovementDecorator.prototype.decorateRadial_ = function(obj, spec) {
 //  this.util_.spec(obj, 'movement', spec, {
 //    speed: 0
 //  });
@@ -31,7 +31,7 @@ MovementDecorators.prototype.init = function() {
 //  });
 //};
 
-MovementDecorators.prototype.decorateStraight_ = function(obj, spec) {
+MovementDecorator.prototype.decorateStraight_ = function(obj, spec) {
   this.util_.spec(obj, 'movement', spec, {
     speed: 0,
     accuracy: 0,
@@ -65,17 +65,19 @@ MovementDecorators.prototype.decorateStraight_ = function(obj, spec) {
   });
 };
 
-MovementDecorators.prototype.getLeadAngle_ = function(proj) {
+MovementDecorator.prototype.getLeadAngle_ = function(proj) {
   var target = this.getExpectedTargetPos_(proj);
   return _.angle(proj, target);
 };
 
-MovementDecorators.prototype.getExpectedTargetPos_ = function(proj) {
+MovementDecorator.prototype.getExpectedTargetPos_ = function(proj) {
   var leadRatio = .9;
+  var targetSpeed =
+        _.distance(proj.target.movement.vector) * proj.target.movement.speed;
   var aimPos = _.geometry.aimPosition(proj,
                                       proj.target,
                                       proj.target.movement.vector,
-                                      proj.target.movement.speed,
+                                      targetSpeed,
                                       proj.movement.speed,
                                       proj.collideDis,
                                       leadRatio);
@@ -89,7 +91,7 @@ MovementDecorators.prototype.getExpectedTargetPos_ = function(proj) {
   }
 };
 
-MovementDecorators.prototype.decorateAtPosition_ = function(obj, spec) {
+MovementDecorator.prototype.decorateAtPosition_ = function(obj, spec) {
   this.util_.spec(obj, 'movement', spec, {
     target: {x: 0, y: 0}
   });

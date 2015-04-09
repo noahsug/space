@@ -11,7 +11,6 @@ Renderer.prototype.init = function() {
     this.style_[name] = {};
     fn.call(this, this.style_[name]);
   }, this);
-
   this.transitionAnimation_ = 0;
 };
 
@@ -162,7 +161,9 @@ Renderer.prototype.drawLostSplash_ = function() {
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
-var DESC_ONLY = _.newSet(['charge', 'charge II', 'tracker', 'tracker II']);
+var DESC_ONLY = _.newSet([
+  'charge', 'charge II', 'tracker', 'tracker II', 'pull'
+]);
 Renderer.prototype.drawItemDesc_ = function(entity) {
   var size = 12;
   if (!entity.item) return;
@@ -485,17 +486,17 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
 
 var SPEED_FUDGING = 8;  // Draw laser ahead of where it actually is.
 Renderer.prototype.addLaserStyle_ = function(style) {
-  style.weak = this.gfx_.addStyle({
-    stroke: Gfx.Color.YELLOW,
-    lineWidth: 2
-  });
   style.strong = this.gfx_.addStyle({
+    stroke: Gfx.Color.YELLOW,
+    lineWidth: 3
+  });
+  style.weak = this.gfx_.addStyle({
     stroke: Gfx.Color.RED,
-    lineWidth: 2
+    lineWidth: 3
   });
   style.effect = this.gfx_.addStyle({
     stroke: Gfx.Color.PINK,
-    lineWidth: 3
+    lineWidth: 4
   });
 };
 Renderer.prototype.drawLaser_ = function(entity, style) {
@@ -504,12 +505,12 @@ Renderer.prototype.drawLaser_ = function(entity, style) {
     return;
   }
 
-  if (entity.style == 'bullet') {
-    this.gfx_.setStyle(style.strong);
+  if (entity.style == 'weak') {
+    this.gfx_.setStyle(style.weak);
   } else if (entity.style == 'effect') {
     this.gfx_.setStyle(style.effect);
   } else {
-    this.gfx_.setStyle(style.weak);
+    this.gfx_.setStyle(style.strong);
   }
   var dx = Math.cos(entity.rotation) * SPEED_FUDGING;
   var dy = Math.sin(entity.rotation) * SPEED_FUDGING;

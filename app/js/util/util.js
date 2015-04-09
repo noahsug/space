@@ -4,6 +4,10 @@ _.pos = {
   BOTTOM: 'bottom'
 };
 
+_.roundTo = function(value, nearest) {
+  return Math.round(value / nearest) * nearest;
+};
+
 _.radians = function(degrees) {
   return degrees * Math.PI / 180;
 };
@@ -480,16 +484,20 @@ _.vector.add = function(v1, v2) {
   _.vector.cartesian(v2);
   v1.x += v2.x;
   v1.y += v2.y;
+  return v1;
 };
 
 _.vector.normalize = function(v) {
-  if (v.x && v.y) {
-    var d = Math.hypot(v.x, v.y);
-    v.x /= d;
-    v.y /= d;
-  } else {
-    v.x = v.y = 0;
-  }
+  var d = Math.hypot(v.x, v.y);
+  v.x /= d;
+  v.y /= d;
+  return v;
+};
+
+_.vector.mult = function(v, r) {
+  v.x *= r;
+  v.y *= r;
+  return v;
 };
 
 _.vector.EMPTY = {x: 0, y: 0, angle: 0, length: 0};

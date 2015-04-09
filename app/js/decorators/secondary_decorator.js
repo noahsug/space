@@ -1,16 +1,17 @@
-var SecondaryDecorators = di.service('SecondaryDecorators', [
+var SecondaryDecorator = di.service('SecondaryDecorator', [
   'EntityDecorator', 'DecoratorUtil as util', 'GameModel as gm']);
 
 
-SecondaryDecorators.prototype.init = function() {
+SecondaryDecorator.prototype.init = function() {
   this.d_ = this.entityDecorator_.getDecorators();
   this.entityDecorator_.addDecoratorObj(this, 'secondary');
 };
 
-SecondaryDecorators.prototype.decoratePistol_ = function(obj, spec) {
+SecondaryDecorator.prototype.decoratePistol_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
     length: 6 + 16,
-    speed: Speed.DEFAULT
+    speed: Speed.DEFAULT,
+    style: 'weak'
   });
 
   switch(spec.power) {
@@ -26,7 +27,7 @@ SecondaryDecorators.prototype.decoratePistol_ = function(obj, spec) {
   }.bind(this));
 };
 
-SecondaryDecorators.prototype.decorateStun_ = function(obj, spec) {
+SecondaryDecorator.prototype.decorateStun_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
     length: 4 + 16,
     speed: Speed.DEFAULT,
@@ -48,7 +49,7 @@ SecondaryDecorators.prototype.decorateStun_ = function(obj, spec) {
                               stopMovement);
 };
 
-SecondaryDecorators.prototype.decorateEmp_ = function(obj, spec) {
+SecondaryDecorator.prototype.decorateEmp_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
     radius: 15,
     speed: Speed.SLOW,
@@ -68,7 +69,7 @@ SecondaryDecorators.prototype.decorateEmp_ = function(obj, spec) {
                               this.util_.fireBomb.bind(this.util_));
 };
 
-SecondaryDecorators.prototype.decorateCharge_ = function(obj, spec) {
+SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
     minRange: 100,
     speed: 500,
@@ -108,7 +109,7 @@ SecondaryDecorators.prototype.decorateCharge_ = function(obj, spec) {
   });
 };
 
-SecondaryDecorators.prototype.decorateTracker_ = function(obj, spec) {
+SecondaryDecorator.prototype.decorateTracker_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
     dmg: 1,
     speed: Speed.DEFAULT,
@@ -138,4 +139,47 @@ SecondaryDecorators.prototype.decorateTracker_ = function(obj, spec) {
       this.util_.mod(projectile, 'dmg', obj.secondary.dmgMod);
     }
   }.bind(this);
+};
+
+SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {
+  this.util_.spec(obj, 'secondary', spec, {
+    duration: null,
+    range: null,
+    knockbackDuration: .25,
+    cooldown: 4,
+    effect: 'stunned',
+    knockback: 45,
+    grow: -500,
+    growDuration: 1,
+    radius: spec.range
+  });
+
+  switch(spec.power) {
+  case 1:
+    obj.secondary.duration *= 1.3;
+  }
+
+  var knockback = function(target) {
+    target.movement.vector.x = -Math.cos(obj.c.targetAngle);
+    target.movement.vector.y = -Math.sin(obj.c.targetAngle);
+    var ratio = (obj.secondary.knockback / obj.secondary.knockbackDuration) /
+        target.movement.speed;
+    target.movement.speed *= ratio;
+    target.addEffect('knockback', obj.secondary.knockbackDuration, function() {
+      target.movement.speed /= ratio;
+      target.movement.vector = {x: 0, y: 0};
+    });
+    target.addEffect(obj.secondary.effect, obj.secondary.duration);
+  }.bind(this);
+
+  this.util_.addWeapon(obj, obj.secondary, function() {
+    this.util_.fireAura(obj, obj.secondary);
+    knockback(obj.target);
+    for (var i = 0; i < obj.target.clones; i++) {
+      var clone = obj.target.clones[i];
+      if (!clone.dead && _.distance(obj, clone) < obj.secondary.range) {
+        knockback(clone);
+      }
+    }
+  }.bind(this));
 };

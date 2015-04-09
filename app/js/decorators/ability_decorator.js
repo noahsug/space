@@ -1,11 +1,11 @@
-var AbilityDecorators = di.service('AbilityDecorators', [
+var AbilityDecorator = di.service('AbilityDecorator', [
   'EntityDecorator', 'DecoratorUtil as util', 'ShipFactory']);
 
-AbilityDecorators.prototype.init = function() {
+AbilityDecorator.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'ability');
 };
 
-AbilityDecorators.prototype.decorateTank_ = function(obj, spec) {
+AbilityDecorator.prototype.decorateTank_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
     def: 1
   });
@@ -19,7 +19,7 @@ AbilityDecorators.prototype.decorateTank_ = function(obj, spec) {
   }
 };
 
-AbilityDecorators.prototype.decorateShield_ = function(obj, spec) {
+AbilityDecorator.prototype.decorateShield_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
     cooldown: 9,
     effect: 'shield',
@@ -50,7 +50,7 @@ AbilityDecorators.prototype.decorateShield_ = function(obj, spec) {
   };
 };
 
-AbilityDecorators.prototype.decorateReflect_ = function(obj, spec) {
+AbilityDecorator.prototype.decorateReflect_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
     cooldown: 6,
     effect: 'reflect',
@@ -75,7 +75,7 @@ AbilityDecorators.prototype.decorateReflect_ = function(obj, spec) {
   };
 };
 
-AbilityDecorators.prototype.decorateHaze_ = function(obj, spec) {
+AbilityDecorator.prototype.decorateHaze_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
     speed: Speed.SLOW,
     seek: _.radians(85),
@@ -109,7 +109,7 @@ AbilityDecorators.prototype.decorateHaze_ = function(obj, spec) {
   }
 };
 
-AbilityDecorators.prototype.decorateKnockback_ = function(obj, spec) {
+AbilityDecorator.prototype.decorateKnockback_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
     speed: 300,
     cooldown: 6,
@@ -130,7 +130,7 @@ AbilityDecorators.prototype.decorateKnockback_ = function(obj, spec) {
     target.addEffect(obj.ability.effect, obj.ability.duration);
     target.movement.vector.x = Math.cos(obj.c.targetAngle);
     target.movement.vector.y = Math.sin(obj.c.targetAngle);
-    var ratio = obj.ability.knockback / (obj.movement.speed || 1);
+    var ratio = obj.ability.knockback / (obj.ability.speed || 1);
     target.movement.speed *= ratio;
     target.addEffect('knockback', obj.ability.duration, function() {
       target.movement.speed /= ratio;

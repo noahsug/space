@@ -87,7 +87,8 @@ di.constant('gameplayFile', {
 
     //'stun',
     //'emp',
-    'pistol',
+    //'pistol',
+    'pull',
     //'charge',
     //'tracker',
 
@@ -100,6 +101,9 @@ di.constant('gameplayFile', {
 
     //'ninja',
     //'druid III',
+
+    //'freeze',
+    //'warp',
   ],
 
   inventory: [
@@ -152,7 +156,7 @@ di.constant('gameplayFile', {
       desc: 'Basic laser.',
       id: 'primary.basicLaser',
       spec: {dmg: 4, cooldown: .75, range: 150},
-      level: 0},
+      level: 1},
     'basic laser II': {
       desc: 'Powerful Basic laser.',
       id: 'primary.basicLaser',
@@ -177,7 +181,7 @@ di.constant('gameplayFile', {
       desc: 'Burst of shots in an arc.',
       id:'primary.shotgun',
       spec: {dmg: 5, cooldown: 2.1, range: 100, projectiles: 6},
-      level: 0},
+      level: 1},
     'shotgun II': {
       desc: 'Burst of shots in an arc.',
       id:'primary.shotgun',
@@ -270,6 +274,10 @@ di.constant('gameplayFile', {
       desc: 'Tracks enemy, ensuring next attack will hit and deal +50% damage.',
       id:'secondary.tracker', spec: {power: 1},
       level: 1},
+    'pull': {
+      desc: 'Pulls enemy close and stuns. Range: 100. Stun duration: .75s',
+      id:'secondary.pull', spec: {duration: .75, range: 100},
+      level: 1},
 
     'dash': {
       desc: 'Ability to dash a short distance.',
@@ -357,5 +365,14 @@ di.constant('gameplayFile', {
     //  desc: 'Stay alive for a few seconds after death.',
     //  id: 'ability.zombie', spec: {cooldown: 4},
     //  level: 9},
+
+    //'freeze': {
+    //  desc: '',
+    //  id: 'active.freeze', spec: {},
+    //  level: 0},
+    //'warp': {
+    //  desc: 'Teleports behind the enemy.',
+    //  id: 'active.warp', spec: {},
+    //  level: 0}
   }
 });
