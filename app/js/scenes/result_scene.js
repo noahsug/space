@@ -31,44 +31,64 @@ ResultScene.prototype.addEntities_ = function() {
     // Reward label.
     var rewardRow = this.layout_.addNew(this.layoutElement_);
     rewardRow.layout.align = 'top';
-    rewardRow.childHeight = Size.TEXT + Padding.ITEM;
+    rewardRow.childHeight = Size.TEXT;
     var rewardLabel = rewardRow.addNew(this.labelElement_);
-    var selectText = this.battleRewards_.numItems() > 1 ?
-        'Select item:' : 'Found new item!';
+    var selectText;
+    if (this.battleRewards_.items_['augment']) {
+      selectText = 'New ' + Strings.ItemType['augment'] + ' found:';
+    } else {
+      selectText = this.battleRewards_.numItems() > 1 ?
+        'Select item:' : 'New item found:';
+    }
     rewardLabel.setText(selectText,
                         {size: Size.TEXT, align: 'left', baseline: 'top'});
     rewardRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
 
-    // Rewards.
-    var row;
-    _.each(Game.ITEM_TYPES, function(type, i) {
-      var pos = i % COLS;
-      // Gap between rows.
-      if (pos == 0 && i) this.layout_.addGap(Padding.ITEM);
-      // New row.
-      if (pos == 0) {
-        row = this.layout_.addNew(this.layoutElement_);
-        row.childHeight = Size.ITEM;
-      }
-      // Gap between btns.
-      if (pos) row.addGap(Padding.ITEM);
-      // The btn.
-      row.add(this.createRewardButton_(type));
-    }, this);
-
     this.layout_.addGap(Padding.MD);
 
-    // Item Description.
-    var itemDescRow = this.layout_.addNew(this.layoutElement_);
-    var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');
-    itemDesc.childHeight = Size.TEXT * 2 + 4;
-    itemDesc.getEntity().update(function() {
-      if (this.selectedReward_) {
-        itemDesc.setProp('item', this.selectedReward_.getProp('item'));
-      }
-    }.bind(this));
-    itemDescRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
-    itemDescRow.childHeight = itemDesc.childHeight;
+    if (this.battleRewards_.items_['augment']) {
+      // Augment reward.
+      var augRow = this.layout_.addNew(this.layoutElement_);
+      augRow.layout.align = 'top';
+      augRow.childHeight = Size.TEXT;
+      var augLabel = augRow.addNew(this.labelElement_);
+      augLabel.setText('-  ' + this.battleRewards_.items_['augment'].desc,
+          {size: Size.TEXT, align: 'left', baseline: 'top'});
+      augLabel.padding.left = Padding.ITEM;
+      augRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+
+    } else {
+      // Rewards.
+      var row;
+      _.each(Game.ITEM_TYPES, function(type, i) {
+        var pos = i % COLS;
+        // Gap between rows.
+        if (pos == 0 && i) this.layout_.addGap(Padding.ITEM);
+        // New row.
+        if (pos == 0) {
+          row = this.layout_.addNew(this.layoutElement_);
+          row.childHeight = Size.ITEM;
+        }
+        // Gap between btns.
+        if (pos) row.addGap(Padding.ITEM);
+        // The btn.
+        row.add(this.createRewardButton_(type));
+      }, this);
+
+      this.layout_.addGap(Padding.ITEM);
+
+      // Item Description.
+      var itemDescRow = this.layout_.addNew(this.layoutElement_);
+      var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');
+      itemDesc.childHeight = Size.TEXT * 2 + 4;
+      itemDesc.getEntity().update(function() {
+        if (this.selectedReward_) {
+          itemDesc.setProp('item', this.selectedReward_.getProp('item'));
+        }
+      }.bind(this));
+      itemDescRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+      itemDescRow.childHeight = itemDesc.childHeight;
+    }
   }
 
   this.layout_.addFlex();

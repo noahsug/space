@@ -13,6 +13,7 @@ DecoratorUtil.prototype.spec = function(obj, name, overrides, defaults) {
     obj[name].name = name;
     obj[name].speed = obj[name].speed || Speed.DEFAULT;
     obj[name].accuracy = obj[name].accuracy || Accuracy.DEFAULT;
+    obj[name].projectiles = obj[name].projectiles || 1;
     return obj[name];
   }
 };
@@ -155,7 +156,14 @@ DecoratorUtil.prototype.addCooldown = function(obj, action, opt_initCooldown) {
   });
 };
 
-DecoratorUtil.prototype.set = function(obj, prop, add) {
+DecoratorUtil.prototype.modSet = function(obj, prop, add) {
+  obj.awake(function() {
+    var value = _.parse(obj, prop);
+    _.set(obj, prop, value);
+  });
+};
+
+DecoratorUtil.prototype.modAdd = function(obj, prop, add) {
   obj.awake(function() {
     var value = _.parse(obj, prop) || 0;
     _.set(obj, prop, value + add);

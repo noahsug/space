@@ -81,6 +81,34 @@ EquipOptionsScene.prototype.addEntities_ = function() {
     row.add(this.createPlayerItemButton_(type));
   }, this);
 
+  if (this.inventory_.getEquipped('augment').length > 0) {
+    this.layout_.addGap(Padding.MD);
+
+    // Aug item label.
+    var augLabelRow = this.layout_.addNew(this.layoutElement_);
+    augLabelRow.layout.align = 'top';
+    augLabelRow.childHeight = Size.TEXT;
+    var augLabel = augLabelRow.addNew(this.labelElement_);
+    augLabel.setText(Strings.ItemType['augment'] + 's:',
+                     {size: Size.TEXT, align: 'left', baseline: 'top'});
+    augLabelRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+
+    this.layout_.addGap(Padding.ITEM);
+
+    // Augmentations.
+    _.each(this.inventory_.getEquipped('augment'), function(item, i) {
+      if (i) this.layout_.addGap(Padding.ITEM);
+      var augRow = this.layout_.addNew(this.layoutElement_);
+      augRow.layout.align = 'top';
+      augRow.childHeight = Size.TEXT;
+      var aug = augRow.addNew(this.labelElement_);
+      aug.setText('-  ' + item.desc,
+                       {size: Size.TEXT, align: 'left', baseline: 'top'});
+      aug.padding.left = Padding.ITEM;
+      augRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+    }, this);
+  };
+
   this.layout_.addFlex();
 
   // Back button.

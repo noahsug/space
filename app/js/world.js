@@ -17,6 +17,7 @@ World.prototype.create = function(world, index) {
   world.lives = world.lives || 0;
   world.maxLives = world.lives;
   world.aquired = [];
+  world.augments = [];
 
   var numLevels = world.rows * world.cols;
   // We assume the last level has the max number of levels.
@@ -34,6 +35,7 @@ World.prototype.create = function(world, index) {
     }
     return {
       hasItem: itemDist[i],
+      hasAugment: true,//!itemDist[i],
       type: level,
       state: i == startIndex ? 'unlocked' : 'locked',
       index: i,
@@ -48,6 +50,7 @@ World.prototype.resetProgress = function() {
     if (level.index == startIndex) level.state = 'unlocked';
     else level.state = 'locked';
   });
+  this.gm_.world.augments = [];
   this.gm_.world.aquired = [];
   this.gm_.world.lives = this.gm_.world.maxLives;
 };

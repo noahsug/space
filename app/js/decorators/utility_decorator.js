@@ -111,8 +111,8 @@ UtilityDecorators.prototype.decorateRanger_ = function(obj, spec) {
 
   switch(spec.power) {
   case 3:
-    this.util_.set(obj, 'primary.seek', _.radians(50));
-    this.util_.set(obj, 'secondary.seek', _.radians(50));
+    this.util_.setAdd(obj, 'primary.seek', _.radians(50));
+    this.util_.setAdd(obj, 'secondary.seek', _.radians(50));
     this.util_.mod(obj, 'primary.range', .75);
     this.util_.mod(obj, 'secondary.range', .75);
     break;

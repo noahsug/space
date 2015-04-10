@@ -5,7 +5,7 @@ BattleRewards.prototype.calculateRewards = function() {
   this.numItems_ = 0;
   this.items_ = {};
 
-  if (!this.gm_.level.hasItem) return;
+  if (!this.gm_.level.hasItem && !this.gm_.level.hasAugment) return;
 
   // Uncomment to always get enemy's items.
   //_.each(Game.ITEM_TYPES, function(type) {
@@ -23,20 +23,24 @@ BattleRewards.prototype.calculateRewards = function() {
     var level = Math.round(
         this.gm_.world.index / this.gm_.worlds.length + levelRange);
     //var item = this.getRandomItem_(this.gm_.level.type);
-    var item = this.getRandomItem_(level);
+    var item = this.getRandomItem_(level, this.gm_.level.hasAugment);
     if (item) {
       this.items_[item.category] = item;
       this.numItems_++;
+      if (item.category == 'augment') {
+        this.inventory_.equip(item);
+        this.gm_.world.augments.push(item);
+      }
     }
   }
 };
 
-BattleRewards.prototype.getRandomItem_ = function(level) {
+BattleRewards.prototype.getRandomItem_ = function(level, returnAugment) {
   var r = Math.random();
   if (level && r < .52) level--;
   if (level && r < .25) level--;
   if (level && r < .11) level--;
-  return _.sample(this.inventory_.getUnownedByLevel(level));
+  return _.sample(this.inventory_.getUnownedByLevel(level, returnAugment));
 };
 
 BattleRewards.prototype.numItems = function() {

@@ -109,12 +109,13 @@ BasicDecorator.prototype.decorateSelectTarget_ = function(obj, spec) {
 BasicDecorator.prototype.decorateShipCollision_ = function(obj, spec) {
   this.util_.spec(obj, 'collision', spec, {
     dmg: 10,
+    targetDmgRatio: 1,
     stunDuration: .75,
     collisionDuration: .75
   });
   this.decorateCollision_(obj, {collide: function(obj, target) {
     if (obj.effect.collided) return;
-    obj.dmg(obj.collision.dmg, target);
+    obj.dmg(obj.collision.dmg * target.collision.targetDmgRatio, target);
     // Move directly away from collided target.
     obj.movement.vector = _.vector.cartesian({angle: obj.c.targetAngle,
                                               length: -.5});

@@ -34,45 +34,45 @@ Gameplay.prototype.worlds = [
     cols: 4
   },
   {  // 2
-    rows: 1,
-    cols: 5
+    rows: 2,
+    cols: 3
   },
   {  // 3
-    rows: 2,
+    rows: 3,
     cols: 3
   },
   {  // 4
     rows: 2,
-    cols: 4
-  },
-  {  // 5
-    rows: 2,
     cols: 5
   },
-  {  // 6
-    rows: 3,
-    cols: 3
-  },
-  {  // 7
-    rows: 3,
-    cols: 4
-  },
-  {  // 8
-    rows: 3,
-    cols: 5
-  },
-  {  // 9
-    rows: 6,
-    cols: 3
-  },
-  {  // 10
-    rows: 8,
-    cols: 3
-  },
-  {  // 11
-    rows: 8,
-    cols: 5
-  }
+  //{  // 5
+  //  rows: 2,
+  //  cols: 5
+  //},
+  //{  // 6
+  //  rows: 3,
+  //  cols: 3
+  //},
+  //{  // 7
+  //  rows: 3,
+  //  cols: 4
+  //},
+  //{  // 8
+  //  rows: 3,
+  //  cols: 5
+  //},
+  //{  // 9
+  //  rows: 6,
+  //  cols: 3
+  //},
+  //{  // 10
+  //  rows: 8,
+  //  cols: 3
+  //},
+  //{  // 11
+  //  rows: 8,
+  //  cols: 5
+  //}
 ];
 
 di.constant('gameplayFile', {
@@ -110,6 +110,7 @@ di.constant('gameplayFile', {
   inventory: [
     'shotgun',
     'pistol',
+    'stealth',
   ],
 
   bosses: [
@@ -351,7 +352,7 @@ di.constant('gameplayFile', {
     //  id: 'ability.shield', spec: {power: 2},
     //  level: 5},
     'reflect': {
-      desc: 'Reflects shots for 1.5s',
+      desc: 'Reflects shots for 1.5s.',
       id: 'ability.reflect', spec: {},
       level: 2},
     //'reflect II': {
@@ -369,19 +370,48 @@ di.constant('gameplayFile', {
     'diamond': {
       desc: '10% more health & no collision damage.',
       id: 'ability.tank', spec: {power: 3, health: 1.1},
-      level: 5}
+      level: 5},
     //'zombie': {
     //  desc: 'Stay alive for a few seconds after death.',
     //  id: 'ability.zombie', spec: {cooldown: 4},
     //  level: 9},
 
-    //'freeze': {
-    //  desc: '',
-    //  id: 'active.freeze', spec: {},
-    //  level: 0},
-    //'warp': {
-    //  desc: 'Teleports behind the enemy.',
-    //  id: 'active.warp', spec: {},
-    //  level: 0}
+    'medic': {
+      desc: 'Slowly heal over time',
+      id: 'augment.medic', spec: {},
+      level: 0},
+    'extreme': {
+      desc: 'Double damage, half health',
+      id: 'augment.extreme', spec: {},
+      level: 0},
+    'freeze': {
+      desc: 'Tap to freeze enemy [1 use / battle]',
+      id: 'augment.freezeClick', spec: {},
+      level: 0},
+    'warp': {
+      desc: 'Tap to teleport [1 use / battle]',
+      id: 'augment.teleClick', spec: {},
+      level: 0},
+    'multi': {
+      desc: '+2 projectiles for shotguns & burst',
+      id: 'augment.multi', spec: {projectiles: 2},
+      req: ['burst laser', 'shotgun', 'scatter shot', 'razors'],
+      level: 0},
+    'speedy': {
+      desc: '+50% speed',
+      id: 'augment.heavy', spec: {speedRatio: 1.5},
+      level: 0},
+    'heavy': {
+      desc: '+20% health, -50% speed',
+      id: 'augment.heavy', spec: {healthRatio: 1.2, speedRatio: .5},
+      level: 0},
+    'sharp': {
+      desc: '2x damage on collisions',
+      id: 'augment.sharp', spec: {dmgRatio: 2},
+      level: 0},
+    'camo': {
+      desc: 'Can fire weapons while stealthed',
+      id: 'augment.camo', spec: {}, req: ['stealth'],
+      level: 0}
   }
 });

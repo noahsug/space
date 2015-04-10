@@ -14,7 +14,8 @@ Inventory.prototype.get = function(type) {
 };
 
 Inventory.prototype.getEquipped = function(type) {
-  return _.findWhere(this.gm_.player, {category: type});
+  var items = _.where(this.gm_.player, {category: type});
+  return type == 'augment' ? items : items[0];
 };
 
 Inventory.prototype.isEquipped = function(item) {
@@ -37,21 +38,39 @@ Inventory.prototype.remove = function(item) {
   this.unequip(item);
 };
 
+Inventory.prototype.removeAugments = function() {
+  _.each(this.getEquipped('augment'), function(item) {
+    this.unequip(item);
+  });
+};
+
 Inventory.prototype.unequip = function(item) {
   var equipIndex = this.getEquippedIndex_(item);
   if (equipIndex >= 0) this.gm_.player.splice(equipIndex, 1);
 };
 
-Inventory.prototype.getUnownedByLevel = function(level) {
+Inventory.prototype.getUnownedByLevel = function(level, opt_returnAugment) {
   var levels = _.range(0, level + 1).reverse().
       concat(_.range(level + 1, Game.MAX_LEVEL + 1));
   for (var i = 0; i < levels.length; i++) {
-    var items = _.filter(this.itemService_.getByLevel(levels[i]),
-                         _.negate(this.hasItem.bind(this)));
+    var items = this.itemService_.getByLevel(levels[i]);
+    items = _.filter(items, _.negate(this.hasItem.bind(this)));
+    items = _.filter(items, _.negate(this.isEquipped.bind(this)));
+    items = _.filter(items, this.hasReq_.bind(this));
+    items = _.filter(items, function(item) {
+      return opt_returnAugment == (item.category == 'augment');
+    }, this);
     if (items.length) return items;
   }
   // The player has every item!
   return [];
+};
+
+Inventory.prototype.hasReq_ = function(item) {
+  if (!item.req) return true;
+  item.req.some(function(name) {
+    return _.findWhere(this.gm_.inventory, {name: name});
+  }.bind(this));
 };
 
 Inventory.prototype.getEquippedIndex_ = function(item) {

@@ -17,7 +17,7 @@ describe('A game', function() {
     watch = false;
 
     items = [];
-    _.each(Game.ITEM_TYPES, function(type) {
+    _.each(Game.ITEM_TYPES.concat(['augment'], function(type) {
       items.push(_.pluck(
         _.where(gameplay.items, {category: type}),
         'name'));

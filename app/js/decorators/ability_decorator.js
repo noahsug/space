@@ -104,7 +104,7 @@ AbilityDecorator.prototype.decorateHaze_ = function(obj, spec) {
   function makeHazable() {
     obj.target.maybeApplyHaze = function(projectile, target, spec) {
       if (target.effect.haze) {
-        this.util_.set(
+        this.util_.modAdd(
             projectile, 'movement.accuracy', obj.ability.hazeAccuracy);
       }
     }.bind(this);

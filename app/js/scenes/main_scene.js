@@ -6,6 +6,11 @@ MainScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('main'));
 };
 
+MainScene.prototype.start_ = function() {
+  this.player_.removeAugments();
+  this.player_.push.apply(this.player_, this.gm_.world.augments);
+};
+
 MainScene.prototype.addEntities_ = function() {
   this.layout_ = this.layoutElement_.create({direction: 'vertical'});
 

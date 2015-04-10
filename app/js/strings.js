@@ -22,7 +22,7 @@ Strings = {
     secondary: 'attack II',
     ability: 'ability',
     utility: 'specialty',
-    mod: 'boost'
+    augment: 'augment'
   },
 
   rank: function(level) {

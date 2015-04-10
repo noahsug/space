@@ -136,7 +136,7 @@ SecondaryDecorator.prototype.decorateTracker_ = function(obj, spec) {
   obj.maybeTrackTarget = function(projectile, spec) {
     if (projectile.target.effect.tagged && spec.name == 'primary') {
       projectile.target.effect.tagged = 0;
-      this.util_.set(projectile, 'movement.seek', obj.secondary.seekMod);
+      this.util_.modAdd(projectile, 'movement.seek', obj.secondary.seekMod);
       this.util_.mod(projectile, 'dmg', obj.secondary.dmgMod);
     }
   }.bind(this);
