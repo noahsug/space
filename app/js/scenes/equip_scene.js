@@ -11,18 +11,37 @@ EquipScene.prototype.addEntities_ = function() {
 
   this.equippedBtn_ = undefined;
   this.layout_ = this.layoutElement_.create({direction: 'vertical'});
-  this.layout_.padding.top = -Padding.ITEM + Padding.BOT;
+  this.layout_.padding.top = Padding.MD;
 
-  this.layout_.addFlex();
+  // Player items.
+  _.each(Game.ITEM_TYPES, function(type, i) {
+    var pos = i % COLS;
+    // Gap between rows.
+    if (pos == 0 && i) this.layout_.addGap(Padding.ITEM);
+    // New row.
+    if (pos == 0) {
+      row = this.layout_.addNew(this.layoutElement_);
+      row.childHeight = Size.ITEM * 1.3;
+    }
+    // Gap between btns.
+    if (pos) row.addGap(Padding.ITEM);
+    // The btn.
+    row.add(this.createPlayerTypeButton_(type));
+  }, this);
+
+  this.layout_.addGap(Padding.MD);
 
   // Label.
-  var labelRow = this.layout_.addNew(this.layoutElement_);
-  labelRow.layout.align = 'top';
-  labelRow.childHeight = Size.TEXT + Padding.ITEM;
-  var label = labelRow.addNew(this.labelElement_);
-  label.setText('equip ' + Strings.ItemType[this.gm_.equipping] + ':',
-                {size: Size.TEXT, align: 'left', baseline: 'top'});
-  labelRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+  this.layout_.addNew(this.entityElement_, 'break');
+  //var labelRow = this.layout_.addNew(this.layoutElement_);
+  //labelRow.layout.align = 'top';
+  //labelRow.childHeight = Size.TEXT + Padding.ITEM;
+  //var label = labelRow.addNew(this.labelElement_);
+  //label.setText('equip ' + Strings.ItemType[this.gm_.equipping] + ':',
+  //              {size: Size.TEXT, align: 'left', baseline: 'top'});
+  //labelRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+
+  this.layout_.addGap(Padding.MD);
 
   // Levels.
   var row;
@@ -73,6 +92,30 @@ EquipScene.prototype.addEntities_ = function() {
   backBtn.onClick(function() {
     this.transitionFast_(this.gm_.transition.prev);
   }.bind(this));
+};
+
+EquipScene.prototype.createPlayerTypeButton_ = function(type) {
+  var btn = this.roundBtnElement_.create();
+  if (this.gm_.equipping == type) {
+    btn.setStyle('selected');
+    btn.setSize(Size.ITEM * 1.3);
+  } else {
+    btn.setSize(Size.ITEM * .9);
+  }
+  btn.setProp('category', type);
+  if (this.inventory_.has(type)) {
+    btn.onClick(function() {
+      this.gm_.equipping = type;
+      this.updateItems_();
+    }.bind(this));
+  }
+  return btn;
+};
+
+EquipScene.prototype.updateItems_ = function() {
+  this.removeEntities_();
+  this.addEntities_();
+  this.update_();
 };
 
 EquipScene.prototype.createItemBtn_ = function(item) {

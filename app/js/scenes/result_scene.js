@@ -11,8 +11,10 @@ ResultScene.prototype.addEntities_ = function() {
   var COLS = 4;  // Number of columns in the item grid.
 
   this.selectedReward_ = undefined;
+  var hasRewards =
+      this.gm_.level.state == 'won' && this.battleRewards_.numItems();
   this.continueBtn_ = this.btnElement_.create();
-  if (this.gm_.level.state == 'won') this.continueBtn_.setStyle('locked');
+  if (hasRewards) this.continueBtn_.setStyle('locked');
   this.layout_ = this.layoutElement_.create({direction: 'vertical'});
   this.layout_.padding.top = -Padding.ITEM + Padding.BOT;
 
@@ -25,20 +27,16 @@ ResultScene.prototype.addEntities_ = function() {
 
   this.layout_.addFlex();
 
-  if (this.gm_.level.state == 'won') {
+  if (hasRewards) {
     // Reward label.
     var rewardRow = this.layout_.addNew(this.layoutElement_);
     rewardRow.layout.align = 'top';
     rewardRow.childHeight = Size.TEXT + Padding.ITEM;
     var rewardLabel = rewardRow.addNew(this.labelElement_);
     var selectText = this.battleRewards_.numItems() > 1 ?
-        'Select reward: ' : 'Reward: ';
-    rewardLabel.getEntity().update(function() {
-      var rewardType = this.selectedReward_ ?
-          Strings.ItemType[this.selectedReward_.getProp('item').category] : '';
-      rewardLabel.setText(selectText + rewardType,
-                          {size: Size.TEXT, align: 'left', baseline: 'top'});
-    }.bind(this));
+        'Select item:' : 'Found new item!';
+    rewardLabel.setText(selectText,
+                        {size: Size.TEXT, align: 'left', baseline: 'top'});
     rewardRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
 
     // Rewards.

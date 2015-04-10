@@ -22,14 +22,18 @@ World.prototype.create = function(world, index) {
   // We assume the last level has the max number of levels.
   var lastLevel = this.gm_.worlds[this.gm_.worlds.length - 1];
   var maxNumLevels = lastLevel.rows * lastLevel.cols;
+  var itemDist = _.intRandomSplit(numLevels - 2, (numLevels - 2) * .5, 1);
+  itemDist = [1].concat(itemDist).concat(1);
 
   world.levels = _.generate(function(i) {
     var startIndex = this.idx_.apply(this, World.START);
     var level = Math.round(Game.MAX_LEVEL * i / (maxNumLevels - 1));
+    level = Math.min(Game.MAX_LEVEL, level + index);
     if (i != 0 && i != numLevels - 1) {
       level = Math.round(level * .5 + Math.random() * (level * .5));
     }
     return {
+      hasItem: itemDist[i],
       type: level,
       state: i == startIndex ? 'unlocked' : 'locked',
       index: i,

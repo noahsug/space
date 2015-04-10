@@ -198,6 +198,26 @@ _.angleDif = function(a1, a2) {
   return da;
 };
 
+// Moves value towards target, but not past it.
+_.approach = function(value, target, absAmount) {
+  var d = target - value;
+  if (Math.abs(d) < absAmount) {
+    return target;
+  }
+  return value + absAmount * Math.sign(d);
+};
+
+// Moves value towards target, but not past it.
+_.approachAngle = function(value, target, absAmount) {
+  var d = _.angleDif(target, value);
+  if (d < absAmount) {
+    return target;
+  }
+  var a1 = value + absAmount;
+  var a2 = value - absAmount;
+  return _.angleDif(a1, target) < _.angleDif(a2, target) ? a1 : a2;
+};
+
 _.startsWith = function(str, prefix) {
   return str.indexOf(prefix) == 0;
 };
@@ -468,6 +488,10 @@ _.deepClone = function(o) {
 };
 
 _.vector = {};
+
+_.vector.length = function(v) {
+  return _.orDef(v.length, _.distance(v));
+};
 
 _.vector.cartesian = function(v) {
   if (!_.isDef(v.x) && !_.isDef(v.y)) {

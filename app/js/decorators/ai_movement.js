@@ -18,7 +18,8 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
 
   this.util_.addCooldown(obj, function() {
     if (obj.dead) return 0;
-    if (obj.effect.targetlessMovement) this.wonder_(obj);
+    if (obj.effect.targetlessMovement) this.wander_(obj);
+    else if (obj.movement.turret) obj.movement.desiredVector = {x: 0, y: 0};
     else this.think_(obj);
     var int = obj.movement.intelligence;
     return this.random_.nextFloat(int - .1, int + .1);
@@ -31,7 +32,7 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
   }.bind(this));
 };
 
-AiMovement.prototype.wonder_ = function(obj) {
+AiMovement.prototype.wander_ = function(obj) {
   if (Math.random() < .2 || !obj.movement.urge) {
     obj.movement.urge = {
       x: this.random_.nextInt(
@@ -139,6 +140,7 @@ AiMovement.prototype.maybeUseTeleport_ = function(obj) {
   if (!obj.utility.teleportReady) return;
   var dd = obj.c.targetDis - obj.movement.desiredDistance;
   if (dd > 35 && this.random_.next() < .5) obj.utility.useTeleport();
+  if (this.random_.next() < .1) obj.utility.useTeleport();
 };
 
 AiMovement.prototype.setDesiredVector_ = function(obj) {
@@ -147,7 +149,7 @@ AiMovement.prototype.setDesiredVector_ = function(obj) {
   total += this.addAndGetLength_(v, this.getWallXVector_(obj, 4));
   total += this.addAndGetLength_(v, this.getWallYVector_(obj, 4));
   total += this.addAndGetLength_(v, this.getEnemyDistanceVector_(obj, 6));
-  total += this.addAndGetLength_(v, this.getCloneDistanceVector_(obj, 4));
+  total += this.addAndGetLength_(v, this.getCloneDistanceVector_(obj, 2));
   total += this.addAndGetLength_(v, this.getDodgeVector_(obj, 2));
   total += this.addAndGetLength_(v, this.getFleeVector_(obj, 4));
   if (!obj.effect.invisible) {
@@ -161,7 +163,7 @@ AiMovement.prototype.setDesiredVector_ = function(obj) {
 };
 
 AiMovement.prototype.addAndGetLength_ = function(v, result) {
-  var length = result.length;
+  var length = _.vector.length(result);
   _.vector.add(v, result);
   return Math.abs(length);
 };
@@ -214,12 +216,15 @@ AiMovement.prototype.getEnemyDistanceVector_ = function(obj, weight) {
 };
 
 AiMovement.prototype.getCloneDistanceVector_ = function(obj, weight) {
-  // TODO: Support 2 or more clones.
-  var clone = obj.clones[0];
-  if (!clone || clone.dead) return _.vector.EMPTY;
-  var distance = _.distance(obj, clone);
-  weight = (1 - _.step(distance, 0, 50, 100, Infinity)) * weight;
-  var v = {length: -weight, angle: _.angle(obj, clone)};
+  if (obj.clones.length == 1) return _.vector.EMPTY;
+  var v = {x: 0, y: 0};
+  for (var i = 0; i < obj.clones.length; i++) {
+    var clone = obj.clones[i];
+    if (clone === obj) continue;
+    var distance = _.distance(obj, clone);
+    var len = (1 - _.step(distance, 0, 50, 100, Infinity)) * weight;
+    _.vector.add(v, {length: -len, angle: _.angle(obj, clone)});
+  }
   //console.log('clone:', v);
   return v;
 };

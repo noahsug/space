@@ -1,5 +1,6 @@
 var LostScene = di.service('LostScene', [
-  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement', 'World']);
+  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement', 'World',
+  'Inventory']);
 
 LostScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('lost'));
@@ -23,10 +24,10 @@ LostScene.prototype.addEntities_ = function() {
 
 LostScene.prototype.start_ = function() {
   _.each(this.gm_.world.aquired, function(item) {
-    this.gm_.inventory.remove(item);
+    this.inventory_.remove(item);
   }, this);
-  if (!this.gm_.inventory.has('primary')) {
-    this.gm_.inventory.equip(this.gm_.inventory.get('primary')[0]);
+  if (!this.inventory_.has('primary')) {
+    this.inventory_.equip(this.inventory_.get('primary')[0]);
   }
   this.world_.resetProgress();
 };

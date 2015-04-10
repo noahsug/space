@@ -17,6 +17,7 @@ ShipDecorator.prototype.decorate = function(obj) {
   obj.movement = {};
 
   // Note: the order here matters.
+  _.decorate(obj, this.d_.clonable);
   _.decorate(obj, this.d_.selectTarget);
   _.decorate(obj, this.sharedComputation_);
   _.decorate(obj, this.d_.effectable);

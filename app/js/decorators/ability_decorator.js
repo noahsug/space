@@ -7,7 +7,8 @@ AbilityDecorator.prototype.init = function() {
 
 AbilityDecorator.prototype.decorateTank_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
-    def: 1
+    def: 1,
+    health: 1
   });
 
   switch(spec.power) {
@@ -16,6 +17,7 @@ AbilityDecorator.prototype.decorateTank_ = function(obj, spec) {
     obj.collision.dmg = 0;
   case 1:
     this.util_.mod(obj, 'def', obj.ability.def);
+    this.util_.mod(obj, 'health', obj.ability.health);
   }
 };
 
@@ -54,7 +56,7 @@ AbilityDecorator.prototype.decorateReflect_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
     cooldown: 6,
     effect: 'reflect',
-    duration: 1,
+    duration: 1.5,
     targetless: true
   });
 
@@ -139,8 +141,7 @@ AbilityDecorator.prototype.decorateKnockback_ = function(obj, spec) {
 
   this.util_.addWeapon(obj, obj.ability, function() {
     this.util_.fireAura(obj, obj.ability);
-    knockback(obj.target);
-    for (var i = 0; i < obj.target.clones; i++) {
+    for (var i = 0; i < obj.target.clones.length; i++) {
       var clone = obj.target.clones[i];
       if (!clone.dead && _.distance(obj, clone) < obj.ability.range) {
         knockback(clone);

@@ -1,6 +1,6 @@
 var UtilityDecorators = di.service('UtilityDecorators', [
   'EntityDecorator', 'Random', 'Screen', 'DecoratorUtil as util',
-  'SharedComputation as c', 'ShipFactory']);
+  'SharedComputation as c']);
 
 UtilityDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'utility');
@@ -71,18 +71,16 @@ UtilityDecorators.prototype.decorateSplit_ = function(obj, spec) {
 
   var split = function(dt) {
     var dna = getCloneDna(obj);
-    var s1 = getClone(obj, dna);
-    var s2 = getClone(obj, dna);
+    var s1 = obj.addClone(dna);
+    var s2 = obj.addClone(dna);
 
-    this.shipFactory_.setTargets(s1, obj.target);
-    this.shipFactory_.setTargets(s2, obj.target);
+    modClone(s1);
+    modClone(s2);
+
     s1.x = obj.x + 10;
     s1.y = obj.y + 10;
     s2.x = obj.x - 10;
     s2.y = obj.y - 10;
-    obj.clones = [s1, s2];
-    s1.clones = [s2];
-    s2.clones = [s1];
 
     obj.dead = obj.remove = true;
     s1.act(dt);
@@ -96,16 +94,13 @@ UtilityDecorators.prototype.decorateSplit_ = function(obj, spec) {
     });
   }.bind(this);
 
-  var getClone = function(obj, dna) {
-    var ship = this.shipFactory_.createShip(dna, obj.style);
-    this.shipFactory_.setTargets(ship, obj.target);
-    this.util_.mod(ship, 'radius', .85);
-    this.util_.mod(ship, 'primary.dmg', DMG_REDUCTION);
-    this.util_.mod(ship, 'secondary.dmg', DMG_REDUCTION);
-    this.util_.mod(ship, 'ability.dmg', DMG_REDUCTION);
-    this.util_.mod(ship, 'utility.dmg', DMG_REDUCTION);
-    ship.setMaxHealth(obj.health / 2);
-    return ship;
+  var modClone = function(clone) {
+    this.util_.mod(clone, 'radius', .85);
+    this.util_.mod(clone, 'primary.dmg', DMG_REDUCTION);
+    this.util_.mod(clone, 'secondary.dmg', DMG_REDUCTION);
+    this.util_.mod(clone, 'ability.dmg', DMG_REDUCTION);
+    this.util_.mod(clone, 'utility.dmg', DMG_REDUCTION);
+    this.util_.mod(clone, 'health', .5);
   }.bind(this);
 };
 
@@ -116,8 +111,10 @@ UtilityDecorators.prototype.decorateRanger_ = function(obj, spec) {
 
   switch(spec.power) {
   case 3:
-    // TODO: Warp accross map ability.
     this.util_.set(obj, 'primary.seek', _.radians(50));
+    this.util_.set(obj, 'secondary.seek', _.radians(50));
+    this.util_.mod(obj, 'primary.range', .75);
+    this.util_.mod(obj, 'secondary.range', .75);
     break;
   case 2:
     this.util_.mod(obj, 'primary.accuracy', 0);
@@ -174,7 +171,7 @@ UtilityDecorators.prototype.decorateDash_ = function(obj, spec) {
 
 UtilityDecorators.prototype.decorateTeleport_ = function(obj, spec) {
   this.util_.spec(obj, 'utility', spec, {
-    cooldown: 2,
+    cooldown: 6,
     range: 300
   });
 

@@ -6,7 +6,8 @@ Padding = {
   WORLD: 10,
   ITEM: 10,
   MD: 25,
-  BOT: 30
+  BOT: 30,
+  TOP: 30
 };
 
 Size = {

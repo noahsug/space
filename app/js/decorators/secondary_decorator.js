@@ -1,5 +1,6 @@
 var SecondaryDecorator = di.service('SecondaryDecorator', [
-  'EntityDecorator', 'DecoratorUtil as util', 'GameModel as gm']);
+  'EntityDecorator', 'DecoratorUtil as util', 'GameModel as gm',
+  'ItemService', 'Random']);
 
 
 SecondaryDecorator.prototype.init = function() {
@@ -174,12 +175,76 @@ SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {
 
   this.util_.addWeapon(obj, obj.secondary, function() {
     this.util_.fireAura(obj, obj.secondary);
-    knockback(obj.target);
-    for (var i = 0; i < obj.target.clones; i++) {
+    for (var i = 0; i < obj.target.clones.length; i++) {
       var clone = obj.target.clones[i];
-      if (!clone.dead && _.distance(obj, clone) < obj.secondary.range) {
+      if (!clone.dead && _.distance(obj, clone) <= obj.secondary.range) {
         knockback(clone);
       }
     }
   }.bind(this));
 };
+
+SecondaryDecorator.prototype.decorateTurret_ = function(obj, spec) {
+  this.util_.spec(obj, 'secondary', spec, {
+    dmgRatio: .5
+  });
+
+  this.util_.addWeapon(obj, obj.secondary, function() {
+    var primary = _.sample(['basic laser', 'grenade', 'shotgun']);
+    var secondary = _.sample(['pull', 'knockback']);
+    var dna = [this.itemService_.getByName(primary),
+               this.itemService_.getByName(secondary)];
+    var turret = obj.addClone(dna);
+    this.util_.mod(turret, 'radius', .70);
+    this.util_.mod(turret, 'primary.dmg', obj.secondary.dmgRatio);
+    this.util_.mod(turret, 'collision.dmg', .5);
+    // Needed for the turret to get knocked arounded.
+    turret.movement.speed = 50;
+    turret.movement.turret = true;
+    turret.setMaxHealth(10);
+
+    var angle = obj.c.targetAngle + this.random_.nextSign() * _.RADIANS_135;
+    turret.x = obj.x + Math.cos(angle) * 30;
+    turret.y = obj.y + Math.sin(angle) * 30;
+
+    turret.act(Game.UPDATE_RATE);
+  }.bind(this));
+};
+
+//SecondaryDecorator.prototype.decorateMelee_ = function(obj, spec) {
+//  this.util_.spec(obj, 'secondary', spec, {
+//    range: null,
+//    dmgRatio: null,
+//    cooldown: .2
+//  });
+//
+//  var cooldownRatio = 1;
+//  var applied = false;
+//  var used = false;
+//  obj.act(function() {
+//    var inRange = obj.c.targetDis <= obj.secondary.range;
+//    var justFired = obj.primary.lastFired == this.gm_.time;
+//
+//    // TODO use resolve.
+//
+//    if (inRange && !applied) {
+//      cooldownRatio = obj.secondary.cooldown / obj.primary.cooldown;
+//      obj.primary.dmg *= obj.secondary.dmgRatio;
+//      obj.primary.cooldown *= cooldownRatio;
+//      applied = true;
+//    }
+//
+//    if (!inRange && applied) {
+//      obj.primary.dmg /= obj.secondary.dmgRatio;
+//      obj.primary.cooldown /= cooldownRatio;
+//      applied = false;
+//    }
+//
+//    if (applied && justFired) {
+//      cooldownRatio = obj.secondary.cooldown / obj.primary.cooldown;
+//      obj.primary.dmg *= obj.secondary.dmgRatio;
+//      obj.primary.cooldown *= cooldownRatio;
+//      used = true;
+//    }
+//  });
+//};

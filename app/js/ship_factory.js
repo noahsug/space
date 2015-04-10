@@ -18,6 +18,7 @@ ShipFactory.prototype.createRandomDna_ = function(level) {
   if (numItems > 1) _.swap(types, 0, _.r.nextInt(0, numItems - 1));
 
   return _.newList(types, function(type, i) {
+    //if (type == 'utility') return this.itemService_.getByName('teleport');
     if (!levels[i]) return undefined;
     return _.sample(this.itemService_.getByTypeAndLevel(type, levels[i] - 1));
   }, this);

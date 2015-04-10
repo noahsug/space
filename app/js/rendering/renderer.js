@@ -162,7 +162,7 @@ Renderer.prototype.drawLostSplash_ = function() {
 };
 
 var DESC_ONLY = _.newSet([
-  'charge', 'charge II', 'tracker', 'tracker II', 'pull'
+  'charge', 'charge II', 'tracker', 'tracker II', 'pull', 'melee',
 ]);
 Renderer.prototype.drawItemDesc_ = function(entity) {
   var size = 12;
@@ -171,7 +171,7 @@ Renderer.prototype.drawItemDesc_ = function(entity) {
   this.ctx_.textBaseline = 'middle';
 
   var tier = Game.MAX_ITEM_LEVEL - entity.item.level + 1;
-  var desc = 'Tier ' + tier + ': ' + entity.item.desc;
+  var desc = entity.item.desc;
 
   var textLines = [desc];
   var type = entity.item.category;
@@ -215,6 +215,18 @@ Renderer.prototype.topLeftSubHeading_ = function(text, opt_color) {
   this.drawHeading_(text, 24, 20, 70 - 16, opt_color);
 };
 
+Renderer.prototype.drawBreak_ = function(entity) {
+  this.ctx_.strokeStyle = '#CCC';
+  this.ctx_.lineWidth = 1;
+  this.ctx_.shadowBlur = 0;
+  var x = this.screen_.width / 8;
+  var y = entity.render.pos.y;
+  this.ctx_.beginPath();
+  this.ctx_.moveTo(this.screen_.width - x, y);
+  this.ctx_.lineTo(x, y);
+  this.ctx_.stroke();
+};
+
 // TODO: Animate level state changes.
 Renderer.prototype.drawRoundBtn_ = function(entity) {
   if (entity.style == 'hidden') return;
@@ -233,19 +245,21 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
       default: _.fail('invalid state: ', entity.level.state);
     }
   } else if (entity.item) {
-    if (entity.rewardBtn) {
-      if (!entity.item.name) {
-        color = Gfx.Color.LOCKED;
-      } else if (entity.style == 'active') {
-        color = Gfx.Color.ACTIVE;
-      }
+    if (entity.rewardBtn && !entity.item.name) {
+      color = Gfx.Color.LOCKED;
     } else if (entity.enemy) {
       if (entity.style == 'active') color = Gfx.Color.ACTIVE_LOCKED;
       else color = Gfx.Color.LOCKED;
     } else if (!this.inventory_.has(entity.item.category)) {
       color = Gfx.Color.LOCKED;
-    } else if (entity.style == 'equipped') {
+    } else if (entity.style == 'equipped' || entity.style == 'active') {
       color = Gfx.Color.ACTIVE;
+    }
+  } else if (entity.category) {
+    if (!this.inventory_.has(entity.category)) {
+      color = Gfx.Color.LOCKED;
+    } else if (entity.style != 'selected') {
+      color = Gfx.Color.UNSELECTED;
     }
   }
   this.ctx_.strokeStyle = color;
@@ -275,6 +289,8 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
     }
     text = entity.item.name || 'none';
     textSize = Size.ITEM_TEXT;
+  } else if (entity.category) {
+    text = Strings.ItemType[entity.category];
   }
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'middle';

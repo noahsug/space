@@ -23,12 +23,11 @@ Inventory.prototype.isEquipped = function(item) {
 
 Inventory.prototype.equip = function(item) {
   this.gm_.player.push(item);
-  _.sortBy(this.gm_.player, 'level');
 };
 
 Inventory.prototype.add = function(item) {
   if (this.hasItem(item)) return;
-  this.gm_.inventory.push(item);
+  this.gm_.inventory.splice(0, 0, item);
 };
 
 Inventory.prototype.remove = function(item) {

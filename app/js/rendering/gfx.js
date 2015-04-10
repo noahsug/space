@@ -25,6 +25,7 @@ Gfx.Color = {
   OPAC_GRAY: 'rgba(50, 50, 50, .5)',
   LESS_OPAC_GRAY: 'rgba(50, 50, 50, .8)',
 
+  UNSELECTED: '#CCC',
   ACTIVE: '#FFFFAA',
   ACTIVE_LOCKED: '#888844',
   LOCKED: '#666',

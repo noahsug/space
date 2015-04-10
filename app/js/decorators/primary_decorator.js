@@ -92,6 +92,7 @@ PrimaryDecorator.prototype.decorateBurstLaser_ = function(obj, spec)  {
     miniCooldown: .12,
     length: 8 + 16,
     speed: Speed.DEFAULT,
+    accuracy: Accuracy.INACCURATE,
     style: 'weak'
   });
 
@@ -108,5 +109,47 @@ PrimaryDecorator.prototype.decorateBurstLaser_ = function(obj, spec)  {
       projectilesRemaining--;
     }
     return projectilesRemaining && obj.primary.miniCooldown;
+  }.bind(this));
+};
+
+PrimaryDecorator.prototype.decorateGatling_ = function(obj, spec)  {
+  this.util_.spec(obj, 'primary', spec, {
+    minCooldownRatio: .17,
+    cooldownReduceSpeed: .4,
+    length: 8 + 16,
+    speed: Speed.DEFAULT,
+    style: 'weak',
+    breakPoint: _.radians(90),
+    turnSpeed: _.radians(35)
+  });
+
+  var angle = 0;
+  var cooldownRatio = 1;
+  var firing = false;
+  obj.awake(function(dt) {
+    angle = _.angle(obj, obj.target);
+  });
+  obj.act(function(dt) {
+    var da = _.angleDif(angle, obj.c.targetAngle);
+    if (da > obj.primary.breakPoint) {
+      obj.primary.cooldown /= cooldownRatio;
+      cooldownRatio = 1;
+      angle = obj.c.targetAngle;
+      firing = false;
+    } else if (firing) {
+      angle = _.approachAngle(
+          angle, obj.c.targetAngle, obj.primary.turnSpeed * dt);
+      obj.primary.cooldown /= cooldownRatio;
+      cooldownRatio *= 1 - obj.primary.cooldownReduceSpeed * dt;
+      cooldownRatio = Math.max(cooldownRatio, obj.primary.minCooldownRatio);
+      obj.primary.cooldown *= cooldownRatio;
+    }
+  });
+
+  this.util_.addWeapon(obj, obj.primary, function() {
+    if (!firing) firing = true;
+    obj.primary.dangle = angle - obj.c.targetAngle;
+    var projectile = this.util_.fireLaser(obj, obj.primary);
+    _.decorate(projectile, this.d_.dmgCollision, obj.primary);
   }.bind(this));
 };

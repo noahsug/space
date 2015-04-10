@@ -71,6 +71,7 @@ MovementDecorator.prototype.getLeadAngle_ = function(proj) {
 };
 
 MovementDecorator.prototype.getExpectedTargetPos_ = function(proj) {
+  if (!proj.target.movement) return proj.target;
   var leadRatio = .9;
   var targetSpeed =
         _.distance(proj.target.movement.vector) * proj.target.movement.speed;

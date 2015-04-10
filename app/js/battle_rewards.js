@@ -4,17 +4,26 @@ var BattleRewards = di.service('BattleRewards', [
 BattleRewards.prototype.calculateRewards = function() {
   this.numItems_ = 0;
   this.items_ = {};
-  _.each(Game.ITEM_TYPES, function(type) {
-    var item = this.itemService_.getEnemyEquipped(type);
-    if (item && !this.inventory_.hasItem(item)) {
-      this.items_[type] = item;
-      this.numItems_++;
-    }
-  }, this);
+
+  if (!this.gm_.level.hasItem) return;
+
+  // Uncomment to always get enemy's items.
+  //_.each(Game.ITEM_TYPES, function(type) {
+  //  var item = this.itemService_.getEnemyEquipped(type);
+  //  if (item && !this.inventory_.hasItem(item)) {
+  //    this.items_[type] = item;
+  //    this.numItems_++;
+  //  }
+  //}, this);
 
   // Always return at least one reward if possible.
   if (!this.numItems_) {
-    var item = this.getRandomItem_(this.gm_.level.type);
+    var levelRange = _.r.nextFloat(
+        Game.MAX_ITEM_LEVEL / this.gm_.worlds.length);
+    var level = Math.round(
+        this.gm_.world.index / this.gm_.worlds.length + levelRange);
+    //var item = this.getRandomItem_(this.gm_.level.type);
+    var item = this.getRandomItem_(level);
     if (item) {
       this.items_[item.category] = item;
       this.numItems_++;

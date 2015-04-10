@@ -1,5 +1,5 @@
 var BasicDecorator = di.service('BasicDecorator', [
-  'EntityDecorator', 'Mouse', 'Screen', 'GameModel as gm',
+  'EntityDecorator', 'Mouse', 'Screen', 'GameModel as gm', 'ShipFactory',
   'SharedComputation as c', 'DecoratorUtil as util']);
 
 BasicDecorator.prototype.init = function() {
@@ -32,6 +32,7 @@ BasicDecorator.prototype.decorateHealth_ = function(obj, spec) {
   };
 
   obj.act(function() {
+    if (obj.health > obj.maxHealth) obj.setMaxHealth(obj.health);
     obj.prevHealth = obj.health;
   });
 
@@ -58,8 +59,8 @@ BasicDecorator.prototype.decorateRange_ = function(obj, spec) {
   });
 };
 
-BasicDecorator.prototype.decorateSelectTarget_ = function(obj, spec) {
-  obj.clones = [];
+BasicDecorator.prototype.decorateClonable_ = function(obj, spec) {
+  obj.clones = [obj];
   obj.getLivingClone = function() {
     if (!obj.dead) return obj;
     for (var i = 0; i < obj.clones.length; i++) {
@@ -69,6 +70,16 @@ BasicDecorator.prototype.decorateSelectTarget_ = function(obj, spec) {
     return obj;
   };
 
+  obj.addClone = function(dna, opt_style) {
+    var clone = this.shipFactory_.createShip(dna, opt_style || obj.style);
+    this.shipFactory_.setTargets(clone, obj.target);
+    obj.clones.push(clone);
+    clone.clones = obj.clones;
+    return clone;
+  }.bind(this);
+};
+
+BasicDecorator.prototype.decorateSelectTarget_ = function(obj, spec) {
   var selectTime = 0;
   obj.act(function(dt) {
     if (obj.target.dead || this.gm_.time - selectTime > 10) {
@@ -78,14 +89,14 @@ BasicDecorator.prototype.decorateSelectTarget_ = function(obj, spec) {
   }.bind(this));
 
   function selectClosestTarget() {
-    if (!obj.target.clones.length) return obj.target;
+    if (obj.target.clones.length == 1) return obj.target;
 
-    var minDis = obj.target.dead ? Infinity : _.distance(obj, obj.target);
+    var minDis = Infinity;
     var target = obj.target;
     for (var i = 0; i < obj.target.clones.length; i++) {
       var clone = obj.target.clones[i];
       if (clone.dead) continue;
-      var dis = _.distance(obj, clone);
+      var dis = clone.effect.invisible ? 999999 : _.distance(obj, clone);
       if (dis < minDis) {
         minDis = dis;
         target = clone;
@@ -125,10 +136,8 @@ BasicDecorator.prototype.decorateDmgCollision_ = function(obj, spec) {
 
 BasicDecorator.prototype.decorateCollision_ = function(obj, spec) {
   obj.affect(function() {
-    maybeCollide(obj.target);
     for (var i = 0; i < obj.target.clones.length; i++) {
-      var clone = obj.target.clones[i];
-      maybeCollide(clone);
+      maybeCollide(obj.target.clones[i]);
     }
   });
 
