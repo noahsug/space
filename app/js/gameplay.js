@@ -41,10 +41,10 @@ Gameplay.prototype.worlds = [
     rows: 3,
     cols: 3
   },
-  {  // 4
-    rows: 2,
-    cols: 5
-  },
+  //{  // 4
+  //  rows: 2,
+  //  cols: 5
+  //},
   //{  // 5
   //  rows: 2,
   //  cols: 5
@@ -77,21 +77,21 @@ Gameplay.prototype.worlds = [
 
 di.constant('gameplayFile', {
   player: [
-    'basic laser',
+    //'basic laser',
     //'burst laser',
     //'grenade',
     //'razors',
     //'sniper',
     //'missiles',
-    //'shotgun',
+    'shotgun',
     //'gatling',
 
     //'stun',
     //'emp',
-    //'pistol',
+    'pistol',
     //'charge',
     //'tracker',
-    'turret',
+    //'turret',
 
     //'teleport',
 
@@ -109,8 +109,7 @@ di.constant('gameplayFile', {
 
   inventory: [
     'shotgun',
-    'pistol',
-    'stealth',
+    'pistol'
   ],
 
   bosses: [
@@ -149,7 +148,7 @@ di.constant('gameplayFile', {
 
   items: {
     'basic laser': {
-      desc: 'Basic laser.',
+      desc: 'Stand laser weapon.',
       id: 'primary.basicLaser',
       spec: {dmg: 4, cooldown: .75, range: 150},
       level: 0},
@@ -186,7 +185,7 @@ di.constant('gameplayFile', {
     'scatter shot': {
       desc: 'Big burst of weak shots.',
       id:'primary.shotgun',
-      spec: {dmg: 3, cooldown: 2.1, range: 150, projectiles: 10, power: 2},
+      spec: {dmg: 4, cooldown: 2.1, range: 150, projectiles: 10, power: 2},
       level: 5},
     'grenade': {
       desc: 'Explodes in a large area.',
@@ -196,7 +195,7 @@ di.constant('gameplayFile', {
     'razors': {
       desc: 'Powerful shots in three directions.',
       id:'primary.razors',
-      spec: {dmg: 10, projectiles: 3, cooldown: 2, range: 150},
+      spec: {dmg: 9, projectiles: 3, cooldown: 2, range: 150},
       level: 1},
     //'razors II': {
     //  desc: 'Powerful shots in five directions.',
@@ -221,13 +220,13 @@ di.constant('gameplayFile', {
     'gatling': {
       desc: 'Slowly inceases firing speed.',
       id:'primary.gatling',
-      spec: {dmg: 1, cooldown: 1, range: 150},
+      spec: {dmg: 3, cooldown: 1, range: 150},
       level: 5},
 
     'turret': {
       desc: 'Drops turrets that shoot at the enemy.',
       id:'secondary.turret',
-      spec: {cooldown: 6, range: 10000},
+      spec: {cooldown: 5, range: 10000},
       level: 2},
     'stun': {
       desc: 'Stun enemy for 1s.',
@@ -250,7 +249,7 @@ di.constant('gameplayFile', {
     //  spec: {dmg: 1, cooldown: 1.5, range: 150, power: 1},
     //  level: 5},
     'pistol': {
-      desc: 'Basic laser.',
+      desc: 'Standard weak laser weapon.',
       id:'secondary.pistol',
       spec: {dmg: 3, cooldown: 1.5, range: 300},
       level: 0},
@@ -282,7 +281,7 @@ di.constant('gameplayFile', {
       level: 1},
     'pull': {
       desc: 'Pulls enemy close and stuns. Range: 10. Stun duration: .75s',
-      id:'secondary.pull', spec: {duration: .75, range: 100},
+      id:'secondary.pull', spec: {duration: 1.5, range: 100},
       level: 1},
     //'melee': {
     //  desc: 'Primary 2x for 75% damage while close.',
@@ -310,7 +309,7 @@ di.constant('gameplayFile', {
       id: 'utility.druid', spec: {power: 2},
       level: 3},
     'divide': {
-      desc: 'Divide into two slightly weaker halfs.',
+      desc: 'Divide into two weaker halfs.',
       id: 'utility.druid', spec: {power: 3},
       level: 5},
     //'scope': {
@@ -318,12 +317,16 @@ di.constant('gameplayFile', {
     //  id: 'utility.ranger', spec: {power: 1, range: 1.5},
     //  level: 1},
     'scope': {
-      desc: '2x range, better accuracy.',
-      id: 'utility.ranger', spec: {power: 2, range: 2},
+      desc: '1.5x range, better accuracy.',
+      id: 'utility.ranger', spec: {power: 2, range: 1.5},
       level: 4},
     'heated': {
       desc: 'Shots seek target, but have less range.',
       id: 'utility.ranger', spec: {power: 3},
+      level: 2},
+    'heavy': {
+      desc: 'Shots knock target back.',
+      id: 'utility.heavy', spec: {power: 3},
       level: 2},
     //'sticky': {
     //  desc: 'Shots slow target with each hit.',
@@ -352,8 +355,8 @@ di.constant('gameplayFile', {
     //  id: 'ability.shield', spec: {power: 2},
     //  level: 5},
     'reflect': {
-      desc: 'Reflects shots for 1.5s.',
-      id: 'ability.reflect', spec: {},
+      desc: 'Reflects any projectile for short time.',
+      id: 'ability.reflect', spec: {duration: 1.25},
       level: 2},
     //'reflect II': {
     //  desc: 'Reflects shots for 2s',
@@ -401,7 +404,7 @@ di.constant('gameplayFile', {
       desc: '+50% speed',
       id: 'augment.heavy', spec: {speedRatio: 1.5},
       level: 0},
-    'heavy': {
+    'beefy': {
       desc: '+20% health, -50% speed',
       id: 'augment.heavy', spec: {healthRatio: 1.2, speedRatio: .5},
       level: 0},

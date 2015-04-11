@@ -17,7 +17,7 @@ describe('A game', function() {
     watch = false;
 
     items = [];
-    _.each(Game.ITEM_TYPES.concat(['augment'], function(type) {
+    _.each(Game.ITEM_TYPES.concat(['augment']), function(type) {
       items.push(_.pluck(
         _.where(gameplay.items, {category: type}),
         'name'));
@@ -27,9 +27,9 @@ describe('A game', function() {
   xit('watch', function() {
     screen.setSurfaceArea(Screen.DESIRED_SURFACE_AREA);
     document.getElementById('hide-canvas').style.display = "";
-    var seed = 2006309135.2142427;
-    var spec1 = ["shotgun", "charge", "reflect II", "scope II"];
-    var spec2 = ["shotgun II"];
+    var seed = 49195228.20349088;
+    var spec1 = ["shotgun", "pistol", "haze", "heated", "heavy"];
+    var spec2 = ["basic laser", "charge", "extreme"];
 
     r.seed(seed);
     watch = true;
@@ -38,7 +38,7 @@ describe('A game', function() {
 
   xit('analyze', function() {
     // TODO: Make both players have same health (not 40 vs 30).
-    var data = gatherData(15000);
+    var data = gatherData(500);
     analyzeItems(data);
     analyzeReplays(data);
   });
@@ -70,14 +70,11 @@ describe('A game', function() {
     var stats = [];
     _.each(data, function(sample) {
       var record = stats[sample[i]] = stats[sample[i]] ||
-          {name: items[i][sample[i]], level: 0, actualLevel: 'N/A',
-           ratio: 0, wins: 0, losses: 0};
+          {name: items[i][sample[i]], ratio: 0, wins: 0, losses: 0};
       var won = sample[sample.length - 1];
       record.wins += won;
       record.losses += !won;
       record.ratio = record.wins / record.losses;
-      record.level = Math.round(record.ratio / .4);
-      if (record.name) record.actualLevel = gameplay.items[record.name].level;
     });
     return _.sortBy(stats, function(stat) {
       return -stat.ratio;

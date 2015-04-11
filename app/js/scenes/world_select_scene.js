@@ -1,6 +1,6 @@
 var WorldSelectScene = di.service('WorldSelectScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'RoundBtnElement',
-  'LabelElement', 'World']);
+  'LabelElement', 'World', 'Inventory']);
 
 WorldSelectScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('worldSelect'));
@@ -41,12 +41,15 @@ WorldSelectScene.prototype.addEntities_ = function() {
   var sandboxBtn = btnRow.addNew(this.roundBtnElement_);
   sandboxBtn.setSize(Size.WORLD);
   sandboxBtn.setProp('text', 'sandbox');
+  sandboxBtn.setStyle('locked');
 
   btnRow.addGap(Size.WORLD);
 
   var rankedBtn = btnRow.addNew(this.roundBtnElement_);
   rankedBtn.setSize(Size.WORLD);
   rankedBtn.setProp('text', 'ranked');
+  rankedBtn.setStyle('locked');
+
   btnRow.childHeight = Size.WORLD;
 };
 
@@ -59,6 +62,8 @@ WorldSelectScene.prototype.createWorldBtn_ = function(world) {
   if (world.state == 'unlocked') {
     btn.onClick(function() {
       this.gm_.world = world;
+      this.inventory_.removeAugments();
+      this.gm_.player.push.apply(this.gm_.player, this.gm_.world.augments);
       this.transition_('main');
     }.bind(this));
   }

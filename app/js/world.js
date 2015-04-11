@@ -35,7 +35,7 @@ World.prototype.create = function(world, index) {
     }
     return {
       hasItem: itemDist[i],
-      hasAugment: true,//!itemDist[i],
+      hasAugment: !itemDist[i],
       type: level,
       state: i == startIndex ? 'unlocked' : 'locked',
       index: i,

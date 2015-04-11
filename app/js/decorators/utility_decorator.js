@@ -6,6 +6,10 @@ UtilityDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'utility');
 };
 
+UtilityDecorators.prototype.decorateHeavy_ = function(obj, spec) {
+
+};
+
 UtilityDecorators.prototype.decorateDruid_ = function(obj, spec) {
   switch(spec.power) {
   case 3:
@@ -57,10 +61,10 @@ UtilityDecorators.prototype.decorateRage_ = function(obj, spec) {
   //}.bind(this));
 };
 
-var DMG_REDUCTION = .65;
 UtilityDecorators.prototype.decorateSplit_ = function(obj, spec) {
   this.util_.spec(obj, 'utility', spec, {
-    cooldown: 6
+    cooldown: 6,
+    dmgRatio: .5
   });
 
   var delay = 3;
@@ -96,10 +100,10 @@ UtilityDecorators.prototype.decorateSplit_ = function(obj, spec) {
 
   var modClone = function(clone) {
     this.util_.mod(clone, 'radius', .85);
-    this.util_.mod(clone, 'primary.dmg', DMG_REDUCTION);
-    this.util_.mod(clone, 'secondary.dmg', DMG_REDUCTION);
-    this.util_.mod(clone, 'ability.dmg', DMG_REDUCTION);
-    this.util_.mod(clone, 'utility.dmg', DMG_REDUCTION);
+    this.util_.mod(clone, 'primary.dmg', obj.utility.dmgRatio);
+    this.util_.mod(clone, 'secondary.dmg', obj.utility.dmgRatio);
+    this.util_.mod(clone, 'ability.dmg', obj.utility.dmgRatio);
+    this.util_.mod(clone, 'utility.dmg', obj.utility.dmgRatio);
     this.util_.mod(clone, 'health', .5);
   }.bind(this);
 };
@@ -111,8 +115,8 @@ UtilityDecorators.prototype.decorateRanger_ = function(obj, spec) {
 
   switch(spec.power) {
   case 3:
-    this.util_.setAdd(obj, 'primary.seek', _.radians(50));
-    this.util_.setAdd(obj, 'secondary.seek', _.radians(50));
+    this.util_.modAdd(obj, 'primary.seek', _.radians(50));
+    this.util_.modAdd(obj, 'secondary.seek', _.radians(50));
     this.util_.mod(obj, 'primary.range', .75);
     this.util_.mod(obj, 'secondary.range', .75);
     break;

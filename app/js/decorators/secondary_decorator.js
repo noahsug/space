@@ -146,7 +146,7 @@ SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
     duration: null,
     range: null,
-    knockbackDuration: .25,
+    knockbackDuration: .5,
     cooldown: 4,
     effect: 'stunned',
     knockback: 45,
@@ -186,7 +186,8 @@ SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {
 
 SecondaryDecorator.prototype.decorateTurret_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
-    dmgRatio: .5
+    dmgRatio: .25,
+    targetless: true
   });
 
   this.util_.addWeapon(obj, obj.secondary, function() {
@@ -201,7 +202,7 @@ SecondaryDecorator.prototype.decorateTurret_ = function(obj, spec) {
     // Needed for the turret to get knocked arounded.
     turret.movement.speed = 50;
     turret.movement.turret = true;
-    turret.setMaxHealth(10);
+    turret.setMaxHealth(5);
 
     var angle = obj.c.targetAngle + this.random_.nextSign() * _.RADIANS_135;
     turret.x = obj.x + Math.cos(angle) * 30;

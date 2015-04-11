@@ -64,7 +64,7 @@ AiMovement.prototype.getDesiredDistance_ = function(obj) {
       maxDis < obj.movement.maxDis ||
       obj.movement.maxDisTime < this.gm_.time) {
     obj.movement.maxDis = maxDis;
-    obj.movement.maxDisTime = this.gm_.time + 5;
+    obj.movement.maxDisTime = this.gm_.time + 10;
   }
 
   var bestDistance = this.computeBestDistance_(obj);
@@ -109,7 +109,13 @@ AiMovement.prototype.computeBestDistance_ = function(obj) {
       i--;
       targetIndex++;
     } else {
-      targetIndex++;
+      while (obj.c.targetRanges[++targetIndex] == target) {
+        numAttacks--;
+      }
+      while (obj.c.ranges[++i] == target) {
+        numAttacks++;
+      }
+      i--;  // Will be incremented by for loop.
       if (numAttacks > bestNumAttacks) {
         bestNumAttacks = numAttacks;
         bestDistance = self;

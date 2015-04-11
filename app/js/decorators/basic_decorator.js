@@ -145,6 +145,7 @@ BasicDecorator.prototype.decorateCollision_ = function(obj, spec) {
   function maybeCollide(target) {
     if (!obj.dead && !target.dead && obj.collides(target)) {
       if (target.maybeReflect && target.maybeReflect(obj)) return;
+      spec.precollide && spec.precollide(obj, target);
       spec.collide(obj, target);
     }
   }

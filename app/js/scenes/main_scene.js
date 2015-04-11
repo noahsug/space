@@ -1,14 +1,9 @@
 var MainScene = di.service('MainScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'RoundBtnElement', 'BtnElement',
-  'LabelElement', 'World']);
+  'LabelElement', 'World', 'Inventory']);
 
 MainScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('main'));
-};
-
-MainScene.prototype.start_ = function() {
-  this.player_.removeAugments();
-  this.player_.push.apply(this.player_, this.gm_.world.augments);
 };
 
 MainScene.prototype.addEntities_ = function() {

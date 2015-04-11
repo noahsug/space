@@ -32,7 +32,7 @@ Game.prototype.start = function() {
   //this.battleRewards_.calculateRewards();
   //this.gm_.equipping = 'primary';
 
-  this.scenes_[1].start();
+  this.scenes_[2].start();
 };
 
 Game.prototype.initGameModel_ = function() {

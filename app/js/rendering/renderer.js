@@ -261,6 +261,8 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
     } else if (entity.style != 'selected') {
       color = Gfx.Color.UNSELECTED;
     }
+  } else if (entity.style == 'locked') {
+    color = Gfx.Color.LOCKED;
   }
   this.ctx_.strokeStyle = color;
   this.ctx_.fillStyle = '#000000';

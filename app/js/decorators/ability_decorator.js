@@ -54,9 +54,9 @@ AbilityDecorator.prototype.decorateShield_ = function(obj, spec) {
 
 AbilityDecorator.prototype.decorateReflect_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
+    duration: 0,
     cooldown: 6,
     effect: 'reflect',
-    duration: 1.5,
     targetless: true
   });
 

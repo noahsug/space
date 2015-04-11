@@ -41,7 +41,7 @@ Inventory.prototype.remove = function(item) {
 Inventory.prototype.removeAugments = function() {
   _.each(this.getEquipped('augment'), function(item) {
     this.unequip(item);
-  });
+  }, this);
 };
 
 Inventory.prototype.unequip = function(item) {

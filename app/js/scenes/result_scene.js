@@ -14,7 +14,9 @@ ResultScene.prototype.addEntities_ = function() {
   var hasRewards =
       this.gm_.level.state == 'won' && this.battleRewards_.numItems();
   this.continueBtn_ = this.btnElement_.create();
-  if (hasRewards) this.continueBtn_.setStyle('locked');
+  if (hasRewards && this.battleRewards_.numItems() > 1) {
+    this.continueBtn_.setStyle('locked');
+  }
   this.layout_ = this.layoutElement_.create({direction: 'vertical'});
   this.layout_.padding.top = -Padding.ITEM + Padding.BOT;
 

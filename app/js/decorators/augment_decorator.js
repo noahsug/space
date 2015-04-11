@@ -8,14 +8,14 @@ AugmentDecorator.prototype.init = function() {
 
 AugmentDecorator.prototype.decorateExtreme_ = function(obj, spec) {
   _.each(Game.ITEM_TYPES, function(type) {
-    this.util_.mod(obj, type + '.damage', 1.5);
+    this.util_.mod(obj, type + '.dmg', 2);
   }, this);
   this.util_.mod(obj, 'health', .5);
 };
 
 AugmentDecorator.prototype.decorateMedic_ = function(obj, spec) {
   obj.act(function(dt) {
-    if (obj.health < obj.maxHealth) obj.health += 2 * dt;
+    if (obj.health < obj.maxHealth) obj.health += 1 * dt;
   });
 };
 
@@ -26,15 +26,15 @@ AugmentDecorator.prototype.decorateCamo_ = function(obj, spec) {
 
 AugmentDecorator.prototype.decorateMulti_ = function(obj, spec) {
   spec = this.util_.spec(spec, {
-    projectiles: null
+    projectiles: 0
   });
   this.util_.modAdd(obj, 'primary.projectiles', spec.projectiles);
 };
 
-AugmentDecorator.prototype.decorateHevay_ = function(obj, spec) {
+AugmentDecorator.prototype.decorateHeavy_ = function(obj, spec) {
   spec = this.util_.spec(spec, {
-    speedRatio: null,
-    healthRatio: null
+    speedRatio: 1,
+    healthRatio: 1
   });
   this.util_.mod(obj, 'health', spec.healthRatio);
   this.util_.mod(obj, 'movement.speed', spec.speedRatio);
@@ -42,7 +42,7 @@ AugmentDecorator.prototype.decorateHevay_ = function(obj, spec) {
 
 AugmentDecorator.prototype.decorateSharp_ = function(obj, spec) {
   spec = this.util_.spec(spec, {
-    dmgRatio: null
+    dmgRatio: 1
   });
   this.util_.mod(obj, 'collision.targetDmgRatio', spec.dmgRatio);
 };

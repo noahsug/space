@@ -8,6 +8,11 @@ ShipFactory.prototype.createEnemyDna = function(level) {
 };
 
 ShipFactory.prototype.createRandomDna_ = function(level) {
+  return [
+    'missiles', 'haze', 'pistol'
+  ].map(this.itemService_.getByName.bind(this.itemService_));
+
+
   var levels = _.intRandomSplit(
       Game.ITEM_TYPES.length, level + 1, Game.MAX_ITEM_LEVEL + 1).
     sort().reverse();
