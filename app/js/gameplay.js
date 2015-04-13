@@ -77,18 +77,18 @@ Gameplay.prototype.worlds = [
 
 di.constant('gameplayFile', {
   player: [
-    //'basic laser',
+    'basic laser',
     //'burst laser',
     //'grenade',
     //'razors',
     //'sniper',
     //'missiles',
-    'shotgun',
+    //'shotgun',
     //'gatling',
 
     //'stun',
     //'emp',
-    'pistol',
+    //'pistol',
     //'charge',
     //'tracker',
     //'turret',
@@ -264,7 +264,7 @@ di.constant('gameplayFile', {
     //  spec: {dmg: 5, cooldown: 1, range: 300},
     //  level: 4},
     'charge': {
-      desc: 'Charge the enemy.',
+      desc: 'Charge the enemy, taking no damage from collisions.',
       id:'secondary.charge', spec: {},
       level: 0},
     //'charge II': {
@@ -277,7 +277,7 @@ di.constant('gameplayFile', {
     //  level: 0},
     'tracker': {
       desc: 'Tracks enemy, ensuring next attack will hit and deal +50% damage.',
-      id:'secondary.tracker', spec: {power: 1},
+      id:'secondary.tracker', spec: {dmgRatio: 1.5},
       level: 1},
     'pull': {
       desc: 'Pulls enemy close and stuns. Range: 10. Stun duration: .75s',
@@ -318,15 +318,11 @@ di.constant('gameplayFile', {
     //  level: 1},
     'scope': {
       desc: '1.5x range, better accuracy.',
-      id: 'utility.ranger', spec: {power: 2, range: 1.5},
+      id: 'utility.ranger', spec: {range: 1.5, accuracy: 0},
       level: 4},
     'heated': {
       desc: 'Shots seek target, but have less range.',
-      id: 'utility.ranger', spec: {power: 3},
-      level: 2},
-    'heavy': {
-      desc: 'Shots knock target back.',
-      id: 'utility.heavy', spec: {power: 3},
+      id: 'utility.ranger', spec: {range: .75, seek: _.radians(50)},
       level: 2},
     //'sticky': {
     //  desc: 'Shots slow target with each hit.',

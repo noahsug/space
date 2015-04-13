@@ -17,13 +17,14 @@ ShipDecorator.prototype.decorate = function(obj) {
   obj.movement = {};
 
   // Note: the order here matters.
-  _.decorate(obj, this.d_.clonable);
-  _.decorate(obj, this.d_.selectTarget);
-  _.decorate(obj, this.sharedComputation_);
-  _.decorate(obj, this.d_.effectable);
-  _.decorate(obj, this.d_.shipCollision);
-
-  _.decorate(obj, this.d_.health);
-  _.decorate(obj, this.d_.movement.ai);
   _.decorate(obj, this.d_.shape.circle, {radius: 12});
+  _.decorate(obj, this.d_.health);
+  _.decorate(obj, this.sharedComputation_);
+  _.decorate(obj, this.d_.collidable);
+  _.decorate(obj, this.d_.effectable);
+  _.decorate(obj, this.d_.clonable);
+  _.decorate(obj, this.d_.firesProjectiles);
+  _.decorate(obj, this.d_.selectsTarget);
+  _.decorate(obj, this.d_.shipCollision);
+  _.decorate(obj, this.d_.movement.ai);
 };

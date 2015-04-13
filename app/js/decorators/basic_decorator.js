@@ -26,7 +26,7 @@ BasicDecorator.prototype.decorateHealth_ = function(obj, spec) {
   obj.setMaxHealth(spec.health);
 
   obj.dmg = function(dmg, source) {
-    if (dmg < .5) return;
+    if (obj.style == 'good') console.log(dmg);
     if (obj.maybeShieldDmg && obj.maybeShieldDmg(source)) return;
     obj.health -= dmg / obj.def;
   };
@@ -79,7 +79,7 @@ BasicDecorator.prototype.decorateClonable_ = function(obj, spec) {
   }.bind(this);
 };
 
-BasicDecorator.prototype.decorateSelectTarget_ = function(obj, spec) {
+BasicDecorator.prototype.decorateSelectsTarget_ = function(obj, spec) {
   var selectTime = 0;
   obj.act(function(dt) {
     if (obj.target.dead || this.gm_.time - selectTime > 10) {
@@ -110,18 +110,40 @@ BasicDecorator.prototype.decorateShipCollision_ = function(obj, spec) {
   this.util_.spec(obj, 'collision', spec, {
     dmg: 10,
     targetDmgRatio: 1,
-    stunDuration: .75,
-    collisionDuration: .75
+    stunDuration: .75
   });
-  this.decorateCollision_(obj, {collide: function(obj, target) {
-    if (obj.effect.collided) return;
+  var lastCollided = {};
+  obj.precollide(function(target) {
+    if (this.gm_.tick - lastCollided[target] <= 2) {
+      obj.shouldCollide = false;
+    }
+    lastCollided[target] = this.gm_.tick;
+  }, this);
+  obj.collide(function(target) {
     obj.dmg(obj.collision.dmg * target.collision.targetDmgRatio, target);
-    // Move directly away from collided target.
-    obj.movement.vector = _.vector.cartesian({angle: obj.c.targetAngle,
-                                              length: -.5});
+    // Move away from collided target at half speed.
+    obj.movement.vector = _.vector.cartesian(
+        {angle: obj.c.targetAngle, length: -.5});
     obj.addEffect('stunned', obj.collision.stunDuration);
     obj.addEffect('collided', obj.collision.collisionDuration);
-  }});
+  });
+};
+
+BasicDecorator.prototype.decorateFiresProjectiles_ = function(obj) {
+  obj.prefire = _.eventFn('prefire');
+  obj.postfire = _.eventFn('postfire');
+};
+
+BasicDecorator.prototype.decorateEffectCollision_ = function(obj, spec) {
+  spec = this.util_.spec(spec, {
+    effect: null,
+    duration: 0
+  });
+  obj.effect = spec.effect;
+  obj.duration = spec.duration;
+  obj.collide(function(target) {
+    target.addEffect(obj.effect, obj.duration);
+  });
 };
 
 BasicDecorator.prototype.decorateDmgCollision_ = function(obj, spec) {
@@ -129,13 +151,24 @@ BasicDecorator.prototype.decorateDmgCollision_ = function(obj, spec) {
     dmg: 0
   });
   obj.dmg = spec.dmg;
-  this.decorateCollision_(obj, {collide: function(obj, target) {
+  obj.collide(function(target) {
     target.dmg(obj.dmg, obj);
-    obj.dead = true;
-  }});
+  });
 };
 
-BasicDecorator.prototype.decorateCollision_ = function(obj, spec) {
+BasicDecorator.prototype.decorateDieOnCollision_ = function(obj, spec) {
+  obj.collide(function() { obj.dead = true; });
+};
+
+BasicDecorator.prototype.decorateProjectileCollidable_ = function(obj) {
+  this.decorateCollidable_(obj);
+};
+
+BasicDecorator.prototype.decorateCollidable_ = function(obj) {
+  obj.shouldCollide = false;
+  obj.precollide = _.eventFn('precollide');
+  obj.collide = _.eventFn('collide');
+
   obj.affect(function() {
     for (var i = 0; i < obj.target.clones.length; i++) {
       maybeCollide(obj.target.clones[i]);
@@ -144,9 +177,15 @@ BasicDecorator.prototype.decorateCollision_ = function(obj, spec) {
 
   function maybeCollide(target) {
     if (!obj.dead && !target.dead && obj.collides(target)) {
-      if (target.maybeReflect && target.maybeReflect(obj)) return;
-      spec.precollide && spec.precollide(obj, target);
-      spec.collide(obj, target);
+      obj.shouldCollide = true;
+      obj.precollide(target);
+      if (obj.shouldCollide) {
+        obj.collide(target);
+        obj.shouldCollide = false;
+      }
+      //if (target.maybeReflect && target.maybeReflect(obj)) return;
+      //spec.precollide && spec.precollide(obj, target);
+      //spec.collide(obj, target);
     }
   }
 };

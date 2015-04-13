@@ -22,10 +22,7 @@ SecondaryDecorator.prototype.decoratePistol_ = function(obj, spec) {
     obj.secondary.dmg *= 1.5;
   }
 
-  this.util_.addWeapon(obj, obj.secondary, function() {
-    var projectile = this.util_.fireLaser(obj, obj.secondary);
-    _.decorate(projectile, this.d_.dmgCollision, obj.secondary);
-  }.bind(this));
+  this.util_.addBasicWeapon_(obj, obj.secondary, this.util_.proj.laser);
 };
 
 SecondaryDecorator.prototype.decorateStun_ = function(obj, spec) {
@@ -42,12 +39,11 @@ SecondaryDecorator.prototype.decorateStun_ = function(obj, spec) {
     obj.secondary.duration *= 1.4;
   }
 
-  var stopMovement = function(obj) {
-    obj.target.movement.vector = {x: 0, y: 0};
+  var stopMovement = function(target) {
+    target.movement.vector = {x: 0, y: 0};
   };
-  this.util_.addEffectWeapon_(obj, obj.secondary,
-                              this.util_.fireLaser.bind(this.util_),
-                              stopMovement);
+  this.util_.addBasicWeapon_(obj, obj.secondary,
+                             this.util_.proj.laser, stopMovement);
 };
 
 SecondaryDecorator.prototype.decorateEmp_ = function(obj, spec) {
@@ -65,9 +61,7 @@ SecondaryDecorator.prototype.decorateEmp_ = function(obj, spec) {
     obj.secondary.radius *= 1.1;
   }
 
-  this.util_.addEffectWeapon_(obj,
-                              obj.secondary,
-                              this.util_.fireBomb.bind(this.util_));
+  this.util_.addBasicWeapon_(obj, obj.secondary, this.util_.proj.bomb);
 };
 
 SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
@@ -112,34 +106,41 @@ SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
 
 SecondaryDecorator.prototype.decorateTracker_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
-    dmg: 1,
     speed: Speed.DEFAULT,
     cooldown: 3,
     length: 4 + 16,
     duration: 1000,
     style: 'effect',
     effect: 'tagged',
-    seekMod: _.radians(360),
-    dmgMod: 1.25,
+    seekAdd: _.radians(360),
+    dmgRatio: 1,
     range: 300
   });
 
   switch(spec.power) {
   case 1:
-    obj.secondary.dmgMod += .25;
+    obj.secondary.dmgRatio += .25;
   }
 
-  this.util_.addEffectWeapon_(obj,
-                              obj.secondary,
-                              this.util_.fireLaser.bind(this.util_));
+  this.util_.addBasicWeapon_(obj, obj.secondary, this.util_.proj.laser);
 
-  obj.maybeTrackTarget = function(projectile, spec) {
-    if (projectile.target.effect.tagged && spec.name == 'primary') {
-      projectile.target.effect.tagged = 0;
-      this.util_.modAdd(projectile, 'movement.seek', obj.secondary.seekMod);
-      this.util_.mod(projectile, 'dmg', obj.secondary.dmgMod);
-    }
-  }.bind(this);
+  obj.prefire(function(proj) {
+    if (proj.spec.name != 'primary') return;
+
+    var usingTag = false;
+    proj.act(function() {
+      if (usingTag == !!proj.target.effect.tagged) return;
+      usingTag = !!proj.target.effect.tagged;
+      var dir = proj.target.effect.tagged ? 1 : -1;  // Tag or untag.
+      this.util_.modAdd(proj, 'movement.seek', obj.secondary.seekAdd * dir);
+    }, this);
+
+    proj.collide(function(target) {
+      if (!target.effect.tagged) return;
+      target.effect.tagged = 0;
+      this.util_.mod(proj, 'dmg', obj.secondary.dmgRatio);
+    }, this);
+  }, this);
 };
 
 SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {

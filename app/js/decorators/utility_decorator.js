@@ -6,10 +6,6 @@ UtilityDecorators.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'utility');
 };
 
-UtilityDecorators.prototype.decorateHeavy_ = function(obj, spec) {
-
-};
-
 UtilityDecorators.prototype.decorateDruid_ = function(obj, spec) {
   switch(spec.power) {
   case 3:
@@ -37,28 +33,10 @@ UtilityDecorators.prototype.decorateRage_ = function(obj, spec) {
   this.util_.spec(obj, 'utility', spec, {
     radiusMod: 1.5,
     dmgMod: 2
-    //enrageHealth: .99
   });
 
   this.util_.mod(obj, 'primary.dmg', obj.utility.dmgMod);
   this.util_.mod(obj, 'radius', obj.utility.radiusMod);
-
-  //obj.resolve(function() {
-  //  var enrage = obj.maxHealth * obj.utility.enrageHealth;
-  //  if (obj.health <= enrage && obj.prevHealth > enrage) {
-  //    obj.radius *= obj.utility.radius;
-  //    if (obj.primary) obj.primary.dmg *= obj.utility.dmg;
-  //    if (obj.secondary) obj.secondary.dmg *= obj.utility.dmg;
-  //    return;
-  //  }
-  //
-  //  if (obj.health > enrage && obj.prevHealth <= enrage) {
-  //    this.util_.mod(obj, 'radius', 1 / obj.utility.radius);
-  //    this.util_.mod(obj, 'primary.dmg', 1 / obj.utility.dmg);
-  //    this.util_.mod(obj, 'secondary.dmg', 1 / obj.utility.dmg);
-  //    return;
-  //  }
-  //}.bind(this));
 };
 
 UtilityDecorators.prototype.decorateSplit_ = function(obj, spec) {
@@ -104,29 +82,27 @@ UtilityDecorators.prototype.decorateSplit_ = function(obj, spec) {
     this.util_.mod(clone, 'secondary.dmg', obj.utility.dmgRatio);
     this.util_.mod(clone, 'ability.dmg', obj.utility.dmgRatio);
     this.util_.mod(clone, 'utility.dmg', obj.utility.dmgRatio);
+    this.util_.mod(clone, 'primary.dmgRatio', obj.utility.dmgRatio);
+    this.util_.mod(clone, 'secondary.dmgRatio', obj.utility.dmgRatio);
+    this.util_.mod(clone, 'ability.dmgRatio', obj.utility.dmgRatio);
+    this.util_.mod(clone, 'utility.dmgRatio', obj.utility.dmgRatio);
     this.util_.mod(clone, 'health', .5);
   }.bind(this);
 };
 
 UtilityDecorators.prototype.decorateRanger_ = function(obj, spec) {
   this.util_.spec(obj, 'utility', spec, {
-    range: 1
+    range: 1,
+    seek: 0,
+    accuracy: 1
   });
 
-  switch(spec.power) {
-  case 3:
-    this.util_.modAdd(obj, 'primary.seek', _.radians(50));
-    this.util_.modAdd(obj, 'secondary.seek', _.radians(50));
-    this.util_.mod(obj, 'primary.range', .75);
-    this.util_.mod(obj, 'secondary.range', .75);
-    break;
-  case 2:
-    this.util_.mod(obj, 'primary.accuracy', 0);
-    this.util_.mod(obj, 'secondary.accuracy', 0);
-  case 1:
-    this.util_.mod(obj, 'primary.range', obj.utility.range);
-    this.util_.mod(obj, 'secondary.range', obj.utility.range);
-  }
+  this.util_.modAdd(obj, 'primary.seek', obj.utility.seek);
+  this.util_.modAdd(obj, 'secondary.seek', obj.utility.seek);
+  this.util_.mod(obj, 'primary.accuracy', obj.utility.accuracy);
+  this.util_.mod(obj, 'secondary.accuracy', obj.utility.accuracy);
+  this.util_.mod(obj, 'primary.range', obj.utility.range);
+  this.util_.mod(obj, 'secondary.range', obj.utility.range);
 };
 
 UtilityDecorators.prototype.decorateNinja_ = function(obj, spec) {

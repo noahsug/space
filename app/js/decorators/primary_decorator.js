@@ -12,8 +12,7 @@ PrimaryDecorator.prototype.decorateGrenade_ = function(obj, spec) {
     radius: 20
   });
 
-  this.util_.addDmgWeapon_(obj, obj.primary,
-                          this.util_.fireBomb.bind(this.util_));
+  this.util_.addBasicWeapon_(obj, obj.primary, this.util_.proj.bomb);
 };
 
 PrimaryDecorator.prototype.decorateBasicLaser_ = function(obj, spec) {
@@ -21,8 +20,7 @@ PrimaryDecorator.prototype.decorateBasicLaser_ = function(obj, spec) {
     length: 8 + 16
   });
 
-  this.util_.addDmgWeapon_(obj, obj.primary,
-                          this.util_.fireLaser.bind(this.util_));
+  this.util_.addBasicWeapon_(obj, obj.primary, this.util_.proj.laser);
 };
 
 PrimaryDecorator.prototype.decorateShotgun_ = function(obj, spec) {
@@ -40,8 +38,7 @@ PrimaryDecorator.prototype.decorateShotgun_ = function(obj, spec) {
     obj.primary.spread *= 1.2;
   }
 
-  this.util_.addDmgWeapon_(obj, obj.primary,
-                          this.util_.fireLaser.bind(this.util_));
+  this.util_.addBasicWeapon_(obj, obj.primary, this.util_.proj.laser);
 };
 
 PrimaryDecorator.prototype.decorateRazors_ = function(obj, spec)  {
@@ -56,8 +53,7 @@ PrimaryDecorator.prototype.decorateRazors_ = function(obj, spec)  {
     obj.primary.spread *= 1.4;
   }
 
-  this.util_.addDmgWeapon_(obj, obj.primary,
-                          this.util_.fireBlade.bind(this.util_));
+  this.util_.addBasicWeapon_(obj, obj.primary, this.util_.proj.blade);
 };
 
 PrimaryDecorator.prototype.decorateMissiles_ = function(obj, spec) {
@@ -72,8 +68,7 @@ PrimaryDecorator.prototype.decorateMissiles_ = function(obj, spec) {
     obj.primary.speed *= 1.1;
   }
 
-  this.util_.addDmgWeapon_(obj, obj.primary,
-                          this.util_.fireBlade.bind(this.util_));
+  this.util_.addBasicWeapon_(obj, obj.primary, this.util_.proj.blade);
 };
 
 PrimaryDecorator.prototype.decorateSniper_ = function(obj, spec) {
@@ -83,8 +78,7 @@ PrimaryDecorator.prototype.decorateSniper_ = function(obj, spec) {
     accuracy: Accuracy.ACCURATE
   });
 
-  this.util_.addDmgWeapon_(obj, obj.primary,
-                          this.util_.fireLaser.bind(this.util_));
+  this.util_.addBasicWeapon_(obj, obj.primary, this.util_.proj.laser);
 };
 
 PrimaryDecorator.prototype.decorateBurstLaser_ = function(obj, spec)  {
@@ -104,8 +98,7 @@ PrimaryDecorator.prototype.decorateBurstLaser_ = function(obj, spec)  {
   this.util_.addCooldown(obj, function() {
     if (obj.effect.silenced) projectilesRemaining = 0;
     if (projectilesRemaining) {
-      var laser = this.util_.fireLaser(obj, obj.primary);
-      _.decorate(laser, this.d_.dmgCollision, obj.primary);
+      this.util_.fireBasicProj_(obj, obj.primary, this.util_.proj.laser);
       projectilesRemaining--;
     }
     return projectilesRemaining && obj.primary.miniCooldown;
@@ -149,7 +142,6 @@ PrimaryDecorator.prototype.decorateGatling_ = function(obj, spec)  {
   this.util_.addWeapon(obj, obj.primary, function() {
     if (!firing) firing = true;
     obj.primary.dangle = angle - obj.c.targetAngle;
-    var projectile = this.util_.fireLaser(obj, obj.primary);
-    _.decorate(projectile, this.d_.dmgCollision, obj.primary);
+    this.util_.fireBasicProj_(obj, obj.primary, this.util_.proj.laser);
   }.bind(this));
 };

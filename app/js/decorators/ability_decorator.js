@@ -87,7 +87,7 @@ AbilityDecorator.prototype.decorateHaze_ = function(obj, spec) {
     range: 300,
     effect: 'haze',
     hazeAccuracy: _.radians(90),
-    duration: 2
+    duration: 4
   });
 
   switch(spec.power) {
@@ -96,18 +96,16 @@ AbilityDecorator.prototype.decorateHaze_ = function(obj, spec) {
     obj.primary.radius *= 1.25;
   }
 
-  this.util_.addEffectWeapon_(obj,
-                              obj.ability,
-                              this.util_.fireBall.bind(this.util_),
-                              makeHazable.bind(this));
+  this.util_.addBasicWeapon_(obj, obj.ability,
+                              this.util_.proj.ball, makeHazable.bind(this));
 
-  function makeHazable() {
-    obj.target.maybeApplyHaze = function(projectile, target, spec) {
-      if (target.effect.haze) {
-        this.util_.modAdd(
-            projectile, 'movement.accuracy', obj.ability.hazeAccuracy);
-      }
-    }.bind(this);
+  function makeHazable(target) {
+    if (target.hazable) return;
+    target.hazable = true;
+    target.prefire(function(proj) {
+      if (!target.effect.haze) return;
+      this.util_.modAdd(proj, 'movement.accuracy', obj.ability.hazeAccuracy);
+    }, this);
   }
 };
 

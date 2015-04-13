@@ -3,6 +3,14 @@ var DecoratorUtil = di.service('DecoratorUtil', [
 
 DecoratorUtil.prototype.init = function() {
   this.d_ = this.entityDecorator_.getDecorators();
+
+  this.proj = {
+    laser: this.fireLaser.bind(this),
+    bomb: this.fireBomb.bind(this),
+    ball: this.fireBall.bind(this),
+    blade: this.fireBlade.bind(this),
+    aura: this.fireAura.bind(this)
+  };
 };
 
 DecoratorUtil.prototype.spec = function(obj, name, overrides, defaults) {
@@ -18,26 +26,24 @@ DecoratorUtil.prototype.spec = function(obj, name, overrides, defaults) {
   }
 };
 
-DecoratorUtil.prototype.addEffectWeapon_ = function(
-    obj, spec, fire, opt_onCollide) {
+DecoratorUtil.prototype.addBasicWeapon_ = function(
+    obj, spec, fire, opt_onCollision) {
   this.addWeapon(obj, spec, function() {
-    var projectile = fire(obj, spec);
-    spec.collide = function(proj, target) {
-      target.addEffect(spec.effect, spec.duration);
-      if (spec.dmg) target.dmg(spec.dmg, obj);
-      opt_onCollide && opt_onCollide(proj);
-      proj.dead = true;
-    }.bind(this);
-    _.decorate(projectile, this.d_.collision, spec);
+    this.fireBasicProj_(obj, spec, fire, opt_onCollision);
   }.bind(this));
 };
 
-DecoratorUtil.prototype.addDmgWeapon_ = function(
-    obj, spec, fire) {
-  this.addWeapon(obj, spec, function() {
-    var projectile = fire(obj, spec);
-    _.decorate(projectile, this.d_.dmgCollision, obj.primary);
-  }.bind(this));
+DecoratorUtil.prototype.fireBasicProj_ = function(
+    obj, spec, fire, opt_onCollision) {
+  var projectile = fire(obj, spec);
+  if (spec.dmg)
+    _.decorate(projectile, this.d_.dmgCollision, projectile.spec);
+  if (spec.effect)
+    _.decorate(projectile, this.d_.effectCollision, projectile.spec);
+  projectile.collide(function(target) {
+    opt_onCollision && opt_onCollision(target, projectile);
+    projectile.dead = true;
+  });
 };
 
 DecoratorUtil.prototype.addWeapon = function(obj, spec, fire) {
@@ -122,12 +128,12 @@ DecoratorUtil.prototype.fireAura = function(obj, spec) {
 
 var EXTRA_RANGE_RATIO = 1.5;
 DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
+  projectile.spec = spec;
   projectile.target = obj.target;
   projectile.setPos(obj.x, obj.y);
+  _.decorate(projectile, this.d_.collidable);
 
-  obj.maybeTrackTarget && obj.maybeTrackTarget(projectile, spec);
-  obj.maybeApplyHaze && obj.maybeApplyHaze(projectile, obj, spec);
-
+  obj.prefire(projectile);
   _.decorate(projectile, this.d_.movement.straight, spec);
   _.decorate(projectile, this.d_.removeOffScreen, spec);
   if (spec.range) {
@@ -135,7 +141,9 @@ DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
     _.decorate(projectile, this.d_.range, {range: range});
   }
 
-  return this.gm_.entities.arr[this.gm_.entities.length++] = projectile;
+  this.gm_.entities.arr[this.gm_.entities.length++] = projectile;
+  obj.postfire(projectile);
+  return projectile;
 };
 
 DecoratorUtil.prototype.initCooldown = function(cooldown) {
@@ -156,25 +164,41 @@ DecoratorUtil.prototype.addCooldown = function(obj, action, opt_initCooldown) {
   });
 };
 
-DecoratorUtil.prototype.modSet = function(obj, prop, add) {
-  obj.awake(function() {
-    var value = _.parse(obj, prop);
+// Use for bool values, don't mix with mod or modAdd.
+DecoratorUtil.prototype.modSet = function(obj, prop, value) {
+  if (obj.awakened) mod();
+  else obj.awake(mod);
+
+  function mod() {
     _.set(obj, prop, value);
-  });
+  }
 };
 
 DecoratorUtil.prototype.modAdd = function(obj, prop, add) {
-  obj.awake(function() {
-    var value = _.parse(obj, prop) || 0;
-    _.set(obj, prop, value + add);
+  this.mod_(obj, prop, function() {
+    obj.mod[prop].add += add;
   });
 };
 
 DecoratorUtil.prototype.mod = function(obj, prop, multiplier) {
-  if (obj.awakened) {
-    var value = _.parse(obj, prop) || 0;
-    _.set(obj, prop, value * multiplier);
-  } else {
-    obj.awake(this.mod.bind(this, obj, prop, multiplier));
-  }
+  this.mod_(obj, prop, function() {
+    obj.mod[prop].mult *= multiplier;
+  });
+};
+
+DecoratorUtil.prototype.mod_ = function(obj, prop, modFn) {
+  if (!obj.mod) obj.mod = {};
+  if (!obj.mod[prop]) obj.mod[prop] = {add: 0, mult: 1};
+  if (obj.awakened) mod();
+  else obj.awake(mod);
+
+  function mod() {
+    var value = _.parse(obj, prop);
+    if (value == undefined) return;
+    var modValues = obj.mod[prop];
+    if (modValues.baseValue == undefined) modValues.baseValue = value;
+    modFn();
+    value = modValues.baseValue * modValues.mult +  modValues.add;
+    _.set(obj, prop, value);
+  };
 };
