@@ -1,12 +1,13 @@
-all: dev
+all: help
 
 help:
 	@echo \'make prod\' - push to noahsug.github.io/space
+	@echo \'make build\' - build index.py
 
-dev:
+build:
 	python scripts/gen_index.py
 
-prod: dev
+prod: build
 	git checkout gh-pages
 	make
 	git add .
