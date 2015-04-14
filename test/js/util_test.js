@@ -105,8 +105,9 @@ describe('Util function:', function() {
         obj.on('event', callback);
 
         expect(callback).not.toHaveBeenCalled();
-        obj.emit_('event', 113);
-        expect(callback).toHaveBeenCalledWith(113);
+        obj.emit_('event', 113, 'hi');
+        expect(callback.calls.mostRecent().args[0]).toBe(113);
+        expect(callback.calls.mostRecent().args[1]).toBe('hi');
       });
 
       describe('.eventFn', function() {
@@ -119,19 +120,10 @@ describe('Util function:', function() {
           obj.ready(callback);
 
           expect(callback).not.toHaveBeenCalled();
-          var args = {color:'blue'};
-          obj.ready(args);
-          expect(callback).toHaveBeenCalledWith(args);
-        });
-
-        it('listeners get notified when the event is emitted', function() {
-          var callback = jasmine.createSpy('callback');
-          obj.ready(callback);
-
-          expect(callback).not.toHaveBeenCalled();
-          var args = {color:'blue'};
-          obj.ready(args);
-          expect(callback).toHaveBeenCalledWith(args);
+          var arg1 = {color:'blue'};
+          obj.ready(arg1, 'ok');
+          expect(callback.calls.mostRecent().args[0]).toBe(arg1);
+          expect(callback.calls.mostRecent().args[1]).toBe('ok');
         });
       });
     });

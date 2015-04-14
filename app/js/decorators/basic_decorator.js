@@ -260,12 +260,20 @@ BasicDecorator.prototype.decorateEffectable_ = function(obj) {
 
 BasicDecorator.prototype.decorateGrowRadiusAndDie_ = function(obj, spec) {
   obj.grow = spec.grow;
-  obj.growDuration = spec.growDuration;
+  obj.minRadius = spec.minRadius;
+  obj.maxRadius = spec.maxRadius;
+  var shouldDie = false;
   obj.update(function(dt) {
-    if (!obj.growDuration) obj.dead = true;
-    obj.radius += Math.min(dt, obj.growDuration) * obj.grow;
-    obj.growDuration = Math.max(obj.growDuration - dt, 0);
-    if (obj.radius <= 0) obj.dead = true;
+    if (obj.dead) return;
+    if (shouldDie) {
+      obj.dead = true;
+      return;
+    }
+    obj.radius += obj.grow * dt;
+    if (obj.radius < obj.minRadius || obj.radius > obj.maxRadius) {
+      obj.radius = obj.radius < obj.minRadius ? obj.minRadius : obj.maxRadius;
+      shouldDie = true;
+    }
   });
 };
 

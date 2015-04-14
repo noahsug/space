@@ -27,9 +27,9 @@ Game.prototype.start = function() {
 
   // DEBUG
   this.gm_.world = this.gm_.worlds[0];
-  this.gm_.level = this.gm_.world.levels[0];
-  //this.gm_.level.state = 'won';
-  //this.battleRewards_.calculateRewards();
+  this.gm_.level = this.gm_.world.levels[2];
+  this.gm_.level.state = 'won';
+  this.battleRewards_.calculateRewards();
   //this.gm_.equipping = 'primary';
 
   this.scenes_[0].start();

@@ -2,7 +2,8 @@ var GameRunner = di.service('GameRunner', [
   'Game', 'Mouse', 'Renderer', 'requestAnimationFrame',
   'cancelAnimationFrame', 'GameModel as gm']);
 
-GameRunner.MIN_FPS = 15;
+GameRunner.MIN_DT = 1 / 15;  // 15 FPS.
+GameRunner.LOGIC_DT = 1 / 60;  // 60 FPS.
 
 GameRunner.prototype.init = function() {
   this.running_ = false;
@@ -19,29 +20,24 @@ GameRunner.prototype.start = function() {
 };
 
 GameRunner.prototype.run = function() {
+  if (this.running_) return;
   this.running_ = true;
+  this.logicInterval_ = setInterval(
+    this.logicUpdate_.bind(this), GameRunner.LOGIC_DT * 1000);
   this.requestNextStep_();
 };
 
 GameRunner.prototype.stop = function() {
+  if (!this.running_) return;
   this.cancelAnimationFrame_(this.frameRequest_);
+  clearInterval(this.logicInterval_);
   this.running_ = false;
 };
 
-window.time = 0; // DEBUG
-var minDt = 1 / GameRunner.MIN_FPS;
 GameRunner.prototype.step_ = function() {
   var now = Date.now();
   var dt = (now - this.frameRequestTime_) / 1000;
-
-  // DEBUG
-  //time += dt;
-  //var r = time > 1 ? .1 : 10;
-  //r = time > 1.5 ? 1 : 10;
-  //r = 1;
-  //window.debug = time > 1.5;
-
-  dt = Math.min(dt, minDt) * this.gm_.gameSpeed;
+  dt = Math.min(dt, GameRunner.MIN_DT) * this.gm_.gameSpeed;
   this.update_(dt);
   this.requestNextStep_();
 };
@@ -52,8 +48,17 @@ GameRunner.prototype.requestNextStep_ = function() {
   this.frameRequest_ = this.requestAnimationFrame_(this.boundStep_);
 };
 
+GameRunner.prototype.logicUpdate_ = function() {
+  if (EXPERIMENT_1) {
+    this.game_.update(GameRunner.LOGIC_DT * this.gm_.gameSpeed);
+    this.mouse_.clearInput();
+  }
+};
+
 GameRunner.prototype.update_ = function(dt) {
-  this.game_.update(dt);
+  if (!EXPERIMENT_1) {
+    this.game_.update(dt);
+    this.mouse_.clearInput();
+  }
   this.renderer_.update(dt);
-  this.mouse_.clearInput();
 };

@@ -36,7 +36,7 @@ describe('A game', function() {
     battle(spec1, spec2);
   });
 
-  it('analyze', function() {
+  xit('analyze', function() {
     // TODO: Make both players have same health (not 40 vs 30).
     var data = gatherData(5000);
     analyzeItems(data);

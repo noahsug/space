@@ -10,7 +10,8 @@ Speed = {
   FAST: 300,
   VERY_FAST: 400,
 
-  SHIP_SPEED: 70
+  SHIP_SPEED: 90,
+  TURN_SPEED: .01
 };
 
 Accuracy = {
@@ -20,8 +21,8 @@ Accuracy = {
 };
 
 Health = {
-  DEFAULT: 50,
-  PLAYER_HEALTH: 65
+  DEFAULT: 500,
+  PLAYER_HEALTH: 650
 };
 
 Gameplay.prototype.worlds = [
@@ -88,7 +89,8 @@ di.constant('gameplayFile', {
 
     //'stun',
     //'emp',
-    'pistol',
+    //'pistol',
+    'pull',
     //'charge',
     //'tracker',
     //'turret',

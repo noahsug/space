@@ -26,9 +26,11 @@ LostScene.prototype.start_ = function() {
   _.each(this.gm_.world.aquired, function(item) {
     this.inventory_.remove(item);
   }, this);
-  if (!this.inventory_.has('primary')) {
-    this.inventory_.equip(this.inventory_.get('primary')[0]);
-  }
+  _.each(Game.ITEM_TYPES, function(type) {
+    if (!this.inventory_.isEquipped(type)) {
+      this.inventory_.equip(this.inventory_.get(type)[0]);
+    }
+  }, this);
   this.world_.resetProgress();
 };
 

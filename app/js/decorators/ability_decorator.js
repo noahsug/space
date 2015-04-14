@@ -105,12 +105,12 @@ AbilityDecorator.prototype.decorateHaze_ = function(obj, spec) {
 AbilityDecorator.prototype.decorateKnockback_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
     speed: 300,
-    cooldown: 6,
+    cooldown: 3,
     duration: .75,
     effect: 'stunned',
     knockback: 550,
     grow: 500,
-    growDuration: .1,
+    maxRadius: 100,
     range: 100
   });
 
