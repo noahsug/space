@@ -14,6 +14,7 @@ Size = {
   WORLD: 50,
   LEVEL: 40,
   ITEM: 54,
+  WORLD_TEXT: 16,
   TEXT: 12,
   ITEM_TEXT: 8
 };

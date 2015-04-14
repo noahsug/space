@@ -39,23 +39,17 @@ AbilityDecorator.prototype.decorateShield_ = function(obj, spec) {
 
   this.util_.addEffectAbility(obj, obj.ability);
 
-  obj.maybeShieldDmg = function(source) {
-    // Only effects projectiles.
-    if (source.type == 'ship') return false;
-    if (obj.effect.shield) {
-      if (!--obj.ability.charges) {
-        obj.effect.shield = 0;
-      }
-      return true;
-    }
-    return false;
-  };
+  obj.receivedPrecollide(function(proj) {
+    if (!obj.effect.shield || proj.type == 'ship') return;
+    if (!--obj.ability.charges) obj.effect.shield = 0;
+    this.util_.modSet(proj, 'dmg', 0);
+  }, this);
 };
 
 AbilityDecorator.prototype.decorateReflect_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
     duration: 0,
-    cooldown: 6,
+    cooldown: 9,
     effect: 'reflect',
     targetless: true
   });
@@ -67,23 +61,22 @@ AbilityDecorator.prototype.decorateReflect_ = function(obj, spec) {
 
   this.util_.addEffectAbility(obj, obj.ability);
 
-  obj.maybeReflect = function(source) {
-    if (!obj.effect.reflect) return false;
-    if (source.type == 'ship') return false;
-    source.rotate && source.rotate(_.RADIANS_180);
-    source.target = obj.target;
-    source.remainingRange = source.maxRange;
-    return true;
-  };
+  obj.receivedPrecollide(function(proj) {
+    if (!obj.effect.reflect || proj.type == 'ship') return;
+    proj.rotate && proj.rotate(_.RADIANS_180);
+    proj.target = obj.target;
+    proj.remainingRange = proj.maxRange;
+    proj.shouldCollide = false;
+  });
 };
 
 AbilityDecorator.prototype.decorateHaze_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
     speed: Speed.SLOW,
     seek: _.radians(85),
-    radius: 4,
+    radius: 3,
     accuracy: 0,
-    cooldown: 4,
+    cooldown: 6,
     range: 300,
     effect: 'haze',
     hazeAccuracy: _.radians(90),

@@ -204,7 +204,39 @@ Gfx.prototype.setCustomStyles_ = function(customStyle, opt_restoreTo) {
   }
 };
 
+var ship1 = new Image();
+ship1.src = 'ship1.png';
+ship1.onload = function() {
+};
+
+var ship2 = new Image();
+ship2.src = 'ship2.png';
+ship2.onload = function() {
+};
+
 Gfx.prototype.drawCircle_ = function(x, y, radius, isFirst) {
+  if (radius == 10) {
+    var shipName = this.ctx_.strokeStyle == '#00ff00' ?
+        'player_' : 'enemy_';
+    var ship = di.get('BattleScene')[shipName];
+
+    if (ship.rotation == undefined) {
+      ship.rotation = ship.c.targetAngle;
+    } else {
+      ship.rotation = _.approachAngle(ship.rotation, ship.c.targetAngle, .005);
+    }
+
+    var shipImg = shipName == 'player_' ? ship1 : ship2;
+
+    var rotation = ship.rotation + Math.PI / 2;
+    this.ctx_.translate(x, y);
+    this.ctx_.rotate(rotation);
+    this.ctx_.drawImage(shipImg, -shipImg.width / 2, -shipImg.height / 2);
+    this.ctx_.rotate(-rotation);
+    this.ctx_.translate(-x, -y);
+    return;
+  }
+
   // TODO: Rewrite gfx to use radial gradients that we save as images instead of
   // shadow blur.
 

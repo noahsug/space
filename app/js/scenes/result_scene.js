@@ -40,7 +40,7 @@ ResultScene.prototype.addEntities_ = function() {
       selectText = 'New ' + Strings.ItemType['augment'] + ' found:';
     } else {
       selectText = this.battleRewards_.numItems() > 1 ?
-        'Select item:' : 'New item found:';
+        'Select reward:' : 'New item found:';
     }
     rewardLabel.setText(selectText,
                         {size: Size.TEXT, align: 'left', baseline: 'top'});
@@ -123,7 +123,6 @@ ResultScene.prototype.addEntities_ = function() {
 
 ResultScene.prototype.createRewardButton_ = function(type) {
   var btn = this.roundBtnElement_.create();
-  btn.setStyle('reward');
   btn.setSize(Size.ITEM);
   btn.setProp('rewardBtn', true);
   var item = this.battleRewards_.getReward(type);

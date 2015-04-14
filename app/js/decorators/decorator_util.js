@@ -164,14 +164,10 @@ DecoratorUtil.prototype.addCooldown = function(obj, action, opt_initCooldown) {
   });
 };
 
-// Use for bool values, don't mix with mod or modAdd.
 DecoratorUtil.prototype.modSet = function(obj, prop, value) {
-  if (obj.awakened) mod();
-  else obj.awake(mod);
-
-  function mod() {
-    _.set(obj, prop, value);
-  }
+  this.mod_(obj, prop, function() {
+    obj.mod[prop].set = value;
+  });
 };
 
 DecoratorUtil.prototype.modAdd = function(obj, prop, add) {
@@ -188,17 +184,22 @@ DecoratorUtil.prototype.mod = function(obj, prop, multiplier) {
 
 DecoratorUtil.prototype.mod_ = function(obj, prop, modFn) {
   if (!obj.mod) obj.mod = {};
-  if (!obj.mod[prop]) obj.mod[prop] = {add: 0, mult: 1};
+  if (!obj.mod[prop]) obj.mod[prop] = {add: 0, mult: 1, set: null};
   if (obj.awakened) mod();
   else obj.awake(mod);
 
   function mod() {
     var value = _.parse(obj, prop);
-    if (value == undefined) return;
     var modValues = obj.mod[prop];
     if (modValues.baseValue == undefined) modValues.baseValue = value;
     modFn();
-    value = modValues.baseValue * modValues.mult +  modValues.add;
+
+    if (modValues.set != undefined) {
+      value = modValues.set;
+    } else {
+      if (modValues.baseValue == undefined) return;
+      value = modValues.baseValue * modValues.mult +  modValues.add;
+    }
     _.set(obj, prop, value);
   };
 };

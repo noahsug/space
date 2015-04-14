@@ -10,11 +10,17 @@ ShipFactory.prototype.createEnemyDna = function(level) {
 ShipFactory.prototype.createRandomDna_ = function(level) {
   // DEBUG.
   return [
-    //'basic laser',
+    //'gatling',
+    //'knockback',
+    //'divide'
     //'charge'
-    'haze',
-    //'pistol',
+    //'haze',
+    'pistol',
+    //'reflect',
+    'shield',
     //'tracker',
+    //'teleport',
+    //'charge',
   ].map(this.itemService_.getByName.bind(this.itemService_));
 
   var levels = _.intRandomSplit(
@@ -26,11 +32,15 @@ ShipFactory.prototype.createRandomDna_ = function(level) {
   var types = [Game.ITEM_TYPES[0]].concat(_.shuffle(Game.ITEM_TYPES.slice(1)));
   if (numItems > 1) _.swap(types, 0, _.r.nextInt(0, numItems - 1));
 
-  return _.newList(types, function(type, i) {
+  var result = _.newList(types, function(type, i) {
     //if (type == 'utility') return this.itemService_.getByName('teleport');
     if (!levels[i]) return undefined;
     return _.sample(this.itemService_.getByTypeAndLevel(type, levels[i] - 1));
   }, this);
+
+  console.log(level, types, levels, _.pluck(result, 'name'));
+
+  return result;
 };
 
 ShipFactory.prototype.createEnemy = function() {

@@ -7,7 +7,7 @@ ShapeDecorator.prototype.init = function() {
 
 ShapeDecorator.prototype.decorateCircle_ = function(obj, spec) {
   spec = _.options(spec, {
-    radius: 10
+    radius: 0
   });
   obj.setRadius = function(radius) {
     obj.radius = obj.collideDis = radius;
@@ -28,7 +28,7 @@ ShapeDecorator.prototype.decorateCircle_ = function(obj, spec) {
 
 ShapeDecorator.prototype.decorateLine_ = function(obj, spec) {
   spec = _.options(spec, {
-    length: 20
+    length: 0
   });
   obj.rotation = obj.rotation || 0;
   obj.length = obj.collideDis = spec.length;

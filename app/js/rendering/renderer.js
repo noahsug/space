@@ -17,9 +17,11 @@ Renderer.prototype.init = function() {
 Renderer.prototype.update = function(dt) {
   this.handleCamera_(dt / this.gm_.gameSpeed);
   this.background_.draw();
+  this.ctx_.save();
   for (var i = 0; i < this.gm_.entities.length; i++) {
     this.drawEntity_(this.gm_.entities.arr[i], dt);
   }
+  this.ctx_.restore();
   this.gfx_.flush();
   this.drawTransition_(dt);
 };
@@ -68,14 +70,12 @@ Renderer.prototype.transitionIn_ = function(dt) {
 };
 
 Renderer.prototype.drawEntity_ = function(entity, dt) {
-  this.ctx_.save();
   if (!entity.render) {
     entity.render = {};
     this.initFns_[entity.type] && this.initFns_[entity.type](entity);
   }
   entity.render.pos = this.getPos_(entity);
   this.drawFns_[entity.type](entity, this.style_[entity.type], dt);
-  this.ctx_.restore();
 };
 
 Renderer.prototype.getPos_ = function(entity) {
@@ -245,8 +245,9 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
       default: _.fail('invalid state: ', entity.level.state);
     }
   } else if (entity.item) {
-    if (entity.rewardBtn && !entity.item.name) {
-      color = Gfx.Color.LOCKED;
+    if (entity.rewardBtn) {
+      if (!entity.item.name) color = Gfx.Color.LOCKED;
+      if (entity.style == 'active') color = Gfx.Color.ACTIVE;
     } else if (entity.enemy) {
       if (entity.style == 'active') color = Gfx.Color.ACTIVE_LOCKED;
       else color = Gfx.Color.LOCKED;
@@ -275,12 +276,12 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
 
   // Draw text.
   var text = entity.text;
-  var textSize;
+  var textSize = Size.ITEM_TEXT;
   if (entity.level) {
     if (entity.style == 'world') {
       if (entity.state == 'won') text = 'W';
       else text = entity.level.index + 1;
-      textSize = 16;
+      textSize = Size.WORLD_TEXT;
     } else {
       text = Strings.rank(entity.level.type);
       textSize = Size.TEXT;
@@ -294,6 +295,7 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
   } else if (entity.category) {
     text = Strings.ItemType[entity.category];
   }
+
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'middle';
   if (this.font_.width(text, textSize) > entity.radius * 2 - 6) {
@@ -350,10 +352,12 @@ Renderer.prototype.addShipStyle_ = function(style) {
     lineWidth: 3
   };
   style.good = this.gfx_.addStyle(_.extend({
-    stroke: Gfx.Color.GREEN
+    stroke: Gfx.Color.GREEN,
+    shadow: 'none'
   }, baseStyle));
   style.bad = this.gfx_.addStyle(_.extend({
-    stroke: Gfx.Color.BLUE
+    stroke: Gfx.Color.BLUE,
+    shadow: 'none'
   }, baseStyle));
   style.goodDmged = this.gfx_.addStyle({
     lineWidth: 5,

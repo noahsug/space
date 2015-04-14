@@ -62,14 +62,11 @@ Background.prototype.drawSky_ = function(ctx, width, height) {
 };
 
 Background.prototype.draw = function() {
-  //this.ctx_.clearRect(0, 0, this.screen_.width, this.screen_.height);
-  this.canvas_.width = this.canvas_.width;  // Clear the canvas.
+  //this.canvas_.width = this.canvas_.width;
 
-  // TODO: Draw short trails behind moving objects during battle by clearing
-  // away half the alpha of shapes on the canvas.
-
-  //this.ctx_.globalCompositeOperation = "source-under";
-  //this.ctx_.fillStyle = 'rgba(0, 0, 0, .5)';
-  //this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
+  this.ctx_.globalCompositeOperation = 'destination-out';
+  this.ctx_.fillStyle = 'rgba(0, 0, 0, .4)';
+  this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
+  this.ctx_.globalCompositeOperation = 'source-over';
   _.each(this.bgLayers_, function(bg) { bg.draw(); });
 };

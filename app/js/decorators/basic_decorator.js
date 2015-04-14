@@ -26,8 +26,7 @@ BasicDecorator.prototype.decorateHealth_ = function(obj, spec) {
   obj.setMaxHealth(spec.health);
 
   obj.dmg = function(dmg, source) {
-    if (obj.style == 'good') console.log(dmg);
-    if (obj.maybeShieldDmg && obj.maybeShieldDmg(source)) return;
+    if (obj.style == 'bad') console.log(dmg);
     obj.health -= dmg / obj.def;
   };
 
@@ -168,6 +167,8 @@ BasicDecorator.prototype.decorateCollidable_ = function(obj) {
   obj.shouldCollide = false;
   obj.precollide = _.eventFn('precollide');
   obj.collide = _.eventFn('collide');
+  obj.receivedPrecollide = _.eventFn('receivedPrecollide');
+  obj.receivedCollide = _.eventFn('receivedCollide');
 
   obj.affect(function() {
     for (var i = 0; i < obj.target.clones.length; i++) {
@@ -179,13 +180,13 @@ BasicDecorator.prototype.decorateCollidable_ = function(obj) {
     if (!obj.dead && !target.dead && obj.collides(target)) {
       obj.shouldCollide = true;
       obj.precollide(target);
+      if (obj.shouldCollide) target.receivedPrecollide(obj);
       if (obj.shouldCollide) {
         obj.collide(target);
+        target.receivedCollide(obj);
         obj.shouldCollide = false;
       }
       //if (target.maybeReflect && target.maybeReflect(obj)) return;
-      //spec.precollide && spec.precollide(obj, target);
-      //spec.collide(obj, target);
     }
   }
 };

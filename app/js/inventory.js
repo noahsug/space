@@ -50,6 +50,11 @@ Inventory.prototype.unequip = function(item) {
 };
 
 Inventory.prototype.getUnownedByLevel = function(level, opt_returnAugment) {
+  return this.getUnownedByLevelAndType(level, null, opt_returnAugment);
+};
+
+Inventory.prototype.getUnownedByLevelAndType = function(
+    level, opt_type, opt_returnAugment) {
   var levels = _.range(0, level + 1).reverse().
       concat(_.range(level + 1, Game.MAX_LEVEL + 1));
   for (var i = 0; i < levels.length; i++) {
@@ -57,8 +62,9 @@ Inventory.prototype.getUnownedByLevel = function(level, opt_returnAugment) {
     items = _.filter(items, _.negate(this.hasItem.bind(this)));
     items = _.filter(items, _.negate(this.isEquipped.bind(this)));
     items = _.filter(items, this.hasReq_.bind(this));
+    if (opt_type) items = _.where(items, {category: opt_type});
     items = _.filter(items, function(item) {
-      return opt_returnAugment == (item.category == 'augment');
+      return !!opt_returnAugment == (item.category == 'augment');
     }, this);
     if (items.length) return items;
   }

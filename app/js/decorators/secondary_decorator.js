@@ -67,7 +67,7 @@ SecondaryDecorator.prototype.decorateEmp_ = function(obj, spec) {
 SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
     minRange: 100,
-    speed: 500,
+    speed: 350,
     duration: 1.2,
     range: 200,
     cooldown: 4,
@@ -187,7 +187,7 @@ SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {
 
 SecondaryDecorator.prototype.decorateTurret_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
-    dmgRatio: .25,
+    dmgRatio: .2,
     targetless: true
   });
 

@@ -10,7 +10,7 @@ Speed = {
   FAST: 300,
   VERY_FAST: 400,
 
-  SHIP_SPEED: 100
+  SHIP_SPEED: 70
 };
 
 Accuracy = {
@@ -41,22 +41,22 @@ Gameplay.prototype.worlds = [
     rows: 3,
     cols: 3
   },
-  //{  // 4
-  //  rows: 2,
-  //  cols: 5
-  //},
-  //{  // 5
-  //  rows: 2,
-  //  cols: 5
-  //},
-  //{  // 6
-  //  rows: 3,
-  //  cols: 3
-  //},
-  //{  // 7
-  //  rows: 3,
-  //  cols: 4
-  //},
+  {  // 4
+    rows: 2,
+    cols: 5
+  },
+  {  // 5
+    rows: 4,
+    cols: 4
+  },
+  {  // 6
+    rows: 5,
+    cols: 5
+  },
+  {  // 7
+    rows: 8,
+    cols: 4
+  },
   //{  // 8
   //  rows: 3,
   //  cols: 5
@@ -77,18 +77,18 @@ Gameplay.prototype.worlds = [
 
 di.constant('gameplayFile', {
   player: [
-    'basic laser',
+    //'basic laser',
     //'burst laser',
     //'grenade',
     //'razors',
     //'sniper',
     //'missiles',
-    //'shotgun',
+    'shotgun',
     //'gatling',
 
     //'stun',
     //'emp',
-    //'pistol',
+    'pistol',
     //'charge',
     //'tracker',
     //'turret',
@@ -150,7 +150,7 @@ di.constant('gameplayFile', {
     'basic laser': {
       desc: 'Stand laser weapon.',
       id: 'primary.basicLaser',
-      spec: {dmg: 4, cooldown: .75, range: 150},
+      spec: {dmg: 5, cooldown: .8, range: 150},
       level: 0},
     //'basic laser II': {
     //  desc: 'Powerful Basic laser.',
@@ -165,7 +165,7 @@ di.constant('gameplayFile', {
     'burst laser': {
       desc: 'Rapid volley of shots.',
       id: 'primary.burstLaser',
-      spec: {dmg: 4, cooldown: 2, range: 150, projectiles: 5},
+      spec: {dmg: 4, cooldown: 2.2, range: 150, projectiles: 5},
       level: 1},
     //'burst laser II': {
     //  desc: 'Rapid volley of shots.',
@@ -186,7 +186,7 @@ di.constant('gameplayFile', {
       desc: 'Big burst of weak shots.',
       id:'primary.shotgun',
       spec: {dmg: 4, cooldown: 2.1, range: 150, projectiles: 10, power: 2},
-      level: 5},
+      level: 2},
     'grenade': {
       desc: 'Explodes in a large area.',
       id:'primary.grenade',
@@ -205,34 +205,34 @@ di.constant('gameplayFile', {
     'sniper': {
       desc: 'Long range, low rate of rate.',
       id:'primary.sniper',
-      spec: {dmg: 12, cooldown: 4, range: 500},
+      spec: {dmg: 12, cooldown: 3.75, range: 500},
       level: 3},
     'missiles': {
       desc: 'Heat seeking missiles.',
       id:'primary.missiles',
-      spec: {dmg: 7, seek: _.radians(60), cooldown: 1.6, range: 300},
-      level: 1},
+      spec: {dmg: 6, seek: _.radians(60), cooldown: 1.6, range: 300},
+      level: 5},
     'stinger': {
       desc: 'Rapid heat seeking missiles.',
       id:'primary.missiles',
-      spec: {dmg: 3, seek: _.radians(60), cooldown: .75, range: 200, power: 1},
-      level: 5},
+      spec: {dmg: 3, seek: _.radians(60), cooldown: .7, range: 200, power: 1},
+      level: 1},
     'gatling': {
-      desc: 'Slowly inceases firing speed.',
+      desc: 'Fires faster and faster over time.',
       id:'primary.gatling',
-      spec: {dmg: 3, cooldown: 1, range: 150},
-      level: 5},
+      spec: {dmg: 3, cooldown: 1, range: 200},
+      level: 4},
 
     'turret': {
       desc: 'Drops turrets that shoot at the enemy.',
       id:'secondary.turret',
-      spec: {cooldown: 5, range: 10000},
-      level: 2},
+      spec: {cooldown: 6, range: 10000},
+      level: 5},
     'stun': {
       desc: 'Stun enemy for 1s.',
       id:'secondary.stun',
       spec: {dmg: 1, cooldown: 1.25, range: 300},
-      level: 2},
+      level: 4},
     //'stun II': {
     //  desc: 'Stun enemy for 1.4s.',
     //  id:'secondary.stun',
@@ -242,7 +242,7 @@ di.constant('gameplayFile', {
       desc: 'Grenade that disables weapons for 1.2s.',
       id:'secondary.emp',
       spec: {dmg: 1, cooldown: 1.5, range: 150},
-      level: 2},
+      level: 3},
     //'emp II': {
     //  desc: 'Grenade that disables weapons for 1.5s.',
     //  id:'secondary.emp',
@@ -282,7 +282,7 @@ di.constant('gameplayFile', {
     'pull': {
       desc: 'Pulls enemy close and stuns. Range: 10. Stun duration: .75s',
       id:'secondary.pull', spec: {duration: 1.5, range: 100},
-      level: 1},
+      level: 2},
     //'melee': {
     //  desc: 'Primary 2x for 75% damage while close.',
     //  id:'secondary.melee', spec: {dmgRatio: .75, range: 50},
@@ -295,7 +295,7 @@ di.constant('gameplayFile', {
     'teleport': {
       desc: 'Ability to teleport behind the enemy.',
       id: 'utility.ninja', spec: {power: 2},
-      level: 3},
+      level: 1},
     'stealth': {
       desc: 'Ability to turn invisible for a short period of time.',
       id: 'utility.ninja', spec: {power: 3},
@@ -352,7 +352,7 @@ di.constant('gameplayFile', {
     //  level: 5},
     'reflect': {
       desc: 'Reflects any projectile for short time.',
-      id: 'ability.reflect', spec: {duration: 1.25},
+      id: 'ability.reflect', spec: {duration: 1.75},
       level: 2},
     //'reflect II': {
     //  desc: 'Reflects shots for 2s',
@@ -362,10 +362,10 @@ di.constant('gameplayFile', {
     //  desc: '15% less damage.',
     //  id: 'ability.tank', spec: {power: 1, def: 1.15},
     //  level: 1},
-    //'steel': {
-    //  desc: '30% less damage.',
-    //  id: 'ability.tank', spec: {power: 2, def: 1.3},
-    //  level: 4},
+    'tank': {
+      desc: '20% less damage.',
+      id: 'ability.tank', spec: {power: 1, def: 1.2},
+      level: 4},
     'diamond': {
       desc: '10% more health & no collision damage.',
       id: 'ability.tank', spec: {power: 3, health: 1.1},
@@ -382,7 +382,7 @@ di.constant('gameplayFile', {
     'extreme': {
       desc: 'Double damage, half health',
       id: 'augment.extreme', spec: {},
-      level: 0},
+      level: 1},
     'freeze': {
       desc: 'Tap to freeze enemy [1 use / battle]',
       id: 'augment.freezeClick', spec: {},
@@ -390,27 +390,27 @@ di.constant('gameplayFile', {
     'warp': {
       desc: 'Tap to teleport [1 use / battle]',
       id: 'augment.teleClick', spec: {},
-      level: 0},
+      level: 1},
     'multi': {
       desc: '+2 projectiles for shotguns & burst',
       id: 'augment.multi', spec: {projectiles: 2},
       req: ['burst laser', 'shotgun', 'scatter shot', 'razors'],
-      level: 0},
+      level: 2},
     'speedy': {
       desc: '+50% speed',
       id: 'augment.heavy', spec: {speedRatio: 1.5},
-      level: 0},
+      level: 2},
     'beefy': {
       desc: '+20% health, -50% speed',
       id: 'augment.heavy', spec: {healthRatio: 1.2, speedRatio: .5},
-      level: 0},
+      level: 3},
     'sharp': {
       desc: '2x damage on collisions',
       id: 'augment.sharp', spec: {dmgRatio: 2},
-      level: 0},
+      level: 4},
     'camo': {
       desc: 'Can fire weapons while stealthed',
       id: 'augment.camo', spec: {}, req: ['stealth'],
-      level: 0}
+      level: 5}
   }
 });
