@@ -18,8 +18,6 @@ ItemService.prototype.getByType = function(type) {
 };
 
 ItemService.prototype.getByTypeAndLevel = function(type, level) {
-  console.log(type, level, _.pluck(_.where(
-      this.gameplay_.items, {level: level, category: type}), 'name'));
   return _.where(this.gameplay_.items, {level: level, category: type});
 };
 
