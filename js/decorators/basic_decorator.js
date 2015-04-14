@@ -26,7 +26,6 @@ BasicDecorator.prototype.decorateHealth_ = function(obj, spec) {
   obj.setMaxHealth(spec.health);
 
   obj.dmg = function(dmg, source) {
-    if (obj.style == 'bad') console.log(dmg);
     obj.health -= dmg / obj.def;
   };
 
