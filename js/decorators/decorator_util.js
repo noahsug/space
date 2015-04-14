@@ -1,108 +1,205 @@
 var DecoratorUtil = di.service('DecoratorUtil', [
   'Entity', 'EntityDecorator', 'GameModel as gm', 'Random']);
 
+DecoratorUtil.prototype.init = function() {
+  this.d_ = this.entityDecorator_.getDecorators();
+
+  this.proj = {
+    laser: this.fireLaser.bind(this),
+    bomb: this.fireBomb.bind(this),
+    ball: this.fireBall.bind(this),
+    blade: this.fireBlade.bind(this),
+    aura: this.fireAura.bind(this)
+  };
+};
+
+DecoratorUtil.prototype.spec = function(obj, name, overrides, defaults) {
+  if (arguments.length == 2) {
+    return _.options(obj /* overrides */, name /* defaults */);
+  } else {
+    obj[name] = _.defaults(_.clone(overrides) || {}, defaults);
+    obj[name].name = name;
+    obj[name].speed = obj[name].speed || Speed.DEFAULT;
+    obj[name].accuracy = obj[name].accuracy || Accuracy.DEFAULT;
+    obj[name].projectiles = obj[name].projectiles || 1;
+    return obj[name];
+  }
+};
+
+DecoratorUtil.prototype.addBasicWeapon_ = function(
+    obj, spec, fire, opt_onCollision) {
+  this.addWeapon(obj, spec, function() {
+    this.fireBasicProj_(obj, spec, fire, opt_onCollision);
+  }.bind(this));
+};
+
+DecoratorUtil.prototype.fireBasicProj_ = function(
+    obj, spec, fire, opt_onCollision) {
+  var projectile = fire(obj, spec);
+  if (spec.dmg)
+    _.decorate(projectile, this.d_.dmgCollision, projectile.spec);
+  if (spec.effect)
+    _.decorate(projectile, this.d_.effectCollision, projectile.spec);
+  projectile.collide(function(target) {
+    opt_onCollision && opt_onCollision(target, projectile);
+    projectile.dead = true;
+  });
+};
+
 DecoratorUtil.prototype.addWeapon = function(obj, spec, fire) {
-  var initCooldown = this.random_.nextFloat(.5) * spec.cooldown;
-  this.onCooldown(obj, function() {
-    if (obj.dead) return 0;
-    if (spec.range && obj.c.targetDis > spec.range) return 0;
+  this.addAbility(obj, spec, function(obj, spec) {
     if (spec.spread) this.fireSpread_(obj, spec, fire);
     else fire(obj, spec);
+    return spec.cooldown;
+  }.bind(this));
+};
+
+DecoratorUtil.prototype.addEffectAbility = function(obj, spec) {
+  spec.maxCharges = spec.charges;
+  this.addAbility(obj, spec, function() {
+    if (obj.effect[spec.effect]) return 0;
+    obj.addEffect(spec.effect, spec.duration);
+    spec.charges = spec.maxCharges;
+    return spec.cooldown;
+  });
+};
+
+DecoratorUtil.prototype.addAbility = function(obj, spec, ability) {
+  this.addCooldown(obj, function() {
+    if (obj.dead || obj.effect.silenced) return 0;
+    // Ship can't use targeted abilities while it has no target.
+    if (obj.effect.targetlessActive && !spec.targetless) return 0;
+    if (spec.range && obj.c.targetDis > spec.range) return 0;
+    if (obj.c.targetDis < spec.minRange) return 0;
     spec.lastFired = this.gm_.time;
-    return this.randomCooldown(spec.cooldown);
-  }.bind(this), initCooldown);
+    var cooldown = ability(obj, spec);
+    return this.randomCooldown(cooldown);
+  }.bind(this), this.initCooldown(spec.cooldown));
 };
 
 DecoratorUtil.prototype.fireSpread_ = function(obj, spec, fire) {
-  if (!obj.spreadPoints) {
-    // Save some time by only computing spread once.
-    obj.spreadPoints = _.geometry.spread(spec.spread, spec.projectiles);
-  }
-  for (var i = 0; i < obj.spreadPoints.length; i++) {
-    spec.dangle = obj.spreadPoints[i];
+  var spreadPoints = _.geometry.spread(spec.spread, spec.projectiles);
+  for (var i = 0; i < spreadPoints.length; i++) {
+    // Fire the middle shot first so that it gets the on-fire effects.
+    var index = Math.floor(i + spreadPoints.length / 2) % spreadPoints.length;
+    spec.dangle = spreadPoints[index];
     fire(obj, spec);
   }
 };
 
 DecoratorUtil.prototype.fireLaser = function(obj, spec) {
-  var d = this.entityDecorator_.getDecorators();
   var laser = this.entity_.create('laser');
   laser.style = spec.style;
-  _.decorate(laser, d.shape.line, spec);
+  _.decorate(laser, this.d_.shape.line, spec);
   return this.fireProjectile_(laser, obj, spec);
 };
 
 DecoratorUtil.prototype.fireBomb = function(obj, spec) {
-  var d = this.entityDecorator_.getDecorators();
   var bomb = this.entity_.create('bomb');
   bomb.style = spec.style;
-  _.decorate(bomb, d.shape.circle, spec);
+  _.decorate(bomb, this.d_.shape.circle, spec);
+  return this.fireProjectile_(bomb, obj, spec);
+};
+
+DecoratorUtil.prototype.fireBall = function(obj, spec) {
+  var bomb = this.entity_.create('ball');
+  bomb.style = spec.style;
+  _.decorate(bomb, this.d_.shape.circle, spec);
   return this.fireProjectile_(bomb, obj, spec);
 };
 
 DecoratorUtil.prototype.fireBlade = function(obj, spec) {
-  var d = this.entityDecorator_.getDecorators();
   var blade = this.entity_.create('blade');
   blade.style = spec.style;
-  _.decorate(blade, d.shape.circle, spec);
+  _.decorate(blade, this.d_.shape.circle, spec);
   return this.fireProjectile_(blade, obj, spec);
+};
+
+DecoratorUtil.prototype.fireAura = function(obj, spec) {
+  var aura = this.entity_.create('aura');
+  aura.style = spec.style;
+  spec.radius = spec.radius || obj.radius;
+  _.decorate(aura, this.d_.shape.circle, spec);
+  aura.target = obj.target;
+  _.decorate(aura, this.d_.movement.atPosition, {target: obj});
+  _.decorate(aura, this.d_.growRadiusAndDie, spec);
+  return this.gm_.entities.arr[this.gm_.entities.length++] = aura;
 };
 
 var EXTRA_RANGE_RATIO = 1.5;
 DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
-  var d = this.entityDecorator_.getDecorators();
+  projectile.spec = spec;
+  projectile.target = obj.target;
   projectile.setPos(obj.x, obj.y);
-  _.decorate(projectile, d.movement.straight, spec);
-  _.decorate(projectile, d.removeOffScreen, spec);
+  _.decorate(projectile, this.d_.collidable);
+
+  obj.prefire(projectile);
+  _.decorate(projectile, this.d_.movement.straight, spec);
+  _.decorate(projectile, this.d_.removeOffScreen, spec);
   if (spec.range) {
     var range = spec.range * EXTRA_RANGE_RATIO;
-    _.decorate(projectile, d.range, {range: range});
+    _.decorate(projectile, this.d_.range, {range: range});
   }
-  projectile.target = obj.target;
-  return this.gm_.entities.arr[this.gm_.entities.length++] = projectile;
+
+  this.gm_.entities.arr[this.gm_.entities.length++] = projectile;
+  obj.postfire(projectile);
+  return projectile;
 };
 
-DecoratorUtil.prototype.set = function(obj, prop, add) {
-  obj.awake(function() {
-    var value = _.parse(obj, prop);
-    _.set(obj, prop, value + add);
-  });
-};
-
-DecoratorUtil.prototype.mod = function(obj, prop, multiplier) {
-  if (obj.awakened) {
-    var value = _.parse(obj, prop);
-    _.set(obj, prop, value * multiplier);
-  } else {
-    obj.awake(this.mod.bind(this, obj, prop, multiplier));
-  }
+DecoratorUtil.prototype.initCooldown = function(cooldown) {
+  return this.random_.nextFloat(.3, .5) * cooldown;
 };
 
 DecoratorUtil.prototype.randomCooldown = function(cooldown) {
   return this.random_.nextFloat(.8, 1.2) * cooldown;
 };
 
-DecoratorUtil.prototype.onCooldown = function(obj, act, opt_initCooldown) {
-  return new EntityCooldown(obj, act, opt_initCooldown);
+DecoratorUtil.prototype.addCooldown = function(obj, action, opt_initCooldown) {
+  var cooldown = opt_initCooldown || 0;
+  obj.act(function(dt) {
+    if (cooldown > 0) cooldown -= dt;
+    if (cooldown <= 0) {
+      cooldown += action() || 0;
+    }
+  });
 };
 
-var EntityCooldown = function(obj, act, opt_initCooldown) {
-  this.cooldown_ = opt_initCooldown || 0;
-  this.act_ = act;
-  this.obj_ = obj;
-  obj.act(this.update_.bind(this, obj));
+DecoratorUtil.prototype.modSet = function(obj, prop, value) {
+  this.mod_(obj, prop, function() {
+    obj.mod[prop].set = value;
+  });
 };
 
-EntityCooldown.prototype.set = function(cooldown) {
-  this.cooldown_ = cooldown;
+DecoratorUtil.prototype.modAdd = function(obj, prop, add) {
+  this.mod_(obj, prop, function() {
+    obj.mod[prop].add += add;
+  });
 };
 
-EntityCooldown.prototype.update_ = function(obj, dt) {
-  // TODO: Move stun check out into passed in function.
-  if (obj.effect.disabled) return;
-  if (this.cooldown_ > 0) this.cooldown_ -= dt;
-  if (this.cooldown_ <= 0) {
-    var newCooldown = this.act_();
-    this.cooldown_ += _.ifDef(newCooldown, 0);
-  }
+DecoratorUtil.prototype.mod = function(obj, prop, multiplier) {
+  this.mod_(obj, prop, function() {
+    obj.mod[prop].mult *= multiplier;
+  });
+};
+
+DecoratorUtil.prototype.mod_ = function(obj, prop, modFn) {
+  if (!obj.mod) obj.mod = {};
+  if (!obj.mod[prop]) obj.mod[prop] = {add: 0, mult: 1, set: null};
+  if (obj.awakened) mod();
+  else obj.awake(mod);
+
+  function mod() {
+    var value = _.parse(obj, prop);
+    var modValues = obj.mod[prop];
+    if (modValues.baseValue == undefined) modValues.baseValue = value;
+    modFn();
+
+    if (modValues.set != undefined) {
+      value = modValues.set;
+    } else {
+      if (modValues.baseValue == undefined) return;
+      value = modValues.baseValue * modValues.mult +  modValues.add;
+    }
+    _.set(obj, prop, value);
+  };
 };

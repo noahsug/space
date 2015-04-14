@@ -1,45 +1,45 @@
 var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene', 'MainScene',
   'EquipOptionsScene', 'EquipScene', 'ResultScene', 'WonScene', 'LostScene',
-  'Gameplay']);
+  'Gameplay', 'World', 'BattleRewards', 'WorldSelectScene']);
 
 Game.UPDATE_RATE = .06;
 
-Game.prototype.init = function() {
-  Game.NUM_LEVELS = this.gameplay_.bosses.length;
-};
+Game.ITEM_TYPES = ['primary', 'secondary', 'ability', 'utility'];
+Game.MAX_ITEM_LEVEL = 5;
+Game.MAX_LEVEL = (Game.MAX_ITEM_LEVEL + 1) * Game.ITEM_TYPES.length - 1;
 
 Game.prototype.start = function() {
   this.nextAction_ = 0;
-  this.setPlayerItems_();
+  this.initGameModel_();
   this.scenes_ = [
     /* 0 */ this.loadingScene_,
     /* 1 */ this.introScene_,
-    /* 2 */ this.mainScene_,
-    /* 3 */ this.battleScene_,
-    /* 4 */ this.resultScene_,
-    /* 5 */ this.equipOptionsScene_,
-    /* 6 */ this.equipScene_,
-    /* 7 */ this.wonScene_,
-    /* 8 */ this.lostScene_
+    /* 2 */ this.worldSelectScene_,
+    /* 3 */ this.mainScene_,
+    /* 4 */ this.equipOptionsScene_,
+    /* 5 */ this.equipScene_,
+    /* 6 */ this.battleScene_,
+    /* 7 */ this.resultScene_,
+    /* 8 */ this.wonScene_,
+    /* 9 */ this.lostScene_
   ];
 
-  //this.gm_.results.won = true;
-  //this.gm_.results.earned = {item: _.value(this.gameplay_.items)};
-  //this.gm_.results.earned = {stat: {name: 'health', value: 3}};
+  // DEBUG
+  this.gm_.world = this.gm_.worlds[0];
+  this.gm_.level = this.gm_.world.levels[0];
+  //this.gm_.level.state = 'won';
+  //this.battleRewards_.calculateRewards();
+  //this.gm_.equipping = 'primary';
 
-  //this.gm_.daysOnLevel = 10;
-  //this.gm_.daysLeft = 10 - this.gm_.daysOnLevel;
-
-  //this.gm_.enemy = 'boss';
-  //this.gm_.enemy = 'random';
-
-  this.scenes_[0].start();
+  this.scenes_[6].start();
 };
 
-Game.prototype.setPlayerItems_ = function() {
+Game.prototype.initGameModel_ = function() {
   this.gm_.inventory = this.gameplay_.inventory;
   this.gm_.player = this.gameplay_.player;
+  this.gm_.worlds = this.gameplay_.worlds;
+  this.world_.createWorlds();
 };
 
 Game.prototype.update = function(dt) {

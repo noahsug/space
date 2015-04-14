@@ -44,6 +44,13 @@ SeededRandom.prototype.nextFloat = function(minOrMax, opt_max) {
   return this.next() * (max - min) + min;
 };
 
-SeededRandom.prototype.flipCoin = function() {
+SeededRandom.prototype.nextBool = function() {
   return this.next() < .5;
 };
+
+SeededRandom.prototype.nextSign = function() {
+  return this.next() < .5 ? 1: -1;
+};
+
+_.r = new SeededRandom();
+_.r.useTrueRandom(true);

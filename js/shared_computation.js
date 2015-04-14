@@ -79,7 +79,10 @@ SharedComputation.prototype.rangeInfo = function(obj) {
 SharedComputation.prototype.rangeInfo_ = function(obj) {
   // TODO: Account for cooldowns in own ranges.
   var ranges = [];
-  if (obj.health > obj.collision.dmg && obj.health > obj.target.health) {
+  var wantToCollideWithEnemy =
+        obj.collision.dmg < obj.target.collision.dmg ||
+        obj.target.health < obj.target.collision.dmg;
+  if (obj.health > obj.collision.dmg && wantToCollideWithEnemy) {
     ranges.push(1);
   }
   if (obj.primary.range) ranges.push(obj.primary.range);
@@ -93,6 +96,7 @@ SharedComputation.prototype.rangeInfo_ = function(obj) {
       obj.target.health > obj.health) {
     targetRanges.push(1);
   }
+  if (obj.target.primary.range) targetRanges.push(obj.target.primary.range);
   if (obj.target.primary.range) targetRanges.push(obj.target.primary.range);
   if (obj.target.secondary.range) targetRanges.push(obj.target.secondary.range);
   if (obj.target.ability.range) targetRanges.push(obj.target.ability.range);

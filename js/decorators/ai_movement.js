@@ -8,33 +8,22 @@ AiMovement.prototype.init = function() {
 };
 
 AiMovement.prototype.aiMovement_ = function(obj, spec) {
-  obj.movement = _.options(spec, {
-    speed: 100,
-    accel: 4,
+  this.util_.spec(obj, 'movement', spec, {
+    speed: Speed.SHIP_SPEED,
+    accel: 1,
     vector: {x: 0, y: 0},
-    intelligence: .1,
+    intelligence: .2,
     urgeCooldown: 1.5
   });
 
-  this.util_.onCooldown(obj, function() {
+  this.util_.addCooldown(obj, function() {
     if (obj.dead) return 0;
-    this.think_(obj);
+    if (obj.effect.targetlessMovement) this.wander_(obj);
+    else if (obj.movement.turret) obj.movement.desiredVector = {x: 0, y: 0};
+    else this.think_(obj);
     var int = obj.movement.intelligence;
     return this.random_.nextFloat(int - .1, int + .1);
   }.bind(this));
-
-  // Random urges.
-  //this.util_.onCooldown(obj, function() {
-  //  obj.movement.urge = {
-  //    x: this.random_.nextInt(
-  //        this.screen_.x - this.screen_.width / 2 + obj.radius,
-  //        this.screen_.x + this.screen_.width / 2 - obj.radius),
-  //    y: this.random_.nextInt(
-  //        this.screen_.y - this.screen_.height / 2 + obj.radius,
-  //        this.screen_.y + this.screen_.height / 2 - obj.radius)
-  //  };
-  //  return obj.movement.urgeCooldown;
-  //}.bind(this));
 
   obj.update(function(dt) {
     if (obj.dead) return;
@@ -43,9 +32,24 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
   }.bind(this));
 };
 
-AiMovement.prototype.think_ = function(obj, dt) {
+AiMovement.prototype.wander_ = function(obj) {
+  if (Math.random() < .2 || !obj.movement.urge) {
+    obj.movement.urge = {
+      x: this.random_.nextInt(
+        this.screen_.x - this.screen_.width / 2 + obj.radius,
+        this.screen_.x + this.screen_.width / 2 - obj.radius),
+      y: this.random_.nextInt(
+        this.screen_.y - this.screen_.height / 2 + obj.radius,
+        this.screen_.y + this.screen_.height / 2 - obj.radius)
+    };
+  }
+  obj.movement.desiredVector = this.getRandomUrgeVector_(obj, 1);
+  _.vector.cartesian(obj.movement.desiredVector);
+};
+
+AiMovement.prototype.think_ = function(obj) {
   //console.log('----- think ' + obj.style + ' -----');
-  obj.movement.distance = this.getDesiredDistance_(obj) - 20;
+  obj.movement.desiredDistance = this.getDesiredDistance_(obj) - 15;
   this.maybeUseDash_(obj);
   this.maybeUseTeleport_(obj);
   this.setDesiredVector_(obj);
@@ -54,11 +58,25 @@ AiMovement.prototype.think_ = function(obj, dt) {
 
 AiMovement.prototype.getDesiredDistance_ = function(obj) {
   this.c_.rangeInfo_(obj);
-  var targetIndex = 0;
-  var numAttacks = 0;
-  var bestNumAttacks = -9;
-  var bestDistance = 2000;
 
+  var maxDis = this.computeMaxDistance_(obj);
+  if (!obj.movement.maxDis ||
+      maxDis < obj.movement.maxDis ||
+      obj.movement.maxDisTime < this.gm_.time) {
+    obj.movement.maxDis = maxDis;
+    obj.movement.maxDisTime = this.gm_.time + 10;
+  }
+
+  var bestDistance = this.computeBestDistance_(obj);
+  if (!bestDistance) {
+    obj.movement.maxDis = Infinity;
+    bestDistance = this.computeBestDistance_(obj);
+  }
+
+  return bestDistance || 1;
+};
+
+AiMovement.prototype.computeMaxDistance_ = function(obj) {
   var backAngle = obj.c.targetAngle + _.RADIANS_180;
   var backAngleX = Math.cos(backAngle);
   var xDis = (backAngleX < 0 ? obj.c.wallDisW : obj.c.wallDisE) /
@@ -67,29 +85,37 @@ AiMovement.prototype.getDesiredDistance_ = function(obj) {
   var yDis = (backAngleY < 0 ? obj.c.wallDisN : obj.c.wallDisS) /
         Math.abs(backAngleY);
   var maxDis = _.distance({x: xDis, y: yDis});
+  return Math.max(1, maxDis - maxDis % 50);
+};
 
-  if (!obj.movement.maxDis || maxDis < obj.movement.maxDis ||
-      obj.movement.maxDisTime < this.gm_.time) {
-    obj.movement.maxDis = maxDis;
-    obj.movement.maxDisTime = this.gm_.time + 12;
-  }
+AiMovement.prototype.computeBestDistance_ = function(obj) {
+  var targetIndex = 0;
+  var numAttacks = 0;
+  var bestNumAttacks = -Infinity;
+  var bestDistance = undefined;
 
   for (var i = 0; i < obj.c.ranges.length; i++) {
-    var self = Math.min(obj.movement.maxDis, obj.c.ranges[i]);
+    var self = obj.c.ranges[i];
+    if (self > obj.movement.maxDis) continue;
     var target = obj.c.targetRanges[targetIndex] || 0;
     if (self > target) {
       numAttacks++;
       if (numAttacks > bestNumAttacks) {
         bestNumAttacks = numAttacks;
         bestDistance = self;
-        continue;
       }
     } else if (self < target) {
       numAttacks--;
       i--;
       targetIndex++;
     } else {
-      targetIndex++;
+      while (obj.c.targetRanges[++targetIndex] == target) {
+        numAttacks--;
+      }
+      while (obj.c.ranges[++i] == target) {
+        numAttacks++;
+      }
+      i--;  // Will be incremented by for loop.
       if (numAttacks > bestNumAttacks) {
         bestNumAttacks = numAttacks;
         bestDistance = self;
@@ -102,7 +128,7 @@ AiMovement.prototype.getDesiredDistance_ = function(obj) {
 
 AiMovement.prototype.maybeUseDash_ = function(obj) {
   if (!obj.utility.dashReady) return;
-  var dd = obj.c.targetDis - obj.movement.distance;
+  var dd = obj.c.targetDis - obj.movement.desiredDistance;
   if (Math.abs(dd) < 35) return;
 
   var dir = Math.sign(dd);
@@ -118,24 +144,34 @@ AiMovement.prototype.maybeUseDash_ = function(obj) {
 
 AiMovement.prototype.maybeUseTeleport_ = function(obj) {
   if (!obj.utility.teleportReady) return;
-  var dd = obj.c.targetDis - obj.movement.distance;
-  if (dd < 35) return;
-  if (this.random_.next() < .5) obj.utility.useTeleport();
+  var dd = obj.c.targetDis - obj.movement.desiredDistance;
+  if (dd > 35 && this.random_.next() < .5) obj.utility.useTeleport();
+  if (this.random_.next() < .1) obj.utility.useTeleport();
 };
 
 AiMovement.prototype.setDesiredVector_ = function(obj) {
   var v = {x: 0, y: 0};
-//  _.vector.add(v, this.getRandomUrgeVector_(obj, v));
-//  _.vector.add(v, this.getCurrentDirection_(obj));
-  _.vector.add(v, this.getWallXVector_(obj, 4));
-  _.vector.add(v, this.getWallYVector_(obj, 4));
-  _.vector.add(v, this.getEnemyDistanceVector_(obj, 4));
-  _.vector.add(v, this.getCurrentPerpendicularVector_(obj, 4));
-  _.vector.add(v, this.getDodgeVector_(obj, 2));
-  _.vector.add(v, this.getFleeVector_(obj, 4));
-  _.vector.add(v, this.getPerpendicularVector_(obj, 2, v));
-  _.vector.normalize(v);
+  var total = 0;
+  total += this.addAndGetLength_(v, this.getWallXVector_(obj, 4));
+  total += this.addAndGetLength_(v, this.getWallYVector_(obj, 4));
+  total += this.addAndGetLength_(v, this.getEnemyDistanceVector_(obj, 6));
+  total += this.addAndGetLength_(v, this.getCloneDistanceVector_(obj, 2));
+  total += this.addAndGetLength_(v, this.getDodgeVector_(obj, 2));
+  total += this.addAndGetLength_(v, this.getFleeVector_(obj, 4));
+  if (!obj.effect.invisible) {
+    _.vector.add(v, this.getCurrentPerpendicularVector_(obj, 1.5));
+    _.vector.add(v, this.getPerpendicularVector_(obj, .5, v));
+  }
+
+  var slowdown = Math.min(1, total / 6);
+  _.vector.mult(_.vector.normalize(v), slowdown);
   obj.movement.desiredVector = v;
+};
+
+AiMovement.prototype.addAndGetLength_ = function(v, result) {
+  var length = _.vector.length(result);
+  _.vector.add(v, result);
+  return Math.abs(length);
 };
 
 AiMovement.prototype.getWallXVector_ = function(obj, weight) {
@@ -173,13 +209,29 @@ AiMovement.prototype.getRandomUrgeVector_ = function(obj, weight) {
 };
 
 AiMovement.prototype.getEnemyDistanceVector_ = function(obj, weight) {
-  if (!obj.movement.distance) return _.vector.EMPTY;
-  var dd = obj.c.targetDis - obj.movement.distance;
+  if (!obj.movement.desiredDistance) return _.vector.EMPTY;
+  var panic = 20;
+  var dd = obj.c.targetDis - obj.movement.desiredDistance;
+  var r = dd * dd / (panic * panic);
   // If we're a little too close or too far, don't panic.
-  if (dd < 0 && dd > -40) weight *= dd * dd / (40 * 40);
-  if (dd > 0 && dd < 40) weight = (weight - 5) * dd * dd / (40 * 40) + 5;
+  if (Math.abs(dd) < panic) weight *= r;
   var v = {length: weight * Math.sign(dd), angle: obj.c.targetAngle};
-  //console.log('edis:', v);
+  //if (obj.style == 'bad') console.log('edis:', v,
+  //                                     dd, obj.movement.desiredDistance);
+  return v;
+};
+
+AiMovement.prototype.getCloneDistanceVector_ = function(obj, weight) {
+  if (obj.clones.length == 1) return _.vector.EMPTY;
+  var v = {x: 0, y: 0};
+  for (var i = 0; i < obj.clones.length; i++) {
+    var clone = obj.clones[i];
+    if (clone === obj) continue;
+    var distance = _.distance(obj, clone);
+    var len = (1 - _.step(distance, 0, 50, 100, Infinity)) * weight;
+    _.vector.add(v, {length: -len, angle: _.angle(obj, clone)});
+  }
+  //console.log('clone:', v);
   return v;
 };
 
@@ -198,9 +250,9 @@ AiMovement.prototype.getDodgeVector_ = function(obj, weight) {
   }
   if (!obj.movement.startDodge) {
     obj.movement.startDodge = true;
-    if (obj.utility.dashReady && this.random_.next() < .5) {
+    if (obj.utility.dashReady && this.random_.next() < .8) {
       obj.utility.useDash();
-    } else if (obj.utility.teleportReady && this.random_.next() < 1) {
+    } else if (obj.utility.teleportReady && this.random_.next() < .8) {
       obj.utility.useTeleport();
     }
   }
@@ -228,43 +280,42 @@ AiMovement.prototype.getCurrentPerpendicularVector_ = function(obj, weight) {
 
 AiMovement.prototype.getFleeVector_ = function(obj, weight) {
   if (!obj.movement.fleeing) {
-    if (obj.c.wallDis > 30) return _.vector.EMPTY;
-    var dd = obj.movement.distance - obj.c.targetDis;
-    if (dd < 50) return _.vector.EMPTY;
-    if (obj.target.c.centerDis < 50) return _.vector.EMPTY;
+    if (obj.c.wallDis > 30)
+      return _.vector.EMPTY;
+    if (obj.c.targetDis - obj.movement.desiredDistance > 50)
+      return _.vector.EMPTY;
+    if (obj.c.wallDis != obj.target.c.wallDis)
+      return _.vector.EMPTY;
+    obj.movement.fleeDirection = 0;
+    if (obj.c.wallDisN == obj.c.wallDis) {
+      obj.movement.fleeDirection = _.RADIANS_90;
+    } else if (obj.c.wallDisS == obj.c.wallDis) {
+      obj.movement.fleeDirection = _.RADIANS_270;
+    } else {
+      return _.vector.EMPTY;
+    }
 
-    var dirs = ['N', 'E', 'S', 'W'];
-    var oppositeDirs = ['S', 'W', 'N', 'E'];
-    for (var i = 0; i < dirs.length; i++) {
-      var name = 'wallDis' + dirs[i];
-      if (obj.c.wallDis == obj.c[name] &&
-          obj.target.c.wallDis == obj.target.c[name]) {
-        obj.movement.fleeing = true;
-        obj.movement.fleeDirection = oppositeDirs[i];
-        if (obj.utility.dashReady && this.random_.next() < .35) {
-          obj.utility.useDash();
-        } else if (obj.utility.teleportReady && this.random_.next() < .35) {
-          obj.utility.useTeleport();
-        }
-        break;
+    if (obj.movement.fleeDirection) {
+      obj.movement.fleeing = true;
+      if (obj.utility.teleportReady) {
+        obj.utility.useTeleport();
+      } else if (obj.utility.dashReady) {
+        obj.utility.useDash();
       }
     }
   }
   if (!obj.movement.fleeing) return _.vector.EMPTY;
 
-  if (obj.c['wallDis' + obj.movement.fleeDirection] < 100) {
+  var wallDis = obj.movement.fleeDirection == _.RADIANS_90 ?
+      obj.c.wallDisS : obj.c.wallDisN;
+  if (wallDis < 100) {
     obj.movement.fleeing = false;
     return _.vector.EMPTY;
   }
 
-  var angle;
-  if (obj.movement.fleeDirection == 'N') angle = _.RADIANS_270;
-  if (obj.movement.fleeDirection == 'E') angle = 0;
-  if (obj.movement.fleeDirection == 'S') angle = _.RADIANS_90;
-  if (obj.movement.fleeDirection == 'W') angle = _.RADIANS_180;
   var v = {
     length: weight,
-    angle: angle
+    angle: obj.movement.fleeDirection
   };
 
   //console.log('flee:', v);
@@ -285,7 +336,10 @@ AiMovement.prototype.getClosestPerpAngle_ = function(perpTo, closeTo) {
 };
 
 AiMovement.prototype.updateVector_ = function(obj, dt) {
-  if (obj.effect.disabled) return;
+  if (!PROD) _.assert(_.isDef(obj.movement.desiredVector.x));
+  if (obj.effect.rooted) {
+    return;
+  }
   var m = obj.movement;
   var dx = m.desiredVector.x - m.vector.x;
   var dy = m.desiredVector.y - m.vector.y;
@@ -313,14 +367,25 @@ AiMovement.prototype.updateVector_ = function(obj, dt) {
 };
 
 AiMovement.prototype.move_ = function(obj, dt) {
+  var m = obj.movement;
   obj.prevX = obj.x;
   obj.prevY = obj.y;
-  obj.x += obj.movement.vector.x * obj.movement.speed * dt;
-  obj.y += obj.movement.vector.y * obj.movement.speed * dt;
+
+  // Move slower if no target or invisible.
+  // TODO: Move this out of movement AI.
+  var mod = 1;
+  if (!obj.secondary.charging && !obj.effect.knockback && !obj.effect.dash) {
+    mod = obj.effect.invisible ? .5 : 1;
+    mod = obj.effect.targetlessMovement ? .25 : 1;
+  }
+
+  obj.x += m.vector.x * m.speed * mod * dt;
+  obj.y += m.vector.y * m.speed * mod * dt;
   this.c_.wallDis(obj);
-  if (obj.c.wallDisN < 0) obj.y = obj.y -= obj.c.wallDisN;
-  else if (obj.c.wallDisS < 0) obj.y = obj.y += obj.c.wallDisS;
-  else if (obj.c.wallDisE < 0) obj.x = obj.x += obj.c.wallDisE;
-  else if (obj.c.wallDisW < 0) obj.x = obj.x -= obj.c.wallDisW;
+  if (obj.c.wallDisN < 0) obj.y -= obj.c.wallDisN;
+  else if (obj.c.wallDisS < 0) obj.y += obj.c.wallDisS;
+  if (obj.c.wallDisE < 0) obj.x += obj.c.wallDisE;
+  else if (obj.c.wallDisW < 0) obj.x -= obj.c.wallDisW;
   if (obj.c.hitWall && obj.effect.dash) obj.utility.stopDash();
+  if (obj.c.hitWall && obj.secondary.charging) obj.secondary.stopCharge();
 };

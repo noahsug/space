@@ -4,8 +4,16 @@ _.pos = {
   BOTTOM: 'bottom'
 };
 
+_.roundTo = function(value, nearest) {
+  return Math.round(value / nearest) * nearest;
+};
+
 _.radians = function(degrees) {
   return degrees * Math.PI / 180;
+};
+
+_.degrees = function(radians) {
+  return radians * 180 / Math.PI;
 };
 
 _.plural = function(string, num) {
@@ -69,13 +77,94 @@ _.pseudorandomSeed = function(opt_seed) {
   return Math.random() * (Math.PI / 2);
 };
 
+_.sum = function(arr) {
+  return arr.reduce(function(p, c) { return p + c; });
+};
+
+_.return = function(v) {
+  return function() { return v; };
+};
+
+_.repeat = function(fn, times) {
+  for (var i = 0; i < times; i++) {
+    fn(i);
+  }
+};
+
+_.swap = function(arr, i1, i2) {
+  if (i1 == i2) return arr;
+  var temp = arr[i1];
+  arr[i1] = arr[i2];
+  arr[i2] = temp;
+};
+
+// Returns a normalized, random array of values.
+_.randomSplit = function(size, opt_total) {
+  return _.normalize(_.generate(Math.random, size), opt_total || 1);
+};
+
+_.intRandomSplit = function(size, opt_total, opt_max) {
+  var total = _.orDef(opt_total, 1);
+  if (opt_max) {
+    if (opt_max * size <= total) return _.generate(_.return(opt_max), size);
+    var split = _.generate(_.return(0), size);
+    var totalSoFar = 0;
+    var capped = {};
+    while (totalSoFar < total) {
+      var index = _.r.nextInt(0, size - 1);
+      while (capped[index]) index = (index + 1) % split.length;
+      split[index]++;
+      totalSoFar++;
+      if (split[index] >= opt_max) capped[index] = true;
+    }
+    return split;
+  } else {
+    return _.intNormalize(_.generate(Math.random, size), total);
+  }
+};
+
+_.normalize = function(arr, opt_total) {
+  var sum = _.sum(arr);
+  return arr.map(function(v) { return (opt_total || 1) * v / sum; });
+};
+
+_.intNormalize = function(arr, opt_total) {
+  var sum = _.sum(arr);
+  var remainder = 0;
+  return arr.map(function(v) {
+    var normalized = (opt_total || 1) * v / sum;
+    var int = Math.floor(normalized);
+    remainder += normalized - int;
+    if (remainder >= .999999) {
+      int++;
+      remainder--;
+    }
+    return int;
+  });
+};
+
+// Split a line of text in half at the whitespace.
+_.splitText = function(text) {
+  var half = Math.floor(text.length / 2);
+  var split = half;
+  for (var i = half + 3; i >= 0; i--) {
+    if (text[i] == ' ') {
+      split = i;
+      break;
+    }
+  }
+  return [text.slice(0, i), text.slice(i + 1)];
+};
+
 _.assert = function(truth, msg) {
+  if (PROD) return;
   if (!truth) {
     throw 'Assert failed: ' + msg;
   }
 };
 
 _.fail = function(msg) {
+  if (PROD) return;
   _.assert(false, msg);
 };
 
@@ -107,6 +196,26 @@ _.angleDif = function(a1, a2) {
   if (da < 0) da += Math.PI * 2;
   if (da > Math.PI) da = Math.PI * 2 - da;
   return da;
+};
+
+// Moves value towards target, but not past it.
+_.approach = function(value, target, absAmount) {
+  var d = target - value;
+  if (Math.abs(d) < absAmount) {
+    return target;
+  }
+  return value + absAmount * Math.sign(d);
+};
+
+// Moves value towards target, but not past it.
+_.approachAngle = function(value, target, absAmount) {
+  var d = _.angleDif(target, value);
+  if (d < absAmount) {
+    return target;
+  }
+  var a1 = value + absAmount;
+  var a2 = value - absAmount;
+  return _.angleDif(a1, target) < _.angleDif(a2, target) ? a1 : a2;
 };
 
 _.startsWith = function(str, prefix) {
@@ -246,6 +355,14 @@ _.generate = function(generator, length, opt_thisObj) {
   return list;
 };
 
+_.newSet = function(values) {
+  var set = {};
+  for (var i = 0; i < values.length; i++) {
+    set[values[i]] = i + 1;
+  }
+  return set;
+};
+
 _.newList = function(list, generator, opt_thisObj) {
   var result = new Array();
   for (var i = 0; i < list.length; i++) {
@@ -263,17 +380,37 @@ _.min = function(list) {
   return min;
 };
 
-_.options = function(options, expected) {
-  return _.defaults(_.clone(options) || {}, expected);
+_.pathExists = function(start, addNeighbors, atEnd, hash) {
+  // TODO: Implement this if needed.
+  var visited = {};
+  visited[hash(start)] = true;
+  return true;
 };
 
-_.ifDef = function(value, valueWhenUndefined) {
+_.between = function(value, min, max) {
+  return value >= min && value <= max;
+};
+
+_.options = function(overrides, defaults) {
+  return _.defaults(_.clone(overrides) || {}, defaults);
+};
+
+_.orDef = function(value, valueWhenUndefined) {
   return _.isDef(value) ? value : valueWhenUndefined;
 };
 
 _.pad = function(num, padding) {
   var numAsStr = '' + num;
   return _.repeat('0', padding - numAsStr.length) + numAsStr;
+};
+
+// step(25, 0, 25, 75, 100) = 0;
+// step(50, 0, 25, 75, 100) = .5;
+// step(75, 0, 25, 75, 100) = 1;
+_.step = function(value, s1, s2, e1, e2) {
+  if (value >= e2) return 1;
+  if (value <= s1) return 0;
+  return (value - s2) / (e1 - s2);
 };
 
 _.callForEach = function(list, obj, fnName) {
@@ -287,7 +424,8 @@ _.unimplemented = function() {
 _.RADIANS_2 = _.radians(2);
 _.RADIANS_90 = _.radians(90);
 _.RADIANS_120 = _.radians(120);
-_.RADIANS_178 = _.radians(180);
+_.RADIANS_135 = _.radians(135);
+_.RADIANS_178 = _.radians(178);
 _.RADIANS_180 = _.radians(180);
 _.RADIANS_270 = _.radians(270);
 _.RADIANS_360 = _.radians(360);
@@ -345,7 +483,15 @@ _.geometry.aimPosition = function(source, target, targetVector, targetSpeed,
   };
 };
 
+_.deepClone = function(o) {
+  return JSON.parse(JSON.stringify(o));
+};
+
 _.vector = {};
+
+_.vector.length = function(v) {
+  return _.orDef(v.length, _.distance(v));
+};
 
 _.vector.cartesian = function(v) {
   if (!_.isDef(v.x) && !_.isDef(v.y)) {
@@ -362,16 +508,20 @@ _.vector.add = function(v1, v2) {
   _.vector.cartesian(v2);
   v1.x += v2.x;
   v1.y += v2.y;
+  return v1;
 };
 
 _.vector.normalize = function(v) {
-  if (v.x && v.y) {
-    var d = Math.hypot(v.x, v.y);
-    v.x /= d;
-    v.y /= d;
-  } else {
-    v.x = v.y = 0;
-  }
+  var d = Math.hypot(v.x, v.y);
+  v.x /= d;
+  v.y /= d;
+  return v;
+};
+
+_.vector.mult = function(v, r) {
+  v.x *= r;
+  v.y *= r;
+  return v;
 };
 
 _.vector.EMPTY = {x: 0, y: 0, angle: 0, length: 0};

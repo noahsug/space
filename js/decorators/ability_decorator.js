@@ -1,44 +1,142 @@
-var AbilityDecorators = di.service('AbilityDecorators', [
-  'EntityDecorator', 'DecoratorUtil as util']);
+var AbilityDecorator = di.service('AbilityDecorator', [
+  'EntityDecorator', 'DecoratorUtil as util', 'ShipFactory']);
 
-AbilityDecorators.prototype.init = function() {
+AbilityDecorator.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'ability');
 };
 
-AbilityDecorators.prototype.decorateMink_ = function(obj) {
-  var spec = {
-    radius: .8,
-    speed: 1.25,
-    dmg: .8
-  };
+AbilityDecorator.prototype.decorateTank_ = function(obj, spec) {
+  this.util_.spec(obj, 'ability', spec, {
+    def: 1,
+    health: 1
+  });
 
-  this.util_.mod(obj, 'radius', spec.radius);
-  this.util_.mod(obj, 'speed', spec.speed);
-  this.util_.mod(obj, 'primary.dmg', spec.dmg);
-  this.util_.mod(obj, 'secondary.dmg', spec.dmg);
+  switch(spec.power) {
+  case 3:
+  case 2:
+    obj.collision.dmg = 0;
+  case 1:
+    this.util_.mod(obj, 'def', obj.ability.def);
+    this.util_.mod(obj, 'health', obj.ability.health);
+  }
 };
 
-AbilityDecorators.prototype.decorateRage_ = function(obj) {
-  var spec = {
-    radius: 1.35,
-    dmg: 1.3,
-    enrageHealth: .5
-  };
+AbilityDecorator.prototype.decorateShield_ = function(obj, spec) {
+  this.util_.spec(obj, 'ability', spec, {
+    cooldown: 9,
+    effect: 'shield',
+    duration: 1000,
+    charges: 1,
+    targetless: true
+  });
 
-  obj.resolve(function() {
-    var enrage = obj.maxHealth * spec.enrageHealth;
-    if (obj.health <= enrage && obj.prevHealth > enrage) {
-      obj.radius *= spec.radius;
-      obj.primary.dmg *= spec.dmg;
-      obj.secondary.dmg *= spec.dmg;
-      return;
-    }
+  switch(spec.power) {
+  case 2:
+    obj.ability.charges++;
+  case 1:
+    obj.ability.charges++;
+  }
 
-    if (obj.health > enrage && obj.prevHealth <= enrage) {
-      this.util_.mod(obj, 'radius', 1 / spec.radius);
-      this.util_.mod(obj, 'primary.dmg', 1 / spec.dmg);
-      this.util_.mod(obj, 'secondary.dmg', 1 / spec.dmg);
-      return;
+  this.util_.addEffectAbility(obj, obj.ability);
+
+  obj.receivedPrecollide(function(proj) {
+    if (!obj.effect.shield || proj.type == 'ship') return;
+    if (!--obj.ability.charges) obj.effect.shield = 0;
+    this.util_.modSet(proj, 'dmg', 0);
+  }, this);
+};
+
+AbilityDecorator.prototype.decorateReflect_ = function(obj, spec) {
+  this.util_.spec(obj, 'ability', spec, {
+    duration: 0,
+    cooldown: 9,
+    effect: 'reflect',
+    targetless: true
+  });
+
+  switch(spec.power) {
+  case 2:
+    obj.ability.duration++;
+  }
+
+  this.util_.addEffectAbility(obj, obj.ability);
+
+  obj.receivedPrecollide(function(proj) {
+    if (!obj.effect.reflect || proj.type == 'ship') return;
+    proj.rotate && proj.rotate(_.RADIANS_180);
+    proj.target = obj.target;
+    proj.remainingRange = proj.maxRange;
+    proj.shouldCollide = false;
+  });
+};
+
+AbilityDecorator.prototype.decorateHaze_ = function(obj, spec) {
+  this.util_.spec(obj, 'ability', spec, {
+    speed: Speed.SLOW,
+    seek: _.radians(85),
+    radius: 3,
+    accuracy: 0,
+    cooldown: 6,
+    range: 300,
+    effect: 'haze',
+    hazeAccuracy: _.radians(90),
+    duration: 4
+  });
+
+  switch(spec.power) {
+  case 1:
+    obj.primary.duration *= 1.5;
+    obj.primary.radius *= 1.25;
+  }
+
+  this.util_.addBasicWeapon_(obj, obj.ability,
+                              this.util_.proj.ball, makeHazable.bind(this));
+
+  function makeHazable(target) {
+    if (target.hazable) return;
+    target.hazable = true;
+    target.prefire(function(proj) {
+      if (!target.effect.haze) return;
+      this.util_.modAdd(proj, 'movement.accuracy', obj.ability.hazeAccuracy);
+    }, this);
+  }
+};
+
+AbilityDecorator.prototype.decorateKnockback_ = function(obj, spec) {
+  this.util_.spec(obj, 'ability', spec, {
+    speed: 300,
+    cooldown: 6,
+    duration: .75,
+    effect: 'stunned',
+    knockback: 550,
+    grow: 500,
+    growDuration: .1,
+    range: 100
+  });
+
+  switch(spec.power) {
+  case 1:
+    obj.ability.duration *= 1.3;
+  }
+
+  var knockback = function(target) {
+    target.addEffect(obj.ability.effect, obj.ability.duration);
+    target.movement.vector.x = Math.cos(obj.c.targetAngle);
+    target.movement.vector.y = Math.sin(obj.c.targetAngle);
+    var ratio = obj.ability.knockback / (obj.ability.speed || 1);
+    target.movement.speed *= ratio;
+    target.addEffect('knockback', obj.ability.duration, function() {
+      target.movement.speed /= ratio;
+    }.bind(this));
+  }.bind(this);
+
+  this.util_.addWeapon(obj, obj.ability, function() {
+    this.util_.fireAura(obj, obj.ability);
+    for (var i = 0; i < obj.target.clones.length; i++) {
+      var clone = obj.target.clones[i];
+      if (!clone.dead && _.distance(obj, clone) < obj.ability.range) {
+        knockback(clone);
+      }
     }
   }.bind(this));
 };

@@ -21,14 +21,11 @@ Strings = {
     primary: 'attack',
     secondary: 'attack II',
     ability: 'ability',
-    utility: 'movement',
-    mod: 'boost'
+    utility: 'specialty',
+    augment: 'augment'
   },
 
-  Stat: {
-    health: 'health',
-    dmg: 'damage',
-    speed: 'speed',
-    def: 'defence'
+  rank: function(level) {
+    return Math.round((level / Game.MAX_LEVEL) * 9 + 1);
   }
 };

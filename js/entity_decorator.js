@@ -8,9 +8,9 @@ EntityDecorator.prototype.getDecorators = function() {
   return this.decorators_;
 };
 
-EntityDecorator.prototype.decorate = function(entity, items) {
-  _.each(items, function(item) {
-    this.validateItem_(item);
+EntityDecorator.prototype.decorate = function(entity, dna) {
+  _.each(dna, function(item) {
+    if (!PROD) this.validateItem_(item);
     var decorator = this.decorators_[item.category][item.type];
     _.decorate(entity, decorator, item.spec);
   }, this);
@@ -29,7 +29,7 @@ EntityDecorator.prototype.validateItem_ = function(item) {
 EntityDecorator.prototype.addDecoratorObj = function(obj, category) {
   var fns = _.pickFunctions(obj, {prefix: 'decorate', suffix: '_'});
   _.each(fns, function(fn, type) {
-    this.addDecorator(category, type, fn);
+    this.addDecorator(category, type, fn.bind(obj));
   }, this);
 };
 

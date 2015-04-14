@@ -6,14 +6,15 @@ LoadingScene.prototype.init = function() {
 };
 
 LoadingScene.prototype.addEntities_ = function() {
-  var loadingElement = this.entityElement_.create('loadingSplash');
-  this.entity_ = loadingElement.getEntity();
-  this.entity_.loading = 0;
+  this.element_ = this.entityElement_.create('loadingSplash');
+  this.element_.setProp('loading', 0);
 };
 
 LoadingScene.prototype.update_ = function(dt) {
-  this.entity_.loading += dt * 1.15;
-  if (this.entity_.loading > 1) {
+  var progress = this.element_.getProp('loading');
+  progress += dt * 1.15;
+  this.element_.setProp('loading', progress);
+  if (progress >= 1) {
     this.transitionInstantly_('intro');
   }
 };

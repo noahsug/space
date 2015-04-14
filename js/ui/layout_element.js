@@ -12,26 +12,26 @@ LayoutElement.prototype.init = function(opt_options) {
 
   var options = opt_options || {};
   this.setDirection(options.direction || LayoutElement.Direction.HORIZONTAL);
-  this.setAlign(options.align || LayoutElement.Align.CENTER);
+  this.setAlign(options.align || 'center');
   this.setPadding.apply(this, options.padding || [0]);
 
   this.addUnit_('pad-left', 'btn', .66);
+  this.addUnit_('pad-left', 'btn-sm', .8);
   this.addUnit_('pad-bot', 'btn', .16);
+  this.addUnit_('pad-bot', 'btn-mix', .14);
+  this.addUnit_('pad-bot', 'btn-crowded', .1);
   this.addUnit_('pad-left', 'btn-lg', .6);
   this.addUnit_('pad-top', 'btn-lg', .2);
+
+  this.addUnit_('pad-top', 'body', Padding.BODY);
+  this.addUnit_('pad-bot', 'body', Padding.BODY);
+  this.addUnit_('pad-right', 'body', Padding.BODY);
+  this.addUnit_('pad-left', 'body', Padding.BODY);
 };
 
 LayoutElement.Direction = {
   HORIZONTAL: 'horizontal',
   VERTICAL: 'vertical'
-};
-
-LayoutElement.Align = {
-  LEFT: 'left',
-  TOP: 'top',
-  RIGHT: 'right',
-  BOTTOM: 'bottom',
-  CENTER: 'center'
 };
 
 LayoutElement.prototype.setDirection = function(direction) {
@@ -68,14 +68,37 @@ LayoutElement.prototype.setAlign = function(align) {
   this.align_ = align;
 };
 
+LayoutElement.prototype.addFlex = function(opt_flex) {
+  var e = this.uiElement_.create();
+  return this.add(e, {flex: opt_flex || 1});
+};
+
+LayoutElement.prototype.addGap = function(size) {
+  var e = this.uiElement_.create();
+  if (this.direction_ == 'vertical') e.childHeight = size;
+  if (this.direction_ == 'horizontal') e.childWidth = size;
+  return this.add(e);
+};
+
+LayoutElement.prototype.addNew = function(element, opt_typeOrOptions) {
+  var e = element.create(opt_typeOrOptions);
+  return this.add(e);
+};
+
 LayoutElement.prototype.add = function(element, opt_options) {
   this.elements_.push(element);
-  if (!opt_options) return;
-  if (_.isDef(opt_options.flex)) element.layout.flex = opt_options.flex;
-  if (_.isDef(opt_options.align)) element.layout.align = opt_options.align;
-  if (_.isDef(opt_options.padding)) {
-    element.setPadding.apply(element, opt_options.padding);
+  if (opt_options) {
+    if (_.isDef(opt_options.flex)) element.layout.flex = opt_options.flex;
+    if (_.isDef(opt_options.align))
+      element.layout.align = opt_options.align;
+    if (_.isDef(opt_options.padding))
+      element.setPadding.apply(element, opt_options.padding);
   }
+  return element;
+};
+
+LayoutElement.prototype.child = function(opt_index) {
+  return this.elements_[opt_index || 0];
 };
 
 LayoutElement.prototype.positionChild_ = function(x, y) {
@@ -102,35 +125,36 @@ LayoutElement.prototype.positionChild_ = function(x, y) {
       distance += freeWidth / 2;
     } else if (this.align_ == o.right) {
       distance += freeWidth;
-    }
-    for (var i = 0; i < this.elements_.length; i++) {
-      var e = this.elements_[i];
-      this.orientedSetPosition_(e, distance, y);
-      distance += e[o.width];
-      e.update();
-    }
-
-  } else {
-    for (var i = 0; i < this.elements_.length; i++) {
-      var e = this.elements_[i];
-      if (e.layout.flex) {
-        var align = e.layout.align || this.align_;
-        e[o.maxWidth_] = freeWidth * e.layout.flex / totalFlex;
-        if (align == o.left) {
-          this.orientedSetPosition_(e, distance, y);
-        } else if (align == o.center) {
-          this.orientedSetPosition_(e, distance + e[o.maxWidth_] / 2, y);
-        } else {
-          this.orientedSetPosition_(e, distance + e[o.maxWidth_], y);
-        }
-        distance += e[o.maxWidth_];
-      } else {
-        this.orientedSetPosition_(e, distance, y);
-        distance += e[o.width];
-      }
-      e.update();
+    } else if (this.align_ != o.left) {
+      _.fail('Invalid children align:', this.align_);
     }
   }
+  for (var i = 0; i < this.elements_.length; i++) {
+    var e = this.elements_[i];
+    if (e.layout.flex) {
+      e[o.maxWidth_] = freeWidth * e.layout.flex / totalFlex;
+    } else {
+      e[o.maxWidth_] = e[o.width];
+    }
+    this.positionElement_(e, distance, y);
+    distance += e[o.maxWidth_];
+    e.update();
+  }
+};
+
+LayoutElement.prototype.positionElement_ = function(e, distance, y) {
+  var o = this.oriented_;
+  var dx;
+  if (e.layout.align == o.left) {
+    dx = 0;
+  } else if (e.layout.align == o.center) {
+    dx = e[o.maxWidth_] / 2;
+  } else if (e.layout.align == o.right) {
+    dx = e[o.maxWidth_];
+  } else {
+    _.fail('Invalid layout align:', e.layout.align);
+  }
+  this.orientedSetPosition_(e, distance + dx, y);
 };
 
 LayoutElement.prototype.orientedSetPosition_ = function(e, x, y) {

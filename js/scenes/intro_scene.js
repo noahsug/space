@@ -11,19 +11,15 @@ IntroScene.prototype.addEntities_ = function() {
   var newGameBtn = this.btnElement_.create();
   newGameBtn.setText('new game', {size: 'btn'});
   newGameBtn.onClick(function() {
-    this.transition_('main');
+    this.transition_('worldSelect');
   }.bind(this));
-
-  var continueBtn = this.btnElement_.create();
-  continueBtn.setText('continue', {size: 'btn'});
 
   this.layout_ = this.layoutElement_.create({
     direction: 'vertical', align: 'bottom'});
   this.layout_.padding.left = 'btn';
   this.layout_.padding.bottom = 'btn';
-  this.layout_.add(continueBtn);
-  continueBtn.padding.bottom = 'btn';
   this.layout_.add(newGameBtn);
+  newGameBtn.layout.align = 'top';
 };
 
 IntroScene.prototype.update_ = function(dt) {

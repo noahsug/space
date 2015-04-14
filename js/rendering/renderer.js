@@ -1,5 +1,6 @@
 var Renderer = di.service('Renderer', [
-  'GameModel as gm', 'Screen', 'ctx', 'Gfx', 'Background', 'Font']);
+  'GameModel as gm', 'Screen', 'ctx', 'Gfx', 'Background', 'Font',
+  'ItemService', 'Inventory']);
 
 Renderer.prototype.init = function() {
   this.initFns_ = _.pickFunctions(this, {prefix: 'init', suffix: '_'});
@@ -10,16 +11,17 @@ Renderer.prototype.init = function() {
     this.style_[name] = {};
     fn.call(this, this.style_[name]);
   }, this);
-
   this.transitionAnimation_ = 0;
 };
 
 Renderer.prototype.update = function(dt) {
   this.handleCamera_(dt / this.gm_.gameSpeed);
   this.background_.draw();
+  this.ctx_.save();
   for (var i = 0; i < this.gm_.entities.length; i++) {
     this.drawEntity_(this.gm_.entities.arr[i], dt);
   }
+  this.ctx_.restore();
   this.gfx_.flush();
   this.drawTransition_(dt);
 };
@@ -68,14 +70,12 @@ Renderer.prototype.transitionIn_ = function(dt) {
 };
 
 Renderer.prototype.drawEntity_ = function(entity, dt) {
-  this.ctx_.save();
   if (!entity.render) {
     entity.render = {};
     this.initFns_[entity.type] && this.initFns_[entity.type](entity);
   }
   entity.render.pos = this.getPos_(entity);
   this.drawFns_[entity.type](entity, this.style_[entity.type], dt);
-  this.ctx_.restore();
 };
 
 Renderer.prototype.getPos_ = function(entity) {
@@ -97,8 +97,8 @@ Renderer.prototype.drawLoadingSplash_ = function(entity) {
 
   var x = this.screen_.width / 2;
   var y = this.screen_.height / 2;
-  this.ctx_.shadowBlur = 8;
-  this.ctx_.lineWidth = 2;
+  this.ctx_.shadowBlur = 25;
+  this.ctx_.lineWidth = 5;
   this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
   this.ctx_.beginPath();
   this.ctx_.arc(x, y, x / 2, -Math.PI / 2,
@@ -115,48 +115,34 @@ Renderer.prototype.drawIntroSplash_ = function() {
 };
 
 Renderer.prototype.drawMainSplash_ = function() {
-  this.topLeftHeading_(Strings.Level[this.gm_.level]);
-  var color = (this.gm_.daysLeft <= 1) && Gfx.Color.WARN;
-  var msg = this.gm_.daysLeft + ' ' + _.plural('day', this.gm_.daysLeft) +
-      ' left';
-  this.topLeftSubHeading_(msg, color);
 };
 
-Renderer.prototype.drawResultSplash_ = function() {
-  this.ctx_.textAlign = 'center';
+var SCREEN_LEFT_PADDING = .13;
+Renderer.prototype.drawResultSplash_ = function(entity) {
+  this.ctx_.textAlign = 'left';
   this.ctx_.textBaseline = 'top';
-  var result = this.gm_.results.won ? 'victory' : 'defeat';
-  this.drawHeading_(result, 70, this.screen_.width / 2, 30 - 12);
-
-  if (this.gm_.results.earned) {
-    var y = this.screen_.height / 2 - 20;
-    var x = this.screen_.width / 2;
-    this.ctx_.textAlign = 'right';
-    var msg = this.gm_.results.earned.item ? 'aquired:' : 'gained:';
-    this.drawText_(msg, 16, x, y);
-
-    y += 30;
-    this.ctx_.textAlign = 'left';
-    if (this.gm_.results.earned.item) {
-      var item = this.gm_.results.earned.item;
-      this.drawText_(item.name, 16, x, y, true);
-      msg = '(' + Strings.ItemType[item.category] + ')';
-      this.drawText_(msg, 16, x, y + 20);
-    }
-    if (this.gm_.results.earned.stat) {
-      var stat = this.gm_.results.earned.stat;
-      msg = '+ ' + stat.value + ' ' + Strings.Stat[stat.name];
-      this.drawText_(msg, 16, x, y, true);
-    }
-  }
+  var result = this.gm_.level.state == 'won' ? 'victory' : 'defeat';
+  this.drawHeading_(result, 70, entity.render.pos.x, entity.render.pos.y);
 };
 
 Renderer.prototype.drawEquipOptionsSplash_ = function() {
-  this.topLeftHeading_('customize');
-};
+  this.ctx_.strokeStyle = '#FFFFFF';
+  this.ctx_.lineWidth = 1;
+  var x = this.screen_.width * SCREEN_LEFT_PADDING;
+  var y = x;
 
-Renderer.prototype.drawEquipSplash_ = function() {
-  this.topLeftHeading_(Strings.ItemType[this.gm_.equipping]);
+  this.ctx_.textAlign = 'left';
+  this.ctx_.textBaseline = 'top';
+  this.drawText_('target: Rank ' + this.getEnemyRank_(this.gm_.level),
+                 12, x, y);
+
+  x += 15;
+  y += 25;
+  var index = 0;
+  _.each(Game.ITEM_TYPES, function(type, i) {
+    var item = this.itemService_.getEnemyEquipped(type);
+    if (item) this.drawText_('- ' + item.name, 12, x, y + 25 * index++);
+  }, this);
 };
 
 Renderer.prototype.drawWonSplash_ = function() {
@@ -175,6 +161,48 @@ Renderer.prototype.drawLostSplash_ = function() {
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
+var DESC_ONLY = _.newSet([
+  'charge', 'charge II', 'tracker', 'tracker II', 'pull', 'melee',
+]);
+Renderer.prototype.drawItemDesc_ = function(entity) {
+  var size = 12;
+  if (!entity.item) return;
+  this.ctx_.textAlign = 'left';
+  this.ctx_.textBaseline = 'middle';
+
+  var tier = Game.MAX_ITEM_LEVEL - entity.item.level + 1;
+  var desc = entity.item.desc;
+
+  var textLines = [desc];
+  var type = entity.item.category;
+  if ((type == 'primary' || type == 'secondary') &&
+      !(entity.item.name in DESC_ONLY)) {
+    var spec = entity.item.spec;
+    var dps = spec.dmg / spec.cooldown;
+    var stats = 'DPS: ' + dps.toFixed(1);
+    if (spec.projectiles > 1) stats += ' x' + spec.projectiles;
+    stats += '  Range: ' + spec.range / 10;
+    if (spec.seek > 10) stats += '  Seek: ' + spec.seek.toFixed(1);
+    textLines[1] = stats;
+  }
+
+  var width = this.font_.width(desc, size);
+  if (width > this.screen_.width - entity.render.pos.x * 2) {
+    if (textLines[1]) desc += ' ' + textLines[1];
+    textLines = _.splitText(desc);
+  }
+
+  if (textLines.length == 2) {
+    this.drawText_(textLines[0], size,
+                   entity.render.pos.x, entity.render.pos.y - size / 2 - 2);
+    this.drawText_(textLines[1], size,
+                   entity.render.pos.x, entity.render.pos.y + size / 2 + 2);
+  } else {
+    this.drawText_(textLines[0], size,
+                   entity.render.pos.x, entity.render.pos.y);
+  }
+};
+
 Renderer.prototype.topLeftHeading_ = function(text) {
   this.ctx_.textAlign = 'left';
   this.ctx_.textBaseline = 'top';
@@ -187,21 +215,120 @@ Renderer.prototype.topLeftSubHeading_ = function(text, opt_color) {
   this.drawHeading_(text, 24, 20, 70 - 16, opt_color);
 };
 
+Renderer.prototype.drawBreak_ = function(entity) {
+  this.ctx_.strokeStyle = '#CCC';
+  this.ctx_.lineWidth = 1;
+  this.ctx_.shadowBlur = 0;
+  var x = this.screen_.width / 8;
+  var y = entity.render.pos.y;
+  this.ctx_.beginPath();
+  this.ctx_.moveTo(this.screen_.width - x, y);
+  this.ctx_.lineTo(x, y);
+  this.ctx_.stroke();
+};
+
+// TODO: Animate level state changes.
+Renderer.prototype.drawRoundBtn_ = function(entity) {
+  if (entity.style == 'hidden') return;
+
+  // Draw circle.
+  var color = '#FFFFFF';
+  if (entity.level) {
+    switch (entity.level.state) {
+      case 'won':
+        if (entity.style != 'world') return;
+        color = Gfx.Color.BEATEN;
+        break;
+      case 'lost': return;
+      case 'locked': color = Gfx.Color.LOCKED; break;
+      case 'unlocked': color = '#FFFFFF'; break;
+      default: _.fail('invalid state: ', entity.level.state);
+    }
+  } else if (entity.item) {
+    if (entity.rewardBtn) {
+      if (!entity.item.name) color = Gfx.Color.LOCKED;
+      if (entity.style == 'active') color = Gfx.Color.ACTIVE;
+    } else if (entity.enemy) {
+      if (entity.style == 'active') color = Gfx.Color.ACTIVE_LOCKED;
+      else color = Gfx.Color.LOCKED;
+    } else if (!this.inventory_.has(entity.item.category)) {
+      color = Gfx.Color.LOCKED;
+    } else if (entity.style == 'equipped' || entity.style == 'active') {
+      color = Gfx.Color.ACTIVE;
+    }
+  } else if (entity.category) {
+    if (!this.inventory_.has(entity.category)) {
+      color = Gfx.Color.LOCKED;
+    } else if (entity.style != 'selected') {
+      color = Gfx.Color.UNSELECTED;
+    }
+  } else if (entity.style == 'locked') {
+    color = Gfx.Color.LOCKED;
+  }
+  this.ctx_.strokeStyle = color;
+  this.ctx_.fillStyle = '#000000';
+  this.ctx_.lineWidth = 2;
+  this.ctx_.beginPath();
+  this.ctx_.arc(entity.render.pos.x, entity.render.pos.y,
+                entity.radius - 1, 0, 2 * Math.PI);
+  this.ctx_.fill();
+  this.ctx_.stroke();
+
+  // Draw text.
+  var text = entity.text;
+  var textSize = Size.ITEM_TEXT;
+  if (entity.level) {
+    if (entity.style == 'world') {
+      if (entity.state == 'won') text = 'W';
+      else text = entity.level.index + 1;
+      textSize = Size.WORLD_TEXT;
+    } else {
+      text = Strings.rank(entity.level.type);
+      textSize = Size.TEXT;
+    }
+  } else if (entity.item) {
+    if (entity.enemy && entity.item.name) {
+      color = '#FFFFFF';
+    }
+    text = entity.item.name || 'none';
+    textSize = Size.ITEM_TEXT;
+  } else if (entity.category) {
+    text = Strings.ItemType[entity.category];
+  }
+
+  this.ctx_.textAlign = 'center';
+  this.ctx_.textBaseline = 'middle';
+  if (this.font_.width(text, textSize) > entity.radius * 2 - 6) {
+    var lines = _.splitText(text);
+    this.drawText_(lines[0], textSize, entity.render.pos.x,
+                   entity.render.pos.y - textSize / 2 - 2,
+                   {color: color});
+    this.drawText_(lines[1], textSize, entity.render.pos.x,
+                   entity.render.pos.y + textSize / 2 + 2,
+                   {color: color});
+  } else {
+    this.drawText_(text, textSize, entity.render.pos.x, entity.render.pos.y,
+                   {color: color});
+  }
+};
+
 Renderer.prototype.drawBtn_ = function(entity) {
-  this.underlineLabel_(entity);
+  this.underlineLabel_(entity, {direction: entity.direction});
   this.drawLabel_(entity);
 };
 
 Renderer.prototype.drawLabel_ = function(entity) {
   var color = null;
-  if (entity.style == 'equipped') {
-    color = Gfx.Color.SUCCESS;
+  if (entity.style == 'equipped' || entity.style == 'active') {
+    color = Gfx.Color.ACTIVE;
+  } else if (entity.style == 'locked') {
+    color = Gfx.Color.LOCKED;
   }
   this.ctx_.textAlign = entity.align;
   this.ctx_.textBaseline = entity.baseline;
   this.drawText_(entity.text, entity.size,
                  entity.render.pos.x, entity.render.pos.y,
-                 false, color);
+                 {color: color, bold: entity.style == 'active'});
 };
 
 Renderer.prototype.drawHitbox_ = function(entity) {
@@ -211,52 +338,8 @@ Renderer.prototype.drawHitbox_ = function(entity) {
   //                   entity.width, entity.height);
 };
 
-// NOT USED.
-Renderer.prototype.drawBtnSm_ = function(entity) {
-  this.ctx_.fillStyle = '#000000';
-  this.ctx_.lineWidth = 2;
-  var color = '#FFFFFF';
-  if (entity.equipped) {
-    color = '#44FF77';
-  } else if (entity.locked) {
-    color = Gfx.Color.LOCKED;
-  }
-  this.ctx_.strokeStyle = color;
-
-  this.ctx_.beginPath();
-  this.ctx_.arc(entity.render.pos.x, entity.render.pos.y,
-                entity.radius - 1, 0, 2 * Math.PI);
-  this.ctx_.fill();
-  this.ctx_.stroke();
-  if (entity.name) {
-    this.drawItem_(entity, entity.render.pos);
-  };
-
-  //if (entity.locked) {
-  //  this.ctx_.fillStyle = 'rgba(200, 200, 200, .5)';
-  //  this.ctx_.font = (entity.radius * 2) + 'px Arial';
-  //  this.ctx_.fillText('✕', entity.render.pos.x, entity.render.pos.y);
-  //}
-};
-
-// NOT USED.
-Renderer.prototype.drawItem_ = function(item, pos) {
-  var size = item.fontSize || 12;
-  if (item.locked) {
-    this.ctx_.fillStyle = Gfx.Color.LOCKED;
-  } else {
-    this.ctx_.fillStyle = '#FFFFFF';
-  }
-  this.ctx_.font = size + 'px Arial';
-  this.ctx_.textAlign = 'center';
-  this.ctx_.textBaseline = 'middle';
-  var x = pos.x; var y = pos.y;
-  if (item.name == '↩') y += 3;
-  if (item.name == '◃') { x -= 1; y += 1; }
-  this.ctx_.fillText(item.name, x, y);
-};
-
 var DEATH_ANIMATION_DURATION = .3;
+var SHIP_SHRINKAGE = 2;
 Renderer.prototype.initShip_ = function(entity) {
   entity.render.damageTaken = 0;
   entity.render.shaking = 0;
@@ -269,10 +352,12 @@ Renderer.prototype.addShipStyle_ = function(style) {
     lineWidth: 3
   };
   style.good = this.gfx_.addStyle(_.extend({
-    stroke: Gfx.Color.GREEN
+    stroke: Gfx.Color.GREEN,
+    shadow: 'none'
   }, baseStyle));
   style.bad = this.gfx_.addStyle(_.extend({
-    stroke: Gfx.Color.BLUE
+    stroke: Gfx.Color.BLUE,
+    shadow: 'none'
   }, baseStyle));
   style.goodDmged = this.gfx_.addStyle({
     lineWidth: 5,
@@ -284,21 +369,32 @@ Renderer.prototype.addShipStyle_ = function(style) {
     stroke: Gfx.Color.MORE_OPAC_RED,
     shadow: 'none'
   });
+  style.disabled = this.gfx_.addStyle({
+    lineWidth: 5,
+    stroke: Gfx.Color.OPAC_BLUE,
+    shadow: 'none'
+  });
+  style.tagged = this.gfx_.addStyle({
+    fill: Gfx.Color.OPAC_RED
+  });
+  style.shield = this.gfx_.addStyle({
+    lineWidth: 2,
+    fill: Gfx.Color.MORE_OPAC_BLUE,
+    stroke: Gfx.Color.OPAC_BLUE
+  });
+  style.reflect = this.gfx_.addStyle({
+    lineWidth: 2,
+    stroke: Gfx.Color.OPAC_YELLOW
+  });
+  style.haze = this.gfx_.addStyle({
+    fill: Gfx.Color.OPAC_GRAY
+  });
+  style.invisible = this.gfx_.addStyle({
+    stroke: Gfx.Color.LESS_OPAC_GRAY,
+    lineWidth: 3
+  });
 };
 Renderer.prototype.drawShip_ = function(entity, style, dt) {
-  if (!entity.dead) {
-    // Don't resize instantly.
-    var rGap = entity.radius - entity.render.radius;
-    if (rGap) {
-      var dr = Math.sign(rGap) * 10 * dt;
-      if (Math.abs(rGap) < Math.abs(dr)) {
-        entity.render.radius = entity.radius;
-      } else {
-        entity.render.radius += dr;
-      }
-    }
-  }
-
   var damage = entity.prevHealth - entity.health;
   if (damage != entity.render.damageTaken) {
     entity.render.damageTaken = damage;
@@ -317,9 +413,61 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
     entity.render.shaking--;
   }
 
-  // Draw health indicator
   if (!entity.dead) {
-    if (entity.health <= damage) {
+    // Don't resize instantly.
+    var rGap = entity.radius - entity.render.radius;
+    if (rGap) {
+      var dr = Math.sign(rGap) * 10 * dt;
+      if (Math.abs(rGap) < Math.abs(dr)) {
+        entity.render.radius = entity.radius;
+      } else {
+        entity.render.radius += dr;
+      }
+    }
+
+    // Draw disabled indicator.
+    if (entity.effect.disabled) {
+      this.gfx_.setStyle(style.disabled);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                       entity.render.radius - 5);
+    }
+
+    // Draw tagged indicator.
+    if (entity.effect.tagged) {
+      this.gfx_.setStyle(style.tagged);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y, 3);
+    }
+
+    // Draw shield indicator.
+    if (entity.effect.shield) {
+      this.gfx_.setStyle(style.shield);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                       entity.radius * 1.5);
+    }
+
+    // Draw reflect indicator.
+    if (entity.effect.reflect) {
+      this.gfx_.setStyle(style.reflect);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                       entity.radius * 1.5);
+    }
+
+    // Draw reflect indicator.
+    if (entity.effect.haze) {
+      this.gfx_.setStyle(style.haze);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                       entity.radius * 1.5);
+    }
+
+    // Draw invisible indicator.
+    if (entity.effect.invisible) {
+      this.gfx_.setStyle(style.invisible);
+      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                       entity.render.radius - SHIP_SHRINKAGE);
+    }
+
+    // Draw health indicator.
+    if (entity.health <= 10 && damage) {
       entity.render.healthIndicator = 30;
     }
     if (entity.render.healthIndicator) {
@@ -344,9 +492,9 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
   // Draw ship.
   this.gfx_.setStyle(style[entity.style], customStyle);
   this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                   entity.render.radius - 2);
+                   entity.render.radius - SHIP_SHRINKAGE);
 
-  // DEBUG.
+  // DEBUG: See where the ship is aiming.
   //var dx = entity.render.pos.x - entity.x;
   //var dy = entity.render.pos.y - entity.y;
   //if (entity.aimPos) {
@@ -358,19 +506,19 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
   //}
 };
 
-var SPEED_FUDGING = 8;
+var SPEED_FUDGING = 8;  // Draw laser ahead of where it actually is.
 Renderer.prototype.addLaserStyle_ = function(style) {
-  style.weak = this.gfx_.addStyle({
-    stroke: Gfx.Color.YELLOW,
-    lineWidth: 2
-  });
   style.strong = this.gfx_.addStyle({
+    stroke: Gfx.Color.YELLOW,
+    lineWidth: 3
+  });
+  style.weak = this.gfx_.addStyle({
     stroke: Gfx.Color.RED,
-    lineWidth: 2
+    lineWidth: 3
   });
   style.effect = this.gfx_.addStyle({
     stroke: Gfx.Color.PINK,
-    lineWidth: 3
+    lineWidth: 4
   });
 };
 Renderer.prototype.drawLaser_ = function(entity, style) {
@@ -379,12 +527,12 @@ Renderer.prototype.drawLaser_ = function(entity, style) {
     return;
   }
 
-  if (entity.style == 'bullet') {
-    this.gfx_.setStyle(style.strong);
+  if (entity.style == 'weak') {
+    this.gfx_.setStyle(style.weak);
   } else if (entity.style == 'effect') {
     this.gfx_.setStyle(style.effect);
   } else {
-    this.gfx_.setStyle(style.weak);
+    this.gfx_.setStyle(style.strong);
   }
   var dx = Math.cos(entity.rotation) * SPEED_FUDGING;
   var dy = Math.sin(entity.rotation) * SPEED_FUDGING;
@@ -411,6 +559,7 @@ Renderer.prototype.addBombStyle_ = function(style) {
   });
 };
 Renderer.prototype.drawBomb_ = function(entity, style, dt) {
+  if (entity.remove) return;
   if (entity.dead) {
     // Draw explosion.
     if (!_.isDef(entity.render.explodeTime)) {
@@ -439,6 +588,38 @@ Renderer.prototype.drawBomb_ = function(entity, style, dt) {
   }
 };
 
+Renderer.prototype.addBallStyle_ = function(style) {
+  style.normal = this.gfx_.addStyle({
+    fill: Gfx.Color.GRAY
+  });
+};
+Renderer.prototype.drawBall_ = function(entity, style, dt) {
+  if (entity.dead) {
+    entity.remove = true;
+    return;
+  }
+  this.gfx_.setStyle(style.normal);
+  this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                   entity.radius);
+};
+
+Renderer.prototype.addAuraStyle_ = function(style) {
+  style.normal = this.gfx_.addStyle({
+    stroke: Gfx.Color.OPAC_WHITE,
+    lineWidth: 1
+  });
+};
+Renderer.prototype.drawAura_ = function(entity, style, dt) {
+  if (entity.dead) {
+    entity.remove = true;
+    return;
+  }
+  this.gfx_.setStyle(style.normal);
+  this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                   entity.radius);
+
+};
+
 Renderer.prototype.addBladeStyle_ = function(style) {
   style.normal = this.gfx_.addStyle({
     stroke: Gfx.Color.BLUE,
@@ -460,11 +641,12 @@ Renderer.prototype.drawBlade_ = function(entity, style, dt) {
 
 };
 
-Renderer.prototype.drawText_ = function(text, size, x, y, opt_bold, opt_color) {
-  var color = opt_color || '#FFFFFF';
+Renderer.prototype.drawText_ = function(text, size, x, y, opt_options) {
+  var options = opt_options || {};
+  var color = options.color || '#FFFFFF';
   this.ctx_.fillStyle = color;
   this.ctx_.shadowBlur = 0;
-  this.ctx_.font = (opt_bold ? 'bold ' : '') + size + 'px ' + Gfx.Font.TEXT;
+  this.ctx_.font = (options.bold ? 'bold ' : '') + size + 'px ' + Gfx.Font.TEXT;
   this.ctx_.fillText(text, x, y);
 };
 
@@ -488,24 +670,36 @@ Renderer.prototype.drawHeading_ = function(text, size, x, y, opt_color) {
   this.ctx_.fillText(text, x, y);
 };
 
-Renderer.prototype.underlineLabel_ = function(entity) {
-  var color = null;
-  if (entity.style == 'equipped') {
-    color = Gfx.Color.SUCCESS;
+Renderer.prototype.underlineLabel_ = function(entity, opt_options) {
+  var options = opt_options || {};
+  options.color = '#FFFFFF';
+  if (entity.style == 'equipped' || entity.style == 'active') {
+    options.color = Gfx.Color.ACTIVE;
   }
-  this.underlineText_(entity.size, entity.render.pos.x, entity.render.pos.y,
-                      color);
+  options.lineDirection = entity.lineDirection;
+  this.underlineText_(entity.text, entity.size,
+                      entity.render.pos.x, entity.render.pos.y, options);
 };
 
-Renderer.prototype.underlineText_ = function(size, x, y, opt_color) {
-  var color = opt_color || '#FFFFFF';
+Renderer.prototype.underlineText_ = function(text, size, x, y, opt_options) {
+  var options = opt_options || {};
+  options.color = options.color || '#FFFFFF';
+  options.lineDirection = options.lineDirection || 'right';
   y += size + 5;
   this.ctx_.lineWidth = 1;
   this.ctx_.shadowBlur = 2;
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = color;
+  this.ctx_.strokeStyle = this.ctx_.shadowColor = options.color;
   this.ctx_.beginPath();
-  this.ctx_.moveTo(x, y);
-  this.ctx_.lineTo(x + this.screen_.width, y);
+
+  if (options.lineDirection == 'right') {
+    this.ctx_.moveTo(x, y);
+    this.ctx_.lineTo(x + this.screen_.width, y);
+  } else {
+    var width = this.font_.width(text, size);
+    this.ctx_.moveTo(x + width, y);
+    this.ctx_.lineTo(0, y);
+  }
+
   this.ctx_.stroke();
 };
 

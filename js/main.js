@@ -30,6 +30,8 @@ Main.prototype.start = function() {
   //this.random_.seed(.02);
   //this.random_.useTrueRandom();
   this.screen_.setSurfaceArea(Screen.DESIRED_SURFACE_AREA);
+  // Hack to fix the screen sometimes not resizing.
+  setTimeout(this.screen_.resize.bind(this.screen_), 1);
   this.gameRunner_.start();
 };
 

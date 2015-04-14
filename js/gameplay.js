@@ -4,273 +4,413 @@ Gameplay.prototype.init = function() {
   this.gameplayParser_.parse(this.gameplayFile_, this);
 };
 
+Speed = {
+  SLOW: 150,
+  DEFAULT: 200,
+  FAST: 300,
+  VERY_FAST: 400,
+
+  SHIP_SPEED: 70
+};
+
+Accuracy = {
+  DEFAULT: _.radians(10),
+  ACCURATE: _.radians(5),
+  INACCURATE: _.radians(15)
+};
+
+Health = {
+  DEFAULT: 50,
+  PLAYER_HEALTH: 65
+};
+
+Gameplay.prototype.worlds = [
+  {  // 0
+    rows: 1,
+    cols: 3
+  },
+  {  // 1
+    rows: 1,
+    cols: 4
+  },
+  {  // 2
+    rows: 2,
+    cols: 3
+  },
+  {  // 3
+    rows: 3,
+    cols: 3
+  },
+  {  // 4
+    rows: 2,
+    cols: 5
+  },
+  {  // 5
+    rows: 4,
+    cols: 4
+  },
+  {  // 6
+    rows: 5,
+    cols: 5
+  },
+  {  // 7
+    rows: 8,
+    cols: 4
+  },
+  //{  // 8
+  //  rows: 3,
+  //  cols: 5
+  //},
+  //{  // 9
+  //  rows: 6,
+  //  cols: 3
+  //},
+  //{  // 10
+  //  rows: 8,
+  //  cols: 3
+  //},
+  //{  // 11
+  //  rows: 8,
+  //  cols: 5
+  //}
+];
+
 di.constant('gameplayFile', {
   player: [
-    'basic laser',
+    //'basic laser',
     //'burst laser',
     //'grenade',
     //'razors',
     //'sniper',
     //'missiles',
-    //'shotgun',
+    'shotgun',
+    //'gatling',
 
     //'stun',
     //'emp',
-    //'pistol',
+    'pistol',
+    //'charge',
+    //'tracker',
+    //'turret',
 
     //'teleport',
 
-    //'mink',
-    //'baboon',
+    //'knockback',
+    //'shield',
+    //'reflect',
+    //'haze',
 
-    //'+explosions',
+    //'ninja',
+    //'divide',
 
-    'circle'
+    //'freeze',
+    //'warp',
   ],
 
   inventory: [
-    'basic laser',
+    'shotgun',
+    'pistol'
   ],
 
   bosses: [
-    [
-      'boss1',
-      'shotgun',
-      'pistol',
-      'circle',
-    ],
-    [
-      'boss2',
-      'razors',
-      'turtle',
-      '+defence',
-      'circle',
-    ],
-    [
-      'boss3',
-      'grenade',
-      'emp',
-      'baboon II',
-      '+explosions',
-      'circle',
-    ],
-    [
-      'boss4',
-      'sniper',
-      'pistol II',
-      'mink',
-      'dash II',
-      '+speed II',
-      'circle',
-    ],
-    [
-      'boss5',
-      'missiles II',
-      'teleport',
-      '+attack rate II',
-      'baboon III',
-      'stun',
-      'circle',
-    ],
+    //[
+    //  'shotgun',
+    //  //'missiles',
+    //  //'pistol',
+    //  //'split',
+    //],
+    //[
+    //  'razors',
+    //  'turtle',
+    //  '+defence',
+    //],
+    //[
+    //  'grenade',
+    //  'emp',
+    //  'baboon II',
+    //  '+explosions',
+    //],
+    //[
+    //  'sniper',
+    //  'pistol II',
+    //  'mink',
+    //  'dash II',
+    //  '+speed II',
+    //],
+    //[
+    //  'missiles II',
+    //  'teleport',
+    //  '+attack rate II',
+    //  'baboon III',
+    //  'stun',
+    //],
   ],
 
   items: {
     'basic laser': {
-      desc: 'Basic laser weapon.',
-      type: 'primary.basicLaser', spec: {},
+      desc: 'Stand laser weapon.',
+      id: 'primary.basicLaser',
+      spec: {dmg: 5, cooldown: .8, range: 150},
       level: 0},
-    'basic laser II': {
-      desc: 'Basic laser weapon.',
-      type: 'primary.basicLaser', spec: {power: 1},
-      level: 1},
-    'basic laser III': {
-      desc: 'Basic laser weapon.',
-      type: 'primary.basicLaser', spec: {power: 2},
-      level: 2},
+    //'basic laser II': {
+    //  desc: 'Powerful Basic laser.',
+    //  id: 'primary.basicLaser',
+    //  spec: {dmg: 6, cooldown: .75, range: 150},
+    //  level: 2},
+    //'basic laser III': {
+    //  desc: 'Rapid, powerful Basic laser.',
+    //  id: 'primary.basicLaser',
+    //  spec: {dmg: 5, cooldown: .5, range: 150},
+    //  level: 4},
     'burst laser': {
-      desc: 'Fires a rapid volley of shots every 2 seconds.',
-      type: 'primary.burstLaser', spec: {},
+      desc: 'Rapid volley of shots.',
+      id: 'primary.burstLaser',
+      spec: {dmg: 4, cooldown: 2.2, range: 150, projectiles: 5},
       level: 1},
-    'burst laser II': {
-      desc: 'Fires a rapid volley of shots every 2 seconds.',
-      type: 'primary.burstLaser', spec: {power: 1},
-      level: 2},
+    //'burst laser II': {
+    //  desc: 'Rapid volley of shots.',
+    //  id: 'primary.burstLaser',
+    //  spec: {dmg: 4, cooldown: 2.5, range: 150, projectiles: 7},
+    //  level: 2},
     'shotgun': {
-      desc: 'Fires a powerful burst of shots in an arc.',
-      type:'primary.shotgun', spec: {},
+      desc: 'Burst of shots in an arc.',
+      id:'primary.shotgun',
+      spec: {dmg: 5, cooldown: 2.1, range: 100, projectiles: 6},
       level: 0},
-    'shotgun II': {
-      desc: 'Fires a powerful burst of shots in an arc.',
-      type:'primary.shotgun', spec: {power: 1},
-      level: 1},
-    'shotgun III': {
-      desc: 'Fires a powerful burst of shots in an arc.',
-      type:'primary.shotgun', spec: {power: 2},
+    //'shotgun II': {
+    //  desc: 'Burst of shots in an arc.',
+    //  id:'primary.shotgun',
+    //  spec: {dmg: 5, cooldown: 1.75, range: 100, projectiles: 8, power: 1},
+    //  level: 2},
+    'scatter shot': {
+      desc: 'Big burst of weak shots.',
+      id:'primary.shotgun',
+      spec: {dmg: 4, cooldown: 2.1, range: 150, projectiles: 10, power: 2},
       level: 2},
     'grenade': {
-      desc: 'Travels a short distance before exploding in a large area.',
-      type:'primary.grenade', spec: {},
+      desc: 'Explodes in a large area.',
+      id:'primary.grenade',
+      spec: {dmg: 10, range: 150, cooldown: 2},
       level: 0},
     'razors': {
-      desc: 'Fires three powerful shots in three directions.',
-      type:'primary.razors', spec: {},
+      desc: 'Powerful shots in three directions.',
+      id:'primary.razors',
+      spec: {dmg: 9, projectiles: 3, cooldown: 2, range: 150},
       level: 1},
+    //'razors II': {
+    //  desc: 'Powerful shots in five directions.',
+    //  id:'primary.razors',
+    //  spec: {power: 1, dmg: 10, projectiles: 5, cooldown: 2.25, range: 150},
+    //  level: 4},
     'sniper': {
-      desc: 'Fires a fast, powerful shot.',
-      type:'primary.sniper', spec: {},
-      level: 1},
+      desc: 'Long range, low rate of rate.',
+      id:'primary.sniper',
+      spec: {dmg: 12, cooldown: 3.75, range: 500},
+      level: 3},
     'missiles': {
-      desc: 'Fires seeking shots.',
-      type:'primary.missiles', spec: {},
+      desc: 'Heat seeking missiles.',
+      id:'primary.missiles',
+      spec: {dmg: 6, seek: _.radians(60), cooldown: 1.6, range: 300},
+      level: 5},
+    'stinger': {
+      desc: 'Rapid heat seeking missiles.',
+      id:'primary.missiles',
+      spec: {dmg: 3, seek: _.radians(60), cooldown: .7, range: 200, power: 1},
       level: 1},
-    'missiles II': {
-      desc: 'Fires seeking shots.',
-      type:'primary.missiles', spec: {power: 1},
-      level: 2},
+    'gatling': {
+      desc: 'Fires faster and faster over time.',
+      id:'primary.gatling',
+      spec: {dmg: 3, cooldown: 1, range: 200},
+      level: 4},
 
+    'turret': {
+      desc: 'Drops turrets that shoot at the enemy.',
+      id:'secondary.turret',
+      spec: {cooldown: 6, range: 10000},
+      level: 5},
     'stun': {
-      desc: 'Shot that stuns the enemy on contact.',
-      type:'secondary.stun', spec: {},
-      level: 0},
-    'stun II': {
-      desc: 'Shot that stuns the enemy on contact.',
-      type:'secondary.stun', spec: {power: 1},
-      level: 1},
+      desc: 'Stun enemy for 1s.',
+      id:'secondary.stun',
+      spec: {dmg: 1, cooldown: 1.25, range: 300},
+      level: 4},
+    //'stun II': {
+    //  desc: 'Stun enemy for 1.4s.',
+    //  id:'secondary.stun',
+    //  spec: {dmg: 1, cooldown: 1.25, range: 300},
+    //  level: 3},
     'emp': {
-      desc: 'Grenade that disables enemy primary weapons.',
-      type:'secondary.emp', spec: {},
-      level: 1},
-    'emp II': {
-      desc: 'Grenade that disables enemy primary weapons.',
-      type:'secondary.emp', spec: {power: 1},
-      level: 2},
+      desc: 'Grenade that disables weapons for 1.2s.',
+      id:'secondary.emp',
+      spec: {dmg: 1, cooldown: 1.5, range: 150},
+      level: 3},
+    //'emp II': {
+    //  desc: 'Grenade that disables weapons for 1.5s.',
+    //  id:'secondary.emp',
+    //  spec: {dmg: 1, cooldown: 1.5, range: 150, power: 1},
+    //  level: 5},
     'pistol': {
-      desc: 'Basic laser.',
-      type:'secondary.pistol', spec: {},
+      desc: 'Standard weak laser weapon.',
+      id:'secondary.pistol',
+      spec: {dmg: 3, cooldown: 1.5, range: 300},
       level: 0},
-    'pistol II': {
-      desc: 'Basic laser.',
-      type:'secondary.pistol', spec: {power: 1},
+    //'pistol II': {
+    //  desc: 'Powerful basic laser.',
+    //  id:'secondary.pistol',
+    //  spec: {dmg: 5, cooldown: 1.25, range: 300},
+    //  level: 3},
+    //'pistol III': {
+    //  desc: 'Rapid, powerful basic laser.',
+    //  id:'secondary.pistol',
+    //  spec: {dmg: 5, cooldown: 1, range: 300},
+    //  level: 4},
+    'charge': {
+      desc: 'Charge the enemy, taking no damage from collisions.',
+      id:'secondary.charge', spec: {},
+      level: 0},
+    //'charge II': {
+    //  desc: 'Charge the enemy while tasking less damage',
+    //  id:'secondary.charge', spec: {power: 1},
+    //  level: 1},
+    //'tracker': {
+    //  desc: 'Tracks enemy, ensuring next attack will hit and deal +25% damage.',
+    //  id:'secondary.tracker', spec: {},
+    //  level: 0},
+    'tracker': {
+      desc: 'Tracks enemy, ensuring next attack will hit and deal +50% damage.',
+      id:'secondary.tracker', spec: {dmgRatio: 1.5},
       level: 1},
-    'pistol III': {
-      desc: 'Basic laser.',
-      type:'secondary.pistol', spec: {power: 2},
+    'pull': {
+      desc: 'Pulls enemy close and stuns. Range: 10. Stun duration: .75s',
+      id:'secondary.pull', spec: {duration: 1.5, range: 100},
       level: 2},
+    //'melee': {
+    //  desc: 'Primary 2x for 75% damage while close.',
+    //  id:'secondary.melee', spec: {dmgRatio: .75, range: 50},
+    //  level: 1},
 
     'dash': {
-      desc: 'dash.',
-      type: 'utility.dash', spec: {},
-      level: 0},
-    'dash II': {
-      desc: 'dash.',
-      type: 'utility.dash', spec: {power: 1},
-      level: 1},
-    'dash III': {
-      desc: 'dash.',
-      type: 'utility.dash', spec: {power: 2},
+      desc: 'Ability to dash a short distance.',
+      id: 'utility.ninja', spec: {power: 1},
       level: 2},
     'teleport': {
-      desc: 'Teleport behind the enemy.',
-      type: 'utility.teleport', spec: {},
+      desc: 'Ability to teleport behind the enemy.',
+      id: 'utility.ninja', spec: {power: 2},
       level: 1},
-    'teleport II': {
-      desc: 'Teleport behind the enemy.',
-      type: 'utility.teleport', spec: {power: 1},
+    'stealth': {
+      desc: 'Ability to turn invisible for a short period of time.',
+      id: 'utility.ninja', spec: {power: 3},
+      level: 0},
+    'tiny': {
+      desc: 'Smaller and faster.',
+      id: 'utility.druid', spec: {power: 1},
+      level: 0},
+    'huge': {
+      desc: 'Larger and more powerful.',
+      id: 'utility.druid', spec: {power: 2},
+      level: 3},
+    'divide': {
+      desc: 'Divide into two weaker halfs.',
+      id: 'utility.druid', spec: {power: 3},
+      level: 5},
+    //'scope': {
+    //  desc: '1.5x range.',
+    //  id: 'utility.ranger', spec: {power: 1, range: 1.5},
+    //  level: 1},
+    'scope': {
+      desc: '1.5x range, better accuracy.',
+      id: 'utility.ranger', spec: {range: 1.5, accuracy: 0},
+      level: 4},
+    'heated': {
+      desc: 'Shots seek target, but have less range.',
+      id: 'utility.ranger', spec: {range: .75, seek: _.radians(50)},
       level: 2},
-    //'turbo': {
-    //  desc: 'move faster.',
-    //  type: 'utility.turbo', spec: {},
-    //  level: 9},
-    //'invisible': {
-    //  desc: 'Become untargetable for a short period of time.',
-    //  type: 'utility.invisible', spec: {cooldown: 4},
-    //  level: 9},
+    //'sticky': {
+    //  desc: 'Shots slow target with each hit.',
+    //  id: 'utility.sticky',
+    //  spec: {},
+    //  level: 3},
 
-    'baboon': {
-      desc: 'Enrage when hurt, becoming larger and dealing more damage.',
-      type: 'ability.rage', spec: {},
+    'knockback': {
+      desc: 'Knocks the enemy away.',
+      id:'ability.knockback', spec: {},
       level: 0},
-    'baboon II': {
-      desc: 'Enrage when hurt, becoming larger and dealing more damage.',
-      type: 'ability.rage', spec: {power: 1},
+    'haze': {
+      desc: 'Lowers enemy accuracy for a short time.',
+      id: 'ability.haze', spec: {},
       level: 1},
-    'baboon III': {
-      desc: 'Enrage when hurt, becoming larger and dealing more damage.',
-      type: 'ability.rage', spec: {power: 1},
+    'shield': {
+      desc: 'Blocks the next shot.',
+      id: 'ability.shield', spec: {},
+      level: 3},
+    //'shield II': {
+    //  desc: 'Blocks the next two shots.',
+    //  id: 'ability.shield', spec: {power: 1},
+    //  level: 4},
+    //'shield III': {
+    //  desc: 'Blocks the next three shots.',
+    //  id: 'ability.shield', spec: {power: 2},
+    //  level: 5},
+    'reflect': {
+      desc: 'Reflects any projectile for short time.',
+      id: 'ability.reflect', spec: {duration: 1.75},
       level: 2},
-    'mink': {
-      desc: 'Small and agile, but deal less damage.',
-      type: 'ability.mink', spec: {},
-      level: 1},
-    'turtle': {
-      desc: 'High def, low speed.',
-      type: 'ability.turtle', spec: {},
-      level: 0},
+    //'reflect II': {
+    //  desc: 'Reflects shots for 2s',
+    //  id: 'ability.reflect', spec: {power: 1},
+    //  level: 3},
+    //'rock': {
+    //  desc: '15% less damage.',
+    //  id: 'ability.tank', spec: {power: 1, def: 1.15},
+    //  level: 1},
+    'tank': {
+      desc: '20% less damage.',
+      id: 'ability.tank', spec: {power: 1, def: 1.2},
+      level: 4},
+    'diamond': {
+      desc: '10% more health & no collision damage.',
+      id: 'ability.tank', spec: {power: 3, health: 1.1},
+      level: 5},
     //'zombie': {
     //  desc: 'Stay alive for a few seconds after death.',
-    //  type: 'ability.zombie', spec: {cooldown: 4},
+    //  id: 'ability.zombie', spec: {cooldown: 4},
     //  level: 9},
 
-    '+health': {
-      desc: '20% more health.',
-      type: 'mod.health', spec: {health: 1.18},
+    'medic': {
+      desc: 'Slowly heal over time',
+      id: 'augment.medic', spec: {},
       level: 0},
-    '+health II': {
-      desc: '20% more health.',
-      type: 'mod.health', spec: {health: 1.27},
+    'extreme': {
+      desc: 'Double damage, half health',
+      id: 'augment.extreme', spec: {},
       level: 1},
-    '+health III': {
-      desc: '20% more health.',
-      type: 'mod.health', spec: {health: 1.36},
+    'freeze': {
+      desc: 'Tap to freeze enemy [1 use / battle]',
+      id: 'augment.freezeClick', spec: {},
+      level: 0},
+    'warp': {
+      desc: 'Tap to teleport [1 use / battle]',
+      id: 'augment.teleClick', spec: {},
+      level: 1},
+    'multi': {
+      desc: '+2 projectiles for shotguns & burst',
+      id: 'augment.multi', spec: {projectiles: 2},
+      req: ['burst laser', 'shotgun', 'scatter shot', 'razors'],
       level: 2},
-    '+defence': {
-      desc: '20% more def.',
-      type: 'mod.def', spec: {def: 1.2},
-      level: 1},
-    '+speed': {
-      desc: 'Move 20% faster.',
-      type: 'mod.speed', spec: {speed: 1.3},
-      level: 0},
-    '+speed II': {
-      desc: 'Move 20% faster.',
-      type: 'mod.speed', spec: {speed: 1.5},
-      level: 1},
-    '+attack rate': {
-      desc: 'Attack 20% faster.',
-      type: 'mod.primaryCooldown', spec: {cooldown: 5 / 6},
-      level: 1},
-    '+attack rate II': {
-      desc: 'Attack 20% faster.',
-      type: 'mod.primaryCooldown', spec: {cooldown: 4 / 6},
+    'speedy': {
+      desc: '+50% speed',
+      id: 'augment.heavy', spec: {speedRatio: 1.5},
       level: 2},
-    '+explosions': {
-      desc: '20% larger explosions.',
-      type: 'mod.aoe', spec: {radius: 1.2},
-      level: 0},
-    '+disable': {
-      desc: 'Stuns, slows and disables last 20% longer.',
-      type: 'mod.disable', spec: {duration: 1.2},
-      level: 1},
-
-    // Non-collectables.
-
-    'circle': {
-      desc: 'Circle',
-      type: 'shape.circle', spec: {radius: 12}},
-
-    'boss1': {
-      type: 'stats', spec: {health: 10}},
-
-    'boss2': {
-      type: 'stats', spec: {health: 16}},
-
-    'boss3': {
-      type: 'stats', spec: {health: 24}},
-
-    'boss4': {
-      type: 'stats', spec: {health: 36}},
-
-    'boss5': {
-      type: 'stats', spec: {health: 50}}
+    'beefy': {
+      desc: '+20% health, -50% speed',
+      id: 'augment.heavy', spec: {healthRatio: 1.2, speedRatio: .5},
+      level: 3},
+    'sharp': {
+      desc: '2x damage on collisions',
+      id: 'augment.sharp', spec: {dmgRatio: 2},
+      level: 4},
+    'camo': {
+      desc: 'Can fire weapons while stealthed',
+      id: 'augment.camo', spec: {}, req: ['stealth'],
+      level: 5}
   }
 });

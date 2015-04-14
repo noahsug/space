@@ -1,5 +1,5 @@
 var ItemService = di.service('ItemService', [
-  'Gameplay']);
+  'Gameplay', 'GameModel as gm']);
 
 ItemService.prototype.get = function() {
   return this.gameplay_.items;
@@ -14,17 +14,15 @@ ItemService.prototype.getByLevel = function(level) {
 };
 
 ItemService.prototype.getByType = function(type) {
-  return this.getByTypeFrom(this.gameplay_.items, type);
+  return _.where(this.gameplay_.items, {category: type});
 };
 
 ItemService.prototype.getByTypeAndLevel = function(type, level) {
+  console.log(type, level, _.pluck(_.where(
+      this.gameplay_.items, {level: level, category: type}), 'name'));
   return _.where(this.gameplay_.items, {level: level, category: type});
 };
 
-ItemService.prototype.getByTypeFrom = function(list, type) {
-  return _.where(list, {category: type});
-};
-
-ItemService.prototype.getIndexByTypeFrom = function(list, item) {
-  return _.findIndexWhere(list, {name: item.name});
+ItemService.prototype.getEnemyEquipped = function(type) {
+  return _.findWhere(this.gm_.level.enemy, {category: type});
 };
