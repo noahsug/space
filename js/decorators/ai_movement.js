@@ -10,9 +10,9 @@ AiMovement.prototype.init = function() {
 AiMovement.prototype.aiMovement_ = function(obj, spec) {
   this.util_.spec(obj, 'movement', spec, {
     speed: Speed.SHIP_SPEED,
-    accel: 1,
+    accel: 2,
     vector: {x: 0, y: 0},
-    intelligence: .2,
+    intelligence: .1,
     urgeCooldown: 1.5
   });
 

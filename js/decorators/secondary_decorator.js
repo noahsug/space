@@ -152,7 +152,6 @@ SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {
     effect: 'stunned',
     knockback: 45,
     grow: -500,
-    growDuration: 1,
     radius: spec.range
   });
 

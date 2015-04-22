@@ -119,8 +119,9 @@ DecoratorUtil.prototype.fireAura = function(obj, spec) {
   var aura = this.entity_.create('aura');
   aura.style = spec.style;
   spec.radius = spec.radius || obj.radius;
+  spec.minRadius = spec.minRadius || obj.radius;
+  spec.maxRadius = spec.maxRadius || spec.radius;
   _.decorate(aura, this.d_.shape.circle, spec);
-  aura.target = obj.target;
   _.decorate(aura, this.d_.movement.atPosition, {target: obj});
   _.decorate(aura, this.d_.growRadiusAndDie, spec);
   return this.gm_.entities.arr[this.gm_.entities.length++] = aura;

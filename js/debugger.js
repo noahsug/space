@@ -1,5 +1,7 @@
 var Debugger = di.service('Debugger', ['GameModel as gm', 'window']);
 
+EXPERIMENT_1 = false;
+
 Debugger.prototype.init = function() {
   if (PROD) return;
   this.window_.DEBUG = false;
@@ -12,4 +14,10 @@ Debugger.prototype.init = function() {
   }.bind(this));
 
   window.g = this.gm_;
+
+  this.window_.addEventListener('touchdown', toggleExperiment);
+  this.window_.addEventListener('mousedown', toggleExperiment);
+  function toggleExperiment() {
+    EXPERIMENT_1 = !EXPERIMENT_1;
+  }
 };

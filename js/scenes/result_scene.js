@@ -107,6 +107,11 @@ ResultScene.prototype.addEntities_ = function() {
   this.continueBtn_.onClick(function() {
     if (this.continueBtn_.getStyle() == 'locked') return;
     if (this.selectedReward_) {
+      var item = this.selectedReward_.getProp('item');
+      this.inventory_.add(item);
+      if (!this.inventory_.getEquipped(item.category)) {
+        this.inventory_.equip(item);
+      }
       this.gm_.world.aquired.push(this.selectedReward_.getProp('item'));
     }
     if (this.gm_.level.state == 'lost' && this.gm_.world.lives > 0) {
@@ -141,21 +146,15 @@ ResultScene.prototype.createRewardButton_ = function(type) {
 ResultScene.prototype.selectReward_ = function(btn) {
   var item = btn.getProp('item');
   if (this.selectedReward_) {
-    // Note: Uncomment this to allow equipping items in result screen.
-    //if (btn.getStyle() == 'active') {
-    //  this.gm_.equipping = item.category;
-    //  this.transitionFast_('equip');
-    //  return;
-    //}
+    if (btn.getStyle() == 'active') {
+      this.gm_.equipping = item.category;
+      this.transitionFast_('equip');
+      return;
+    }
     this.selectedReward_.setStyle('');
-    this.inventory_.remove(this.selectedReward_.getProp('item'));
   }
   this.selectedReward_ = btn;
   this.selectedReward_.setStyle('active');
-  this.inventory_.add(btn.getProp('item'));
-  if (!this.inventory_.getEquipped(item.category)) {
-    this.inventory_.equip(item);
-  }
   this.continueBtn_.setStyle('');
 };
 

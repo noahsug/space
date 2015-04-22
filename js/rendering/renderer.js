@@ -23,7 +23,30 @@ Renderer.prototype.update = function(dt) {
   }
   this.ctx_.restore();
   this.gfx_.flush();
+  this.drawFps_(dt);
   this.drawTransition_(dt);
+};
+
+Renderer.prototype.drawFps_ = function(dt) {
+  if (!this.fps_) {
+    this.displayedFps_ = 0;
+    this.fpsLastUpdated_ = 0;
+    this.fps_ = 0;
+  }
+  var fps = 1 / dt;
+  var change = (fps - this.fps_) / (2000 * dt);
+  this.fps_ = Math.abs(change) > 10 ? fps : this.fps_ + change;
+  this.fpsLastUpdated_ += dt;
+  if (this.fpsLastUpdated_ > .2) {
+    this.displayedFps_ = this.fps_;
+    this.fpsLastUpdated_ -= .2;
+  }
+
+  this.ctx_.textAlign = 'left';
+  this.ctx_.textBaseline = 'top';
+  this.ctx_.fillStyle = 'black';
+  this.ctx_.fillRect(0, 0, 40, 20);
+  this.drawText_(this.displayedFps_.toFixed(0), 20, 0, 0, {color: '#ccc'});
 };
 
 var INTRO_SCROLL_SPEED = 16;
@@ -606,7 +629,7 @@ Renderer.prototype.drawBall_ = function(entity, style, dt) {
 Renderer.prototype.addAuraStyle_ = function(style) {
   style.normal = this.gfx_.addStyle({
     stroke: Gfx.Color.OPAC_WHITE,
-    lineWidth: 1
+    lineWidth: 16
   });
 };
 Renderer.prototype.drawAura_ = function(entity, style, dt) {

@@ -1,5 +1,5 @@
 var Gfx = di.service('Gfx', [
-  'Screen', 'ctx']);
+  'Screen', 'ctx', 'GameModel as gm']);
 
 Gfx.Font = {
   TITLE: 'ElegantLux',
@@ -9,7 +9,7 @@ Gfx.Font = {
 Gfx.Color = {
   BLACK: '#000000',
   WHITE: '#FFFFFF',
-  OPAC_WHITE: 'rgba(255, 255, 255, .5)',
+  OPAC_WHITE: 'rgba(255, 255, 255, .12)',
   RED: '#FF0000',
   GREEN: '#00FF00',
   BLUE: '#7799FF',
@@ -205,7 +205,7 @@ Gfx.prototype.setCustomStyles_ = function(customStyle, opt_restoreTo) {
 };
 
 var ship1 = new Image();
-ship1.src = 'ship1.png';
+ship1.src = 'my_ship2.png';
 ship1.onload = function() {
 };
 
@@ -223,8 +223,14 @@ Gfx.prototype.drawCircle_ = function(x, y, radius, isFirst) {
     if (ship.rotation == undefined) {
       ship.rotation = ship.c.targetAngle;
     } else {
-      ship.rotation = _.approachAngle(ship.rotation, ship.c.targetAngle, .005);
+      ship.rotation = _.approachAngle(ship.rotation, ship.c.targetAngle,
+                                      Speed.TURN_SPEED);
     }
+
+    //if (this.gm_.time - ship.ability.lastFired < .25) {
+    //  this.ctx_.shadowBlur = 4;
+    //  this.ctx_.shadowColor = '#FFFF00';
+    //}
 
     var shipImg = shipName == 'player_' ? ship1 : ship2;
 
@@ -234,13 +240,21 @@ Gfx.prototype.drawCircle_ = function(x, y, radius, isFirst) {
     this.ctx_.drawImage(shipImg, -shipImg.width / 2, -shipImg.height / 2);
     this.ctx_.rotate(-rotation);
     this.ctx_.translate(-x, -y);
+
+
+
+    //if (!isFirst) {
+    //  this.ctx_.lineWidth = 1;
+    //  this.ctx_.moveTo(x + radius + 2, y);
+    //}
+    //this.ctx_.arc(x, y, radius + 2, 0, Math.PI * 2);
     return;
   }
 
   // TODO: Rewrite gfx to use radial gradients that we save as images instead of
   // shadow blur.
 
-  //var blur = 6;
+  //var blur = Math.min(radius - 1, 6);
   //var gradiant = this.ctx_.createRadialGradient(x, y, radius - blur,
   //                                              x, y, radius + blur);
   //gradiant.addColorStop(0, 'rgba(0, 255, 0, 0)');
