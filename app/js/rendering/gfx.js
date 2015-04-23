@@ -205,17 +205,17 @@ Gfx.prototype.setCustomStyles_ = function(customStyle, opt_restoreTo) {
 };
 
 var ship1 = new Image();
-ship1.src = 'my_ship2.png';
+ship1.src = 'RD2_36.png';
 ship1.onload = function() {
 };
 
 var ship2 = new Image();
-ship2.src = 'ship2.png';
+ship2.src = 'drakir_36.png';
 ship2.onload = function() {
 };
 
 Gfx.prototype.drawCircle_ = function(x, y, radius, isFirst) {
-  if (radius == 10) {
+  if (radius == 17) {
     var shipName = this.ctx_.strokeStyle == '#00ff00' ?
         'player_' : 'enemy_';
     var ship = di.get('BattleScene')[shipName];
@@ -225,6 +225,7 @@ Gfx.prototype.drawCircle_ = function(x, y, radius, isFirst) {
     } else {
       ship.rotation = _.approachAngle(ship.rotation, ship.c.targetAngle,
                                       Speed.TURN_SPEED);
+      //ship.rotation += Speed.TURN_SPEED;
     }
 
     //if (this.gm_.time - ship.ability.lastFired < .25) {

@@ -10,7 +10,7 @@ AiMovement.prototype.init = function() {
 AiMovement.prototype.aiMovement_ = function(obj, spec) {
   this.util_.spec(obj, 'movement', spec, {
     speed: Speed.SHIP_SPEED,
-    accel: 2,
+    accel: 2.5,
     vector: {x: 0, y: 0},
     intelligence: .1,
     urgeCooldown: 1.5
@@ -210,7 +210,7 @@ AiMovement.prototype.getRandomUrgeVector_ = function(obj, weight) {
 
 AiMovement.prototype.getEnemyDistanceVector_ = function(obj, weight) {
   if (!obj.movement.desiredDistance) return _.vector.EMPTY;
-  var panic = 20;
+  var panic = 10;
   var dd = obj.c.targetDis - obj.movement.desiredDistance;
   var r = dd * dd / (panic * panic);
   // If we're a little too close or too far, don't panic.

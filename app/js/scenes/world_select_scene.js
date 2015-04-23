@@ -37,20 +37,20 @@ WorldSelectScene.prototype.addEntities_ = function() {
   this.layout_.addGap(Padding.WORLD * 3);
 
   // Sandbox + ranked.
-  var btnRow = this.layout_.addNew(this.layoutElement_);
-  var sandboxBtn = btnRow.addNew(this.roundBtnElement_);
-  sandboxBtn.setSize(Size.WORLD);
-  sandboxBtn.setProp('text', 'sandbox');
-  sandboxBtn.setStyle('locked');
-
-  btnRow.addGap(Size.WORLD);
-
-  var rankedBtn = btnRow.addNew(this.roundBtnElement_);
-  rankedBtn.setSize(Size.WORLD);
-  rankedBtn.setProp('text', 'ranked');
-  rankedBtn.setStyle('locked');
-
-  btnRow.childHeight = Size.WORLD;
+  //var btnRow = this.layout_.addNew(this.layoutElement_);
+  //var sandboxBtn = btnRow.addNew(this.roundBtnElement_);
+  //sandboxBtn.setSize(Size.WORLD);
+  //sandboxBtn.setProp('text', 'sandbox');
+  //sandboxBtn.setStyle('locked');
+  //
+  //btnRow.addGap(Size.WORLD);
+  //
+  //var rankedBtn = btnRow.addNew(this.roundBtnElement_);
+  //rankedBtn.setSize(Size.WORLD);
+  //rankedBtn.setProp('text', 'ranked');
+  //rankedBtn.setStyle('locked');
+  //
+  //btnRow.childHeight = Size.WORLD;
 };
 
 WorldSelectScene.prototype.createWorldBtn_ = function(world) {

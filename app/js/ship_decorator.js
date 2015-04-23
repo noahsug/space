@@ -17,7 +17,7 @@ ShipDecorator.prototype.decorate = function(obj) {
   obj.movement = {};
 
   // Note: the order here matters.
-  _.decorate(obj, this.d_.shape.circle, {radius: 12});
+  _.decorate(obj, this.d_.shape.circle, {radius: 17});
   _.decorate(obj, this.d_.health);
   _.decorate(obj, this.sharedComputation_);
   _.decorate(obj, this.d_.collidable);

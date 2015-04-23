@@ -23,7 +23,7 @@ Renderer.prototype.update = function(dt) {
   }
   this.ctx_.restore();
   this.gfx_.flush();
-  this.drawFps_(dt);
+  //this.drawFps_(dt);
   this.drawTransition_(dt);
 };
 
@@ -362,7 +362,7 @@ Renderer.prototype.drawHitbox_ = function(entity) {
 };
 
 var DEATH_ANIMATION_DURATION = .3;
-var SHIP_SHRINKAGE = 2;
+var SHIP_SHRINKAGE = 0;
 Renderer.prototype.initShip_ = function(entity) {
   entity.render.damageTaken = 0;
   entity.render.shaking = 0;
