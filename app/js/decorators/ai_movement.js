@@ -10,7 +10,7 @@ AiMovement.prototype.init = function() {
 AiMovement.prototype.aiMovement_ = function(obj, spec) {
   this.util_.spec(obj, 'movement', spec, {
     speed: Speed.SHIP_SPEED,
-    accel: 2.5,
+    accel: 2.25,
     vector: {x: 0, y: 0},
     intelligence: .1,
     urgeCooldown: 1.5
@@ -62,6 +62,7 @@ AiMovement.prototype.getDesiredDistance_ = function(obj) {
   var maxDis = this.computeMaxDistance_(obj);
   if (!obj.movement.maxDis ||
       maxDis < obj.movement.maxDis ||
+      obj.c.targetDis > obj.movement.maxDis + 100 ||
       obj.movement.maxDisTime < this.gm_.time) {
     obj.movement.maxDis = maxDis;
     obj.movement.maxDisTime = this.gm_.time + 10;
@@ -95,10 +96,12 @@ AiMovement.prototype.computeBestDistance_ = function(obj) {
   var bestDistance = undefined;
 
   for (var i = 0; i < obj.c.ranges.length; i++) {
-    var self = obj.c.ranges[i];
-    if (self > obj.movement.maxDis) continue;
+    var self = Math.min(obj.c.ranges[i], obj.movement.maxDis);
     var target = obj.c.targetRanges[targetIndex] || 0;
     if (self > target) {
+      // If we have the longest range attack, stay at max range.
+      if (targetIndex == 0) return obj.c.ranges[i];
+
       numAttacks++;
       if (numAttacks > bestNumAttacks) {
         bestNumAttacks = numAttacks;
@@ -139,7 +142,7 @@ AiMovement.prototype.maybeUseDash_ = function(obj) {
   };
   this.c_.wallDis(pos);
   if (pos.c.hitWall) return;
-  if (this.random_.next() < .1) obj.utility.useDash();
+  if (this.random_.next() < .15) obj.utility.useDash();
 };
 
 AiMovement.prototype.maybeUseTeleport_ = function(obj) {
@@ -210,7 +213,7 @@ AiMovement.prototype.getRandomUrgeVector_ = function(obj, weight) {
 
 AiMovement.prototype.getEnemyDistanceVector_ = function(obj, weight) {
   if (!obj.movement.desiredDistance) return _.vector.EMPTY;
-  var panic = 10;
+  var panic = 20;
   var dd = obj.c.targetDis - obj.movement.desiredDistance;
   var r = dd * dd / (panic * panic);
   // If we're a little too close or too far, don't panic.
@@ -278,6 +281,7 @@ AiMovement.prototype.getCurrentPerpendicularVector_ = function(obj, weight) {
   return v;
 };
 
+// TODO: This doesn't really work.
 AiMovement.prototype.getFleeVector_ = function(obj, weight) {
   if (!obj.movement.fleeing) {
     if (obj.c.wallDis > 30)
@@ -368,13 +372,10 @@ AiMovement.prototype.updateVector_ = function(obj, dt) {
 
 AiMovement.prototype.move_ = function(obj, dt) {
   var m = obj.movement;
-  obj.prevX = obj.x;
-  obj.prevY = obj.y;
-
   // Move slower if no target or invisible.
   // TODO: Move this out of movement AI.
   var mod = 1;
-  if (!obj.secondary.charging && !obj.effect.knockback && !obj.effect.dash) {
+  if (!obj.effect.displaced) {
     mod = obj.effect.invisible ? .5 : 1;
     mod = obj.effect.targetlessMovement ? .25 : 1;
   }
@@ -386,6 +387,5 @@ AiMovement.prototype.move_ = function(obj, dt) {
   else if (obj.c.wallDisS < 0) obj.y += obj.c.wallDisS;
   if (obj.c.wallDisE < 0) obj.x += obj.c.wallDisE;
   else if (obj.c.wallDisW < 0) obj.x -= obj.c.wallDisW;
-  if (obj.c.hitWall && obj.effect.dash) obj.utility.stopDash();
-  if (obj.c.hitWall && obj.secondary.charging) obj.secondary.stopCharge();
+  if (obj.c.hitWall) obj.stopEffect('displaced');
 };

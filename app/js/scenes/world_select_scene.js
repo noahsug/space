@@ -8,7 +8,6 @@ WorldSelectScene.prototype.init = function() {
 
 WorldSelectScene.prototype.addEntities_ = function() {
   var COLS = 4;  // Number of columns in the world grid.
-
   this.layout_ = this.layoutElement_.create({direction: 'vertical'});
 
   // World select label.
@@ -55,9 +54,8 @@ WorldSelectScene.prototype.addEntities_ = function() {
 
 WorldSelectScene.prototype.createWorldBtn_ = function(world) {
   var btn = this.roundBtnElement_.create();
-  btn.setStyle('world');
   btn.setSize(Size.WORLD);
-  btn.setProp('level', world);
+  btn.setProp('world', world);
 
   if (world.state == 'unlocked') {
     btn.onClick(function() {

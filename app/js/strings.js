@@ -1,5 +1,5 @@
 Strings = {
-  Level: [
+  Stage: [
     'Home World',
     'Sagittarius',
     'Andromeda',
@@ -23,9 +23,5 @@ Strings = {
     ability: 'ability',
     utility: 'specialty',
     augment: 'augment'
-  },
-
-  rank: function(level) {
-    return Math.round((level / Game.MAX_LEVEL) * 9 + 1);
   }
 };

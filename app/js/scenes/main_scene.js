@@ -1,37 +1,48 @@
 var MainScene = di.service('MainScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'RoundBtnElement', 'BtnElement',
-  'LabelElement', 'World', 'Inventory']);
+  'LabelElement', 'World', 'Inventory', 'Gameplay']);
 
 MainScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('main'));
 };
 
 MainScene.prototype.addEntities_ = function() {
+  var COLS = 4;
   this.layout_ = this.layoutElement_.create({direction: 'vertical'});
 
-  this.layout_.addFlex();
+  this.layout_.addGap(Padding.TOP);
 
-  // Lives label.
+  // World label.
   var labelRow = this.layout_.addNew(this.layoutElement_);
   labelRow.layout.align = 'top';
-  labelRow.childHeight = Size.TEXT + Padding.LEVEL;
+  labelRow.childHeight = Size.TEXT;
   var livesLabel = labelRow.addNew(this.labelElement_);
   livesLabel.setText('World ' + (this.gm_.world.index + 1),
                      {size: Size.TEXT, align: 'left', baseline: 'top'});
-  labelRow.addGap(Padding.LEVEL * 4 + Size.LEVEL * 5);
+  labelRow.addGap(Padding.STAGE * (COLS - 1) + Size.STAGE * COLS);
 
-  // Levels.
-  for (var row = 0; row < this.gm_.world.rows; row++) {
-    if (row) this.layout_.addGap(Padding.LEVEL);
-    var levelRow = this.layout_.addNew(this.layoutElement_);
-    levelRow.childHeight = Size.LEVEL;
-    for (var col = 0; col < this.gm_.world.cols; col++) {
-      if (col) levelRow.addGap(Padding.LEVEL);
-      levelRow.add(this.createBtn_(row, col));
+  this.layout_.addFlex();
+
+  // Stages.
+  for (var row = this.gm_.world.stages.length - 1; row >= 0; row--) {
+    if (row < this.gm_.world.stages.length - 1)
+      this.layout_.addGap(Padding.STAGE);
+    var stageRow = this.layout_.addNew(this.layoutElement_);
+    stageRow.childHeight = Size.STAGE;
+    for (var col = 0; col < this.gm_.world.stages[row].length; col++) {
+      if (col) stageRow.addGap(Padding.STAGE);
+      stageRow.add(this.createBtn_(row, col));
     }
   }
 
   this.layout_.addFlex();
+
+  // Player ship.
+  var playerRow = this.layout_.addNew(this.layoutElement_);
+  playerRow.childHeight = Size.STAGE;
+  playerRow.add(this.createPlayerShipBtn_());
+
+  this.layout_.addFlex(.5);
 
   // Back button.
   var btnRow = this.layout_.addNew(this.layoutElement_);
@@ -48,16 +59,27 @@ MainScene.prototype.addEntities_ = function() {
   }.bind(this));
 };
 
+MainScene.prototype.createPlayerShipBtn_ = function() {
+  var btn = this.roundBtnElement_.create();
+  btn.setSize(Size.STAGE);
+  btn.setProp('stage', {hull: this.inventory_.getHull()});
+  btn.onClick(function() {
+    this.gm_.equipping = 'primary';
+    this.transition_('equip');
+  }.bind(this));
+  return btn;
+};
+
 MainScene.prototype.createBtn_ = function(row, col) {
   var btn = this.roundBtnElement_.create();
-  btn.setSize(Size.LEVEL);
+  btn.setSize(Size.STAGE);
 
-  var level = this.world_.get(row, col);
-  btn.setProp('level', level);
+  var stage = this.gm_.world.stages[row][col];
+  btn.setProp('stage', stage);
 
-  if (level.state == 'unlocked') {
+  if (stage.state == 'unlocked') {
     btn.onClick(function() {
-      this.gm_.level = level;
+      this.gm_.stage = stage;
       this.transition_('equipOptions');
     }.bind(this));
   }

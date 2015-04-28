@@ -2,17 +2,18 @@ var ShipFactory = di.service('ShipFactory', [
   'GameModel as gm', 'Entity', 'EntityDecorator as ed', 'Gameplay', 'Screen',
   'ShipDecorator', 'ItemService']);
 
-ShipFactory.prototype.createEnemyDna = function(level) {
-  //return this.gameplay_.bosses[level];
-  return this.createRandomDna_(level);
+ShipFactory.prototype.init = function() {
+  this.d_ = this.ed_.getDecorators();
 };
 
-ShipFactory.prototype.createRandomDna_ = function(level) {
+ShipFactory.prototype.createEnemyDna = function(stage) {
   // DEBUG.
   return [
-    'basic laser',
+    //'basic laser',
+    'shotgun',
+    'dash',
     //'gatling',
-    'knockback',
+    //'knockback',
     //'divide'
     //'charge'
     //'haze',
@@ -23,28 +24,28 @@ ShipFactory.prototype.createRandomDna_ = function(level) {
     //'tracker',
     //'teleport',
     //'charge',
+    stage.hull.name,
   ].map(this.itemService_.getByName.bind(this.itemService_));
 
   var levels = _.intRandomSplit(
-      Game.ITEM_TYPES.length, level + 1, Game.MAX_ITEM_LEVEL + 1).
-    sort().reverse();
+      Game.ITEM_TYPES.length, stage.level + 1, Game.MAX_ITEM_LEVEL + 1).
+        sort().reverse();
 
   var numItems = levels.reduce(function(p, c) { return p + (c > 0); }, 0);
   // Ensure every ship has a primary weapon.
   var types = [Game.ITEM_TYPES[0]].concat(_.shuffle(Game.ITEM_TYPES.slice(1)));
   if (numItems > 1) _.swap(types, 0, _.r.nextInt(0, numItems - 1));
 
-  var result = _.newList(types, function(type, i) {
-    //if (type == 'utility') return this.itemService_.getByName('teleport');
+  var items = _.newList(types, function(type, i) {
     if (!levels[i]) return undefined;
     return _.sample(this.itemService_.getByTypeAndLevel(type, levels[i] - 1));
   }, this);
-
-  return result;
+  items.push(stage.hull);
+  return items;
 };
 
 ShipFactory.prototype.createEnemy = function() {
-  return this.createShip(this.gm_.level.enemy, 'bad');
+  return this.createShip(this.gm_.stage.enemy, 'bad');
 };
 
 ShipFactory.prototype.createPlayer = function() {
@@ -54,9 +55,9 @@ ShipFactory.prototype.createPlayer = function() {
 ShipFactory.prototype.createShip = function(dna, style) {
   if (!PROD) _.assert(dna);
   var ship = this.entity_.create('ship');
-  ship.dna = dna;
+  ship.dna = dna;  // For future cloning.
   _.decorate(ship, this.shipDecorator_);
-  if (style == 'good') ship.setMaxHealth(Health.PLAYER_HEALTH);
+  if (style == 'good') ship.setMaxHealth(Health.PLAYER);
   this.ed_.decorate(ship, dna);
   ship.style = style;
   this.gm_.entities.add(ship);

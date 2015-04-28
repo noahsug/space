@@ -1,5 +1,5 @@
 var Gfx = di.service('Gfx', [
-  'Screen', 'ctx', 'GameModel as gm']);
+  'Screen', 'ctx', 'GameModel as gm', 'SpriteService']);
 
 Gfx.Font = {
   TITLE: 'ElegantLux',
@@ -35,7 +35,8 @@ Gfx.Color = {
 Gfx.DrawFn = {
   CIRCLE: 0,
   LINE: 1,
-  TRIANGLE: 2
+  TRIANGLE: 2,
+  IMAGE: 3
 };
 
 Gfx.AttrMap = {
@@ -118,6 +119,10 @@ Gfx.prototype.triangle = function(x1, y1, x2, y2, x3, y3) {
   this.addDrawFn_(Gfx.DrawFn.TRIANGLE, x1, y1, x2, y2, x3, y3);
 };
 
+Gfx.prototype.image = function(name, x, y, rotation, scale) {
+  this.addDrawFn_(Gfx.DrawFn.IMAGE, name, x, y, rotation, scale);
+};
+
 Gfx.prototype.addDrawFn_ = function(var_drawFnArgs) {
   if (this.currentStyle_.flushCount != this.flushCount_) {
     this.currentStyle_.drawFns.length = 0;
@@ -186,8 +191,9 @@ Gfx.prototype.drawShape_ = function(args, isFirst) {
   } else if (args[0] == Gfx.DrawFn.LINE) {
     this.drawLine_(args[1], args[2], args[3], args[4]);
   } else if (args[0] == Gfx.DrawFn.TRIANGLE) {
-    this.drawTriangle_(
-      args[1], args[2], args[3], args[4], args[5], args[6]);
+    this.drawTriangle_(args[1], args[2], args[3], args[4], args[5], args[6]);
+  } else if (args[0] == Gfx.DrawFn.IMAGE) {
+    this.drawImage_(args[1], args[2], args[3], args[4], args[5]);
   } else {
     throw 'Invalid shape id: ' +  args[0];
   }
@@ -204,57 +210,8 @@ Gfx.prototype.setCustomStyles_ = function(customStyle, opt_restoreTo) {
   }
 };
 
-var ship1 = new Image();
-ship1.src = 'RD2_36.png';
-ship1.onload = function() {
-};
-
-var ship2 = new Image();
-ship2.src = 'drakir_36.png';
-ship2.onload = function() {
-};
-
 Gfx.prototype.drawCircle_ = function(x, y, radius, isFirst) {
-  if (radius == 17) {
-    var shipName = this.ctx_.strokeStyle == '#00ff00' ?
-        'player_' : 'enemy_';
-    var ship = di.get('BattleScene')[shipName];
-
-    if (ship.rotation == undefined) {
-      ship.rotation = ship.c.targetAngle;
-    } else {
-      ship.rotation = _.approachAngle(ship.rotation, ship.c.targetAngle,
-                                      Speed.TURN_SPEED);
-      //ship.rotation += Speed.TURN_SPEED;
-    }
-
-    //if (this.gm_.time - ship.ability.lastFired < .25) {
-    //  this.ctx_.shadowBlur = 4;
-    //  this.ctx_.shadowColor = '#FFFF00';
-    //}
-
-    var shipImg = shipName == 'player_' ? ship1 : ship2;
-
-    var rotation = ship.rotation + Math.PI / 2;
-    this.ctx_.translate(x, y);
-    this.ctx_.rotate(rotation);
-    this.ctx_.drawImage(shipImg, -shipImg.width / 2, -shipImg.height / 2);
-    this.ctx_.rotate(-rotation);
-    this.ctx_.translate(-x, -y);
-
-
-
-    //if (!isFirst) {
-    //  this.ctx_.lineWidth = 1;
-    //  this.ctx_.moveTo(x + radius + 2, y);
-    //}
-    //this.ctx_.arc(x, y, radius + 2, 0, Math.PI * 2);
-    return;
-  }
-
-  // TODO: Rewrite gfx to use radial gradients that we save as images instead of
-  // shadow blur.
-
+  // TODO: Maybe use radial gradients instead of shadow blur?
   //var blur = Math.min(radius - 1, 6);
   //var gradiant = this.ctx_.createRadialGradient(x, y, radius - blur,
   //                                              x, y, radius + blur);
@@ -273,6 +230,7 @@ Gfx.prototype.drawCircle_ = function(x, y, radius, isFirst) {
 };
 
 Gfx.prototype.drawLine_ = function(x, y, dx, dy) {
+  // TODO: Maybe use radial gradients instead of shadow blur?
   //var r = Math.hypot(dx, dy) / 2;
   //var gradiant = this.ctx_.createRadialGradient(x + dx / 2, y + dy / 2, 0,
   //                                              x + dx / 2, y + dy / 2, r);
@@ -291,4 +249,9 @@ Gfx.prototype.drawTriangle_ = function(x1, y1, x2, y2, x3, y3) {
   this.ctx_.lineTo(x2, y2);
   this.ctx_.lineTo(x3, y3);
   this.ctx_.lineTo(x1, y1);
+};
+
+Gfx.prototype.drawImage_ = function(name, x, y, rotation, radius) {
+  this.spriteService_.draw(
+      name, x, y, {rotation: rotation, radius: radius});
 };

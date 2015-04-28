@@ -39,7 +39,7 @@ BattleScene.prototype.update_ = function(dt) {
     this.player_ = this.player_.getLivingClone();
     this.enemy_ = this.enemy_.getLivingClone();
     if (this.player_.dead || this.enemy_.dead) {
-      this.gm_.level.state = this.player_.dead ? 'lost' : 'won';
+      this.gm_.stage.state = this.player_.dead ? 'locked' : 'won';
       this.battleEnding_ = SLOWDOWN_TIME;
     }
   }
@@ -54,13 +54,13 @@ BattleScene.prototype.freezeEntities_ = function() {
 
 BattleScene.prototype.transitionOver_ = function() {
   this.removeEntities_();
-  this.gm_.level.state == 'won' ? this.handleWin_() : this.handleLoss_();
+  this.gm_.stage.state == 'won' ? this.handleWin_() : this.handleLoss_();
   this.gm_.equipping = null;
 };
 
 BattleScene.prototype.handleWin_ = function() {
   this.battleRewards_.calculateRewards();
-  this.world_.unlockAdjacent(this.gm_.level);
+  this.world_.unlockAdjacent(this.gm_.stage);
 };
 
 BattleScene.prototype.handleLoss_ = function() {

@@ -14,14 +14,18 @@ EquipOptionsScene.prototype.addEntities_ = function() {
 
   this.layout_.addFlex();
 
-  // Enemy label.
-  var enemyLabelRow = this.layout_.addNew(this.layoutElement_);
-  enemyLabelRow.layout.align = 'top';
-  enemyLabelRow.childHeight = Size.TEXT + Padding.ITEM;
-  var enemyLabel = enemyLabelRow.addNew(this.labelElement_);
-  enemyLabel.setText('rank ' + Strings.rank(this.gm_.level.type) + ' enemy:',
-                     {size: Size.TEXT, align: 'left', baseline: 'top'});
-  enemyLabelRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+  // Item Description.
+  var itemDescRow = this.layout_.addNew(this.layoutElement_);
+  var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');
+  itemDesc.childHeight = Size.ITEM_DESC;
+  itemDesc.getEntity().update(function() {
+    var item = this.selectedBtn_ && this.selectedBtn_.getProp('item');
+    itemDesc.setProp('item', item);
+  }.bind(this));
+  itemDescRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+  itemDescRow.childHeight = itemDesc.childHeight;
+
+  this.layout_.addGap(Padding.ITEM);
 
   // Enemy items.
   this.selectedBtn_ = null;
@@ -41,29 +45,15 @@ EquipOptionsScene.prototype.addEntities_ = function() {
     row.add(this.createEnemyItemButton_(type));
   }, this);
 
-  this.layout_.addGap(Padding.ITEM);
-
-  // Item Description.
-  var itemDescRow = this.layout_.addNew(this.layoutElement_);
-  var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');
-  itemDesc.childHeight = Size.TEXT * 2 + 4;
-  itemDesc.getEntity().update(function() {
-    var item = this.selectedBtn_ && this.selectedBtn_.getProp('item');
-    itemDesc.setProp('item', item);
-  }.bind(this));
-  itemDescRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
-  itemDescRow.childHeight = itemDesc.childHeight;
+  // Enemy splash.
+  var enemySplash = this.layout_.addNew(this.entityElement_, 'enemySplash');
+  enemySplash.childHeight = Size.SHIP;
 
   this.layout_.addGap(Padding.MD);
 
-  // Player item label.
-  var playerLabelRow = this.layout_.addNew(this.layoutElement_);
-  playerLabelRow.layout.align = 'top';
-  playerLabelRow.childHeight = Size.TEXT + Padding.ITEM;
-  var playerLabel = playerLabelRow.addNew(this.labelElement_);
-  playerLabel.setText('equipment:',
-                     {size: Size.TEXT, align: 'left', baseline: 'top'});
-  playerLabelRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+  // Player splash.
+  var playerSplash = this.layout_.addNew(this.entityElement_, 'playerSplash');
+  playerSplash.childHeight = Size.SHIP;
 
   // Player items.
   _.each(Game.ITEM_TYPES, function(type, i) {
@@ -107,7 +97,9 @@ EquipOptionsScene.prototype.addEntities_ = function() {
       aug.padding.left = Padding.ITEM;
       augRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
     }, this);
-  };
+  } else {
+    this.layout_.addGap(Size.ITEM_DESC);
+  }
 
   this.layout_.addFlex();
 

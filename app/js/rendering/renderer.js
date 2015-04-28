@@ -1,6 +1,6 @@
 var Renderer = di.service('Renderer', [
   'GameModel as gm', 'Screen', 'ctx', 'Gfx', 'Background', 'Font',
-  'ItemService', 'Inventory']);
+  'ItemService', 'Inventory', 'SpriteService']);
 
 Renderer.prototype.init = function() {
   this.initFns_ = _.pickFunctions(this, {prefix: 'init', suffix: '_'});
@@ -137,42 +137,33 @@ Renderer.prototype.drawIntroSplash_ = function() {
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
-Renderer.prototype.drawMainSplash_ = function() {
-};
-
-var SCREEN_LEFT_PADDING = .13;
 Renderer.prototype.drawResultSplash_ = function(entity) {
   this.ctx_.textAlign = 'left';
   this.ctx_.textBaseline = 'top';
-  var result = this.gm_.level.state == 'won' ? 'victory' : 'defeat';
+  var result = this.gm_.stage.state == 'won' ? 'victory' : 'defeat';
   this.drawHeading_(result, 70, entity.render.pos.x, entity.render.pos.y);
 };
 
-Renderer.prototype.drawEquipOptionsSplash_ = function() {
-  this.ctx_.strokeStyle = '#FFFFFF';
-  this.ctx_.lineWidth = 1;
-  var x = this.screen_.width * SCREEN_LEFT_PADDING;
-  var y = x;
+Renderer.prototype.drawPlayerSplash_ = function(entity) {
+  this.spriteService_.draw(
+      this.inventory_.getHull().name,
+      this.screen_.width / 2, entity.render.pos.y);
+};
 
-  this.ctx_.textAlign = 'left';
-  this.ctx_.textBaseline = 'top';
-  this.drawText_('target: Rank ' + this.getEnemyRank_(this.gm_.level),
-                 12, x, y);
-
-  x += 15;
-  y += 25;
-  var index = 0;
-  _.each(Game.ITEM_TYPES, function(type, i) {
-    var item = this.itemService_.getEnemyEquipped(type);
-    if (item) this.drawText_('- ' + item.name, 12, x, y + 25 * index++);
-  }, this);
+Renderer.prototype.drawEnemySplash_ = function(entity) {
+  this.spriteService_.draw(
+      this.gm_.stage.hull.name,
+      this.screen_.width / 2, entity.render.pos.y,
+      {rotation: Math.PI});
 };
 
 Renderer.prototype.drawWonSplash_ = function() {
   var fontSize = 50;
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'alphabetic';
-  this.drawTitle_('YOU WIN', fontSize,
+  var text = _.last(this.gm_.worlds) == this.gm_.world ?
+      'You Win' : 'World Clear';
+  this.drawTitle_(text, fontSize,
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
@@ -180,7 +171,7 @@ Renderer.prototype.drawLostSplash_ = function() {
   var fontSize = 50;
   this.ctx_.textAlign = 'center';
   this.ctx_.textBaseline = 'alphabetic';
-  this.drawTitle_('YOU LOSE', fontSize,
+  this.drawTitle_('World Failed', fontSize,
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
@@ -250,22 +241,25 @@ Renderer.prototype.drawBreak_ = function(entity) {
   this.ctx_.stroke();
 };
 
-// TODO: Animate level state changes.
+// TODO: Animate stage state changes.
 Renderer.prototype.drawRoundBtn_ = function(entity) {
   if (entity.style == 'hidden') return;
 
   // Draw circle.
   var color = '#FFFFFF';
-  if (entity.level) {
-    switch (entity.level.state) {
-      case 'won':
-        if (entity.style != 'world') return;
-        color = Gfx.Color.BEATEN;
-        break;
-      case 'lost': return;
+  var fillColor = '#000000';
+  var lineWidth = 2;
+  if (entity.stage) {
+    if (entity.stage.state == 'won' || entity.stage.state == 'lost') {
+      return;
+    }
+    fillColor = '';
+    lineWidth = .25;
+    if (entity.stage.end) color = Gfx.Color.ACTIVE;
+  } else if (entity.world) {
+    switch (entity.world.state) {
+      case 'won': color = Gfx.Color.BEATEN; break;
       case 'locked': color = Gfx.Color.LOCKED; break;
-      case 'unlocked': color = '#FFFFFF'; break;
-      default: _.fail('invalid state: ', entity.level.state);
     }
   } else if (entity.item) {
     if (entity.rewardBtn) {
@@ -288,27 +282,32 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
   } else if (entity.style == 'locked') {
     color = Gfx.Color.LOCKED;
   }
+
+  this.ctx_.shadowBlur = 0;
+  this.ctx_.fillStyle = fillColor;
   this.ctx_.strokeStyle = color;
-  this.ctx_.fillStyle = '#000000';
-  this.ctx_.lineWidth = 2;
+  this.ctx_.lineWidth = lineWidth;
   this.ctx_.beginPath();
   this.ctx_.arc(entity.render.pos.x, entity.render.pos.y,
-                entity.radius - 1, 0, 2 * Math.PI);
-  this.ctx_.fill();
+                entity.radius - lineWidth / 2, 0, 2 * Math.PI);
+  if (fillColor) this.ctx_.fill();
   this.ctx_.stroke();
 
-  // Draw text.
+  // Draw context.
   var text = entity.text;
   var textSize = Size.ITEM_TEXT;
-  if (entity.level) {
-    if (entity.style == 'world') {
-      if (entity.state == 'won') text = 'W';
-      else text = entity.level.index + 1;
-      textSize = Size.WORLD_TEXT;
-    } else {
-      text = Strings.rank(entity.level.type);
-      textSize = Size.TEXT;
-    }
+  if (entity.stage) {
+    var hull = entity.stage.hull.name;
+    var rotation = entity.stage.enemy ? Math.PI : 0;
+    var alpha = entity.stage.state == 'locked' ? .1 : 0;
+    this.spriteService_.draw(
+      hull, entity.render.pos.x, entity.render.pos.y,
+      {rotation: rotation, alpha: alpha});
+    return;
+  } else if (entity.world) {
+    if (entity.state == 'won') text = 'W';
+    else text = entity.world.index + 1;
+    textSize = Size.WORLD_TEXT;
   } else if (entity.item) {
     if (entity.enemy && entity.item.name) {
       color = '#FFFFFF';
@@ -362,7 +361,6 @@ Renderer.prototype.drawHitbox_ = function(entity) {
 };
 
 var DEATH_ANIMATION_DURATION = .3;
-var SHIP_SHRINKAGE = 0;
 Renderer.prototype.initShip_ = function(entity) {
   entity.render.damageTaken = 0;
   entity.render.shaking = 0;
@@ -371,34 +369,23 @@ Renderer.prototype.initShip_ = function(entity) {
   entity.render.radius = entity.radius;
 };
 Renderer.prototype.addShipStyle_ = function(style) {
-  var baseStyle = {
-    lineWidth: 3
-  };
-  style.good = this.gfx_.addStyle(_.extend({
-    stroke: Gfx.Color.GREEN,
-    shadow: 'none'
-  }, baseStyle));
-  style.bad = this.gfx_.addStyle(_.extend({
-    stroke: Gfx.Color.BLUE,
-    shadow: 'none'
-  }, baseStyle));
-  style.goodDmged = this.gfx_.addStyle({
-    lineWidth: 5,
-    stroke: Gfx.Color.OPAC_RED,
+  style.normal = this.gfx_.addStyle({
     shadow: 'none'
   });
-  style.badDmged = this.gfx_.addStyle({
-    lineWidth: 5,
-    stroke: Gfx.Color.MORE_OPAC_RED,
-    shadow: 'none'
+  style.dmged = this.gfx_.addStyle({
+    shadow: Gfx.Color.RED,
+    shadowBlur: 5
   });
   style.disabled = this.gfx_.addStyle({
-    lineWidth: 5,
-    stroke: Gfx.Color.OPAC_BLUE,
-    shadow: 'none'
+    shadow: Gfx.Color.BLUE,
+    shadowBlur: 5
   });
   style.tagged = this.gfx_.addStyle({
-    fill: Gfx.Color.OPAC_RED
+    stroke: Gfx.Color.OPAC_RED,
+    lineWidth: 2,
+    shadow: Gfx.Color.BLACK,
+    shadowBlur: 2,
+    layer: 6
   });
   style.shield = this.gfx_.addStyle({
     lineWidth: 2,
@@ -411,10 +398,6 @@ Renderer.prototype.addShipStyle_ = function(style) {
   });
   style.haze = this.gfx_.addStyle({
     fill: Gfx.Color.OPAC_GRAY
-  });
-  style.invisible = this.gfx_.addStyle({
-    stroke: Gfx.Color.LESS_OPAC_GRAY,
-    lineWidth: 3
   });
 };
 Renderer.prototype.drawShip_ = function(entity, style, dt) {
@@ -436,6 +419,9 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
     entity.render.shaking--;
   }
 
+  var customStyle;
+  var shipStyle = style.normal;
+
   if (!entity.dead) {
     // Don't resize instantly.
     var rGap = entity.radius - entity.render.radius;
@@ -446,13 +432,6 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
       } else {
         entity.render.radius += dr;
       }
-    }
-
-    // Draw disabled indicator.
-    if (entity.effect.disabled) {
-      this.gfx_.setStyle(style.disabled);
-      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                       entity.render.radius - 5);
     }
 
     // Draw tagged indicator.
@@ -475,18 +454,16 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
                        entity.radius * 1.5);
     }
 
-    // Draw reflect indicator.
+    // Draw haze indicator.
     if (entity.effect.haze) {
       this.gfx_.setStyle(style.haze);
       this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
                        entity.radius * 1.5);
     }
 
-    // Draw invisible indicator.
-    if (entity.effect.invisible) {
-      this.gfx_.setStyle(style.invisible);
-      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                       entity.render.radius - SHIP_SHRINKAGE);
+    // Draw disabled indicator.
+    if (entity.effect.disabled) {
+      shipStyle = style.disabled;
     }
 
     // Draw health indicator.
@@ -494,28 +471,29 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
       entity.render.healthIndicator = 30;
     }
     if (entity.render.healthIndicator) {
-      var healthStyle = style[entity.style + 'Dmged'];
-      this.gfx_.setStyle(healthStyle);
-      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                       entity.render.radius - 5);
+      shipStyle = style.dmged;
       entity.render.healthIndicator--;
+    }
+
+    if (entity.effect.invisible) {
+      customStyle = {};
+      customStyle.globalAlpha = .5;
+    }
+  } else {
+    // Death animation.
+    if (entity.dead) {
+      customStyle = {
+        globalAlpha: entity.render.deathAnimation / DEATH_ANIMATION_DURATION
+      };
+      entity.render.deathAnimation -= dt;
+      if (entity.render.deathAnimation < 0) entity.render.deathAnimation = 0;
     }
   }
 
-  // Death animation.
-  var customStyle;
-  if (entity.dead) {
-    customStyle = {
-      globalAlpha: entity.render.deathAnimation / DEATH_ANIMATION_DURATION
-    };
-    entity.render.deathAnimation -= dt;
-    if (entity.render.deathAnimation < 0) entity.render.deathAnimation = 0;
-  }
-
   // Draw ship.
-  this.gfx_.setStyle(style[entity.style], customStyle);
-  this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                   entity.render.radius - SHIP_SHRINKAGE);
+  this.gfx_.setStyle(shipStyle, customStyle);
+  this.gfx_.image(entity.hull.style, entity.render.pos.x, entity.render.pos.y,
+                  entity.rotation + Math.PI / 2, entity.render.radius);
 
   // DEBUG: See where the ship is aiming.
   //var dx = entity.render.pos.x - entity.x;

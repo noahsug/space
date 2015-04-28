@@ -1,5 +1,6 @@
 var AbilityDecorator = di.service('AbilityDecorator', [
-  'EntityDecorator', 'DecoratorUtil as util', 'ShipFactory']);
+  'EntityDecorator', 'DecoratorUtil as util', 'ShipFactory',
+  'GameModel as gm']);
 
 AbilityDecorator.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'ability');
@@ -108,7 +109,6 @@ AbilityDecorator.prototype.decorateKnockback_ = function(obj, spec) {
     cooldown: 3,
     duration: .75,
     effect: 'stunned',
-    knockback: 550,
     grow: 500,
     maxRadius: 100,
     range: 100
@@ -121,13 +121,13 @@ AbilityDecorator.prototype.decorateKnockback_ = function(obj, spec) {
 
   var knockback = function(target) {
     target.addEffect(obj.ability.effect, obj.ability.duration);
+    target.addEffect('displaced', obj.ability.duration, function() {
+      this.util_.modSet(target, 'movement.speed', null);
+    }.bind(this));
+
     target.movement.vector.x = Math.cos(obj.c.targetAngle);
     target.movement.vector.y = Math.sin(obj.c.targetAngle);
-    var ratio = obj.ability.knockback / (obj.ability.speed || 1);
-    target.movement.speed *= ratio;
-    target.addEffect('knockback', obj.ability.duration, function() {
-      target.movement.speed /= ratio;
-    }.bind(this));
+    this.util_.modSet(target, 'movement.speed', obj.ability.speed);
   }.bind(this);
 
   this.util_.addWeapon(obj, obj.ability, function() {

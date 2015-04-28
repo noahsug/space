@@ -1,5 +1,5 @@
 var PrimaryDecorator = di.service('PrimaryDecorator', [
-  'EntityDecorator', 'DecoratorUtil as util']);
+  'EntityDecorator', 'DecoratorUtil as util', 'GameModel as gm']);
 
 PrimaryDecorator.prototype.init = function() {
   this.d_ = this.entityDecorator_.getDecorators();
@@ -108,40 +108,35 @@ PrimaryDecorator.prototype.decorateBurstLaser_ = function(obj, spec)  {
 PrimaryDecorator.prototype.decorateGatling_ = function(obj, spec)  {
   this.util_.spec(obj, 'primary', spec, {
     minCooldownRatio: .17,
-    cooldownReduceSpeed: .4,
+    cooldownReduceSpeed: .9,
     length: 8 + 16,
     speed: Speed.DEFAULT,
     style: 'weak',
-    breakPoint: _.radians(90),
-    turnSpeed: _.radians(35)
+    breakPoint: _.radians(15)
   });
 
-  var angle = 0;
   var cooldownRatio = 1;
-  var firing = false;
-  obj.awake(function(dt) {
-    angle = _.angle(obj, obj.target);
-  });
-  obj.act(function(dt) {
-    var da = _.angleDif(angle, obj.c.targetAngle);
+  this.util_.addWeapon(obj, obj.primary, function() {
+    var da = _.angleDif(obj.rotation, obj.c.targetAngle);
     if (da > obj.primary.breakPoint) {
+      obj.primary.jammed = true;
+      return 0;
+    }
+
+    obj.primary.dangle = obj.rotation - obj.c.targetAngle;
+    this.util_.fireBasicProj_(obj, obj.primary, this.util_.proj.laser);
+
+    obj.primary.cooldown /= cooldownRatio;
+    cooldownRatio *= obj.primary.cooldownReduceSpeed;
+    cooldownRatio = Math.max(cooldownRatio, obj.primary.minCooldownRatio);
+    obj.primary.cooldown *= cooldownRatio;
+    return obj.primary.cooldown;
+  }.bind(this));
+
+  obj.act(function(dt) {
+    if (obj.primary.jammed) {
       obj.primary.cooldown /= cooldownRatio;
       cooldownRatio = 1;
-      angle = obj.c.targetAngle;
-      firing = false;
-    } else if (firing) {
-      angle = _.approachAngle(
-          angle, obj.c.targetAngle, obj.primary.turnSpeed * dt);
-      obj.primary.cooldown /= cooldownRatio;
-      cooldownRatio *= 1 - obj.primary.cooldownReduceSpeed * dt;
-      cooldownRatio = Math.max(cooldownRatio, obj.primary.minCooldownRatio);
-      obj.primary.cooldown *= cooldownRatio;
     }
-  });
-
-  this.util_.addWeapon(obj, obj.primary, function() {
-    if (!firing) firing = true;
-    obj.primary.dangle = angle - obj.c.targetAngle;
-    this.util_.fireBasicProj_(obj, obj.primary, this.util_.proj.laser);
   }.bind(this));
 };

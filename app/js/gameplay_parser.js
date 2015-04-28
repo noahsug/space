@@ -1,40 +1,61 @@
 var GameplayParser = di.service('GameplayParser');
 
 GameplayParser.prototype.parse = function(file, dest) {
-  // Parse items.
-  dest.items = {};
-  _.each(file.items, function(item, name) {
-    dest.items[name] = this.parseItem_(name, item);
-  }, this);
-
+  dest.items = this.parseItems_(file.items);
+  dest.stages = this.parseStages_(file.stages, dest.items);
+  dest.worlds = this.parseWorlds_(file.worlds, dest.stages);
   dest.player = this.parseItemList_(file.player, dest.items);
   dest.inventory = this.parseItemList_(file.inventory, dest.items);
+};
 
-  // Parse enemies for each level.
-  dest.bosses = [];
-  for (var i = 0; i < file.bosses.length; i++) {
-    dest.bosses[i] = this.parseItemList_(file.bosses[i], dest.items);
-  }
+GameplayParser.prototype.parseItems_ = function(items) {
+  var result = {};
+  _.each(items, function(item, name) {
+    item = _.clone(item);
+    var types = item.id.split('.');
+    if (types.length > 1) {
+      item.category = types[0];
+      item.type = types[1];
+    } else {
+      item.category = 'base';
+      item.type = types[0];
+    }
+    item.name = name;
+    result[name] = item;
+  });
+  return result;
+};
+
+GameplayParser.prototype.parseStages_ = function(stages, items) {
+  var result = {};
+  _.each(stages, function(stage, name) {
+    stage = _.clone(stage);
+    stage.hull = items[stage.hull];
+    result[name] = stage;
+  });
+  return result;
+};
+
+GameplayParser.prototype.parseWorlds_ = function(worlds, stages) {
+  return _.map(worlds, function(world, index) {
+    world = _.clone(world);
+    world.index = index;
+    world.stages = this.parseWorldStages_(world.stages, stages);
+    return world;
+  }, this);
+};
+
+GameplayParser.prototype.parseWorldStages_ = function(names, stages) {
+  return names.map(function(row, rowIndex) {
+    return row.map(function(stageName, colIndex) {
+      var stage = _.deepClone(stages[stageName]);
+      stage.row = rowIndex;
+      stage.col = colIndex;
+      return stage;
+    });
+  });
 };
 
 GameplayParser.prototype.parseItemList_ = function(names, items) {
-  var parsedItemList = [];
-  _.each(names, function(name) {
-    parsedItemList.push(items[name]);
-  }, this);
-  return parsedItemList;
-};
-
-GameplayParser.prototype.parseItem_ = function(name, item) {
-  item = _.clone(item);
-  var types = item.id.split('.');
-  if (types.length > 1) {
-    item.category = types[0];
-    item.type = types[1];
-  } else {
-    item.category = 'base';
-    item.type = types[0];
-  }
-  item.name = name;
-  return item;
+  return names.map(function(name) { return items[name]; });
 };

@@ -1,4 +1,4 @@
-describe('A world', function() {
+xdescribe('A world', function() {
   initTestEnvironment(this);
   var gm, world;
 

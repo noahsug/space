@@ -77,6 +77,20 @@ BasicDecorator.prototype.decorateClonable_ = function(obj, spec) {
   }.bind(this);
 };
 
+BasicDecorator.prototype.decorateRotates_ = function(obj, spec) {
+  obj.turnSpeed = Speed.TURN_SPEED;
+
+  obj.awake(function() {
+    obj.rotation = _.angle(obj, obj.target);
+  });
+
+  obj.update(function(dt) {
+    if (obj.effect.rooted) return;
+    obj.rotation = _.approachAngle(
+        obj.rotation, obj.c.targetAngle, obj.turnSpeed * dt);
+  });
+};
+
 BasicDecorator.prototype.decorateSelectsTarget_ = function(obj, spec) {
   var selectTime = 0;
   obj.act(function(dt) {
@@ -201,6 +215,7 @@ BasicDecorator.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
 // stunned: stops actives and movement control.
 // disabled: visually mark the ship as disabled.
 // invisible: stops target from firing projectiles and causes confused movement.
+// displaced: ship is being forcably moved around the map.
 BasicDecorator.prototype.decorateEffectable_ = function(obj) {
   var effects = [];
   obj.effect = {};
@@ -218,7 +233,7 @@ BasicDecorator.prototype.decorateEffectable_ = function(obj) {
     // Stunned = silenced + rooted.
     if (effect == 'stunned') {
       obj.addEffect('silenced', duration);
-      obj.addEffect('rooted', duration * .9);
+      obj.addEffect('rooted', duration);
     }
 
     var currentDuration = obj.effect[effect];
@@ -226,6 +241,10 @@ BasicDecorator.prototype.decorateEffectable_ = function(obj) {
     else if (obj.onEffectEnd[effect]) obj.onEffectEnd[effect]();
     obj.effect[effect] = duration;
     obj.onEffectEnd[effect] = opt_onEffectEnd;
+  };
+
+  obj.stopEffect = function(effect) {
+    obj.addEffect(effect, 0);
   };
 
   obj.act(function(dt) {

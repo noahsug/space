@@ -5,10 +5,8 @@ BattleRewards.prototype.calculateRewards = function() {
   this.numItems_ = 0;
   this.items_ = {};
 
-  if (!this.gm_.level.hasItem && !this.gm_.level.hasAugment) return;
-
-  // Give 4 items if last level.
-  if (this.gm_.level.index == this.gm_.world.levels.length - 1) {
+  // Give 4 items if last stage.
+  if (this.gm_.stage.end) {
     _.each(Game.ITEM_TYPES, function(type) {
       var level = this.getRandomLevel_();
       var item = _.sample(this.inventory_.getUnownedByLevelAndType(
@@ -18,9 +16,11 @@ BattleRewards.prototype.calculateRewards = function() {
     return;
   }
 
+  if (!this.gm_.stage.hasItem && !this.gm_.stage.hasAugment) return;
+
   // Give one random item or augment.
   var level = this.getRandomLevel_();
-  var item = this.getRandomItem_(level, this.gm_.level.hasAugment);
+  var item = this.getRandomItem_(level, this.gm_.stage.hasAugment);
   if (item) this.rewardItem_(item);
 
   // Get enemy's items.

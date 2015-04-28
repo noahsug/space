@@ -43,7 +43,7 @@ EquipScene.prototype.addEntities_ = function() {
 
   this.layout_.addGap(Padding.MD);
 
-  // Levels.
+  // Stages.
   var row;
   var items = this.inventory_.get(this.gm_.equipping);
   for (var i = 0; i < items.length || i % COLS; i++) {

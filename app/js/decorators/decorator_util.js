@@ -29,7 +29,7 @@ DecoratorUtil.prototype.spec = function(obj, name, overrides, defaults) {
 DecoratorUtil.prototype.addBasicWeapon_ = function(
     obj, spec, fire, opt_onCollision) {
   this.addWeapon(obj, spec, function() {
-    this.fireBasicProj_(obj, spec, fire, opt_onCollision);
+    return this.fireBasicProj_(obj, spec, fire, opt_onCollision);
   }.bind(this));
 };
 
@@ -48,9 +48,10 @@ DecoratorUtil.prototype.fireBasicProj_ = function(
 
 DecoratorUtil.prototype.addWeapon = function(obj, spec, fire) {
   this.addAbility(obj, spec, function(obj, spec) {
-    if (spec.spread) this.fireSpread_(obj, spec, fire);
-    else fire(obj, spec);
-    return spec.cooldown;
+    var overwriteCooldown;
+    if (spec.spread) overwriteCooldown = this.fireSpread_(obj, spec, fire);
+    else overwriteCooldown = fire(obj, spec);
+    return overwriteCooldown == undefined ? spec.cooldown : overwriteCooldown;
   }.bind(this));
 };
 
@@ -66,11 +67,15 @@ DecoratorUtil.prototype.addEffectAbility = function(obj, spec) {
 
 DecoratorUtil.prototype.addAbility = function(obj, spec, ability) {
   this.addCooldown(obj, function() {
-    if (obj.dead || obj.effect.silenced) return 0;
-    // Ship can't use targeted abilities while it has no target.
-    if (obj.effect.targetlessActive && !spec.targetless) return 0;
-    if (spec.range && obj.c.targetDis > spec.range) return 0;
-    if (obj.c.targetDis < spec.minRange) return 0;
+    spec.jammed = false;
+    if (obj.dead || obj.effect.silenced ||
+        // Ship can't use targeted abilities while it has no target.
+        obj.effect.targetlessActive && !spec.targetless ||
+        spec.range && obj.c.targetDis > spec.range ||
+        obj.c.targetDis < spec.minRange) {
+      spec.jammed = true;
+      return 0;
+    }
     spec.lastFired = this.gm_.time;
     var cooldown = ability(obj, spec);
     return this.randomCooldown(cooldown);
@@ -78,13 +83,16 @@ DecoratorUtil.prototype.addAbility = function(obj, spec, ability) {
 };
 
 DecoratorUtil.prototype.fireSpread_ = function(obj, spec, fire) {
+  var overwriteCooldown;
   var spreadPoints = _.geometry.spread(spec.spread, spec.projectiles);
   for (var i = 0; i < spreadPoints.length; i++) {
     // Fire the middle shot first so that it gets the on-fire effects.
     var index = Math.floor(i + spreadPoints.length / 2) % spreadPoints.length;
     spec.dangle = spreadPoints[index];
-    fire(obj, spec);
+    var overwrite = fire(obj, spec);
+    if (overwriteCooldown == undefined) overwriteCooldown = overwrite;
   }
+  return overwriteCooldown;
 };
 
 DecoratorUtil.prototype.fireLaser = function(obj, spec) {
@@ -127,7 +135,7 @@ DecoratorUtil.prototype.fireAura = function(obj, spec) {
   return this.gm_.entities.arr[this.gm_.entities.length++] = aura;
 };
 
-var EXTRA_RANGE_RATIO = 1.5;
+var EXTRA_RANGE_RATIO = 2.5;
 DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
   projectile.spec = spec;
   projectile.target = obj.target;
@@ -192,13 +200,13 @@ DecoratorUtil.prototype.mod_ = function(obj, prop, modFn) {
   function mod() {
     var value = _.parse(obj, prop);
     var modValues = obj.mod[prop];
-    if (modValues.baseValue == undefined) modValues.baseValue = value;
+    if (modValues.baseValue == null) modValues.baseValue = value;
     modFn();
 
-    if (modValues.set != undefined) {
+    if (modValues.set != null) {
       value = modValues.set;
     } else {
-      if (modValues.baseValue == undefined) return;
+      if (modValues.baseValue == null) return;
       value = modValues.baseValue * modValues.mult +  modValues.add;
     }
     _.set(obj, prop, value);

@@ -11,7 +11,7 @@ Speed = {
   VERY_FAST: 400,
 
   SHIP_SPEED: 90,
-  TURN_SPEED: .01
+  TURN_SPEED: Math.PI / 2
 };
 
 Accuracy = {
@@ -21,131 +21,85 @@ Accuracy = {
 };
 
 Health = {
-  DEFAULT: 500,
-  PLAYER_HEALTH: 650
+  DEFAULT: 50,
+  PLAYER: 50
 };
 
-Gameplay.prototype.worlds = [
-  {  // 0
-    rows: 1,
-    cols: 3
-  },
-  {  // 1
-    rows: 1,
-    cols: 4
-  },
-  {  // 2
-    rows: 2,
-    cols: 3
-  },
-  {  // 3
-    rows: 3,
-    cols: 3
-  },
-  {  // 4
-    rows: 2,
-    cols: 5
-  },
-  {  // 5
-    rows: 4,
-    cols: 4
-  },
-  {  // 6
-    rows: 5,
-    cols: 5
-  },
-  {  // 7
-    rows: 8,
-    cols: 4
-  },
-  //{  // 8
-  //  rows: 3,
-  //  cols: 5
-  //},
-  //{  // 9
-  //  rows: 6,
-  //  cols: 3
-  //},
-  //{  // 10
-  //  rows: 8,
-  //  cols: 3
-  //},
-  //{  // 11
-  //  rows: 8,
-  //  cols: 5
-  //}
-];
-
 di.constant('gameplayFile', {
+  stages: {
+    'drakir': {
+      level: 0, reward: {item: 1},
+      hull: 'drakir'},
+    'station': {
+      level: 1, reward: {item: .5, augment: .5}, end: true,
+      hull: 'station'}
+  },
+
+  worlds: [
+    {  // 0
+      stages: [
+        ['drakir', 'drakir'],
+        ['station']
+      ]
+    },
+    {  // 1
+      stages: [
+        ['drakir', 'drakir'],
+        ['station']
+      ]
+    },
+    {  // 2
+      stages: [
+        ['drakir', 'drakir'],
+        ['station']
+      ]
+    },
+    {  // 3
+      stages: [
+        ['drakir', 'drakir'],
+        ['station']
+      ]
+    },
+  ],
+
   player: [
     //'basic laser',
     //'burst laser',
     //'grenade',
     //'razors',
     //'sniper',
+    'missiles',
     //'missiles',
-    'shotgun',
+    //'shotgun',
     //'gatling',
 
     //'stun',
     //'emp',
     //'pistol',
-    'pull',
+    //'pull',
     //'charge',
     //'tracker',
     //'turret',
 
-    //'teleport',
-
-    //'knockback',
+    'knockback',
     //'shield',
     //'reflect',
     //'haze',
 
+    //'teleport',
     //'ninja',
     //'divide',
+    'sticky',
 
     //'freeze',
     //'warp',
+
+    'rd2',
   ],
 
   inventory: [
     'shotgun',
     'pistol'
-  ],
-
-  bosses: [
-    //[
-    //  'shotgun',
-    //  //'missiles',
-    //  //'pistol',
-    //  //'split',
-    //],
-    //[
-    //  'razors',
-    //  'turtle',
-    //  '+defence',
-    //],
-    //[
-    //  'grenade',
-    //  'emp',
-    //  'baboon II',
-    //  '+explosions',
-    //],
-    //[
-    //  'sniper',
-    //  'pistol II',
-    //  'mink',
-    //  'dash II',
-    //  '+speed II',
-    //],
-    //[
-    //  'missiles II',
-    //  'teleport',
-    //  '+attack rate II',
-    //  'baboon III',
-    //  'stun',
-    //],
   ],
 
   items: {
@@ -207,22 +161,22 @@ di.constant('gameplayFile', {
     'sniper': {
       desc: 'Long range, low rate of rate.',
       id:'primary.sniper',
-      spec: {dmg: 12, cooldown: 3.75, range: 500},
+      spec: {dmg: 10, cooldown: 3, range: 500},
       level: 3},
     'missiles': {
       desc: 'Heat seeking missiles.',
       id:'primary.missiles',
-      spec: {dmg: 6, seek: _.radians(60), cooldown: 1.6, range: 300},
+      spec: {dmg: 6, seek: _.radians(60), cooldown: 1.6, range: 350},
       level: 5},
     'stinger': {
       desc: 'Rapid heat seeking missiles.',
       id:'primary.missiles',
-      spec: {dmg: 3, seek: _.radians(60), cooldown: .7, range: 200, power: 1},
+      spec: {dmg: 3, seek: _.radians(60), cooldown: .7, range: 250, power: 1},
       level: 1},
     'gatling': {
       desc: 'Fires faster and faster over time.',
       id:'primary.gatling',
-      spec: {dmg: 3, cooldown: 1, range: 200},
+      spec: {dmg: 5, cooldown: 1, range: 200},
       level: 4},
 
     'turret': {
@@ -282,7 +236,7 @@ di.constant('gameplayFile', {
       id:'secondary.tracker', spec: {dmgRatio: 1.5},
       level: 1},
     'pull': {
-      desc: 'Pulls enemy close and stuns. Range: 10. Stun duration: .75s',
+      desc: 'Pulls enemy close and stuns. Range: 10. Stun duration: 1.5s',
       id:'secondary.pull', spec: {duration: 1.5, range: 100},
       level: 2},
     //'melee': {
@@ -326,11 +280,11 @@ di.constant('gameplayFile', {
       desc: 'Shots seek target, but have less range.',
       id: 'utility.ranger', spec: {range: .75, seek: _.radians(50)},
       level: 2},
-    //'sticky': {
-    //  desc: 'Shots slow target with each hit.',
-    //  id: 'utility.sticky',
-    //  spec: {},
-    //  level: 3},
+    'sticky': {
+      desc: 'Shots slow target by 75% with each hit, can stack up to 5 times.',
+      id: 'utility.sticky',
+      spec: {},
+      level: 3},
 
     'knockback': {
       desc: 'Knocks the enemy away.',
@@ -413,6 +367,16 @@ di.constant('gameplayFile', {
     'camo': {
       desc: 'Can fire weapons while stealthed',
       id: 'augment.camo', spec: {}, req: ['stealth'],
-      level: 5}
+      level: 5},
+
+    'rd2': {
+      id: 'hull.basic',
+      spec: {size: 36}},
+    'drakir': {
+      id: 'hull.basic',
+      spec: {size: 36}},
+    'station': {
+      id: 'hull.basic',
+      spec: {size: 40}}
   }
 });

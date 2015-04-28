@@ -26,6 +26,10 @@ Inventory.prototype.equip = function(item) {
   this.gm_.player.push(item);
 };
 
+Inventory.prototype.getHull = function() {
+  return _.findWhere(this.gm_.player, {category: 'hull'});
+};
+
 Inventory.prototype.add = function(item) {
   if (this.hasItem(item)) return;
   this.gm_.inventory.splice(0, 0, item);
@@ -48,6 +52,7 @@ Inventory.prototype.unequip = function(item) {
   var equipIndex = this.getEquippedIndex_(item);
   if (equipIndex >= 0) this.gm_.player.splice(equipIndex, 1);
 };
+
 
 Inventory.prototype.getUnownedByLevel = function(level, opt_returnAugment) {
   return this.getUnownedByLevelAndType(level, null, opt_returnAugment);
@@ -81,8 +86,4 @@ Inventory.prototype.hasReq_ = function(item) {
 
 Inventory.prototype.getEquippedIndex_ = function(item) {
   return _.findIndexWhere(this.gm_.player, {name: item.name});
-};
-
-Inventory.prototype.hasItemToEquip = function() {
-  return this.gm_.player.length - 1 < this.gm_.inventory.length;
 };

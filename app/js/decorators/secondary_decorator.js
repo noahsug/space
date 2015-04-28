@@ -67,7 +67,7 @@ SecondaryDecorator.prototype.decorateEmp_ = function(obj, spec) {
 SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
     minRange: 100,
-    speed: 350,
+    speed: 300,
     duration: 1.2,
     range: 200,
     cooldown: 4,
@@ -80,11 +80,13 @@ SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
     obj.secondary.def = 1.5;
   }
 
-  var ratio = obj.secondary.speed / (obj.movement.speed || 1);
   this.util_.addWeapon(obj, obj.secondary, function() {
+    obj.addEffect('displaced', duration, stopCharge);
+    obj.addEffect('stunned', duration, stopCharge);
+    _.modSet(obj, 'movement.speed', obj.secondary.speed);
+
     obj.movement.vector.x = Math.cos(obj.c.targetAngle);
     obj.movement.vector.y = Math.sin(obj.c.targetAngle);
-    obj.movement.speed *= ratio;
     var collisionRatio = .00001;
     obj.collision.dmg *= collisionRatio;
     obj.collision.stunDuration /= obj.secondary.stunReduction;
@@ -92,15 +94,14 @@ SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
     obj.secondary.charging = true;
     obj.def *= obj.secondary.def;
 
-    obj.secondary.stopCharge = function() {
+    var stopCharge = function() {
+      if (!obj.secondary.charging) return;
       obj.secondary.charging = false;
-      obj.movement.speed /= ratio;
+      this.util_.modSet(obj.target, 'movement.speed', null);
       obj.collision.dmg /= collisionRatio;
       obj.collision.stunDuration /= obj.secondary.stunReduction;
       obj.def /= obj.secondary.def;
     };
-
-    obj.addEffect('stunned', duration, obj.secondary.stopCharge);
   });
 };
 
@@ -112,7 +113,7 @@ SecondaryDecorator.prototype.decorateTracker_ = function(obj, spec) {
     duration: 1000,
     style: 'effect',
     effect: 'tagged',
-    seekAdd: _.radians(360),
+    seekAdd: _.radians(50),
     dmgRatio: 1,
     range: 300
   });
@@ -149,7 +150,6 @@ SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {
     range: null,
     knockbackDuration: .5,
     cooldown: 4,
-    effect: 'stunned',
     knockback: 45,
     grow: -500,
     radius: spec.range
@@ -161,16 +161,15 @@ SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {
   }
 
   var knockback = function(target) {
-    target.movement.vector.x = -Math.cos(obj.c.targetAngle);
-    target.movement.vector.y = -Math.sin(obj.c.targetAngle);
-    var ratio = (obj.secondary.knockback / obj.secondary.knockbackDuration) /
-        target.movement.speed;
-    target.movement.speed *= ratio;
-    target.addEffect('knockback', obj.secondary.knockbackDuration, function() {
-      target.movement.speed /= ratio;
+    target.addEffect('displaced', obj.secondary.knockbackDuration, function() {
+      this.util_.modSet(target, 'movement.speed', null);
       target.movement.vector = {x: 0, y: 0};
     });
-    target.addEffect(obj.secondary.effect, obj.secondary.duration);
+    target.movement.vector.x = -Math.cos(obj.c.targetAngle);
+    target.movement.vector.y = -Math.sin(obj.c.targetAngle);
+    var speed = obj.secondary.knockback / obj.secondary.knockbackDuration;
+    target.addEffect('stunned', obj.secondary.duration);
+    this.util_.modSet(target, 'movement.speed', speed);
   }.bind(this);
 
   this.util_.addWeapon(obj, obj.secondary, function() {
@@ -194,7 +193,9 @@ SecondaryDecorator.prototype.decorateTurret_ = function(obj, spec) {
     var primary = _.sample(['basic laser', 'grenade', 'shotgun']);
     var secondary = _.sample(['pull', 'knockback']);
     var dna = [this.itemService_.getByName(primary),
-               this.itemService_.getByName(secondary)];
+               this.itemService_.getByName(secondary),
+               // TODO(sugarman): Use turret sprite? Who's turrets are whose?
+               this.itemService_.getByName('drakir')];
     var turret = obj.addClone(dna);
     this.util_.mod(turret, 'radius', .70);
     this.util_.mod(turret, 'primary.dmg', obj.secondary.dmgRatio);

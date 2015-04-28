@@ -6,7 +6,7 @@ ItemService.prototype.get = function() {
 };
 
 ItemService.prototype.getByName = function(name) {
-  return _.findWhere(this.gameplay_.items, {name: name});
+  return this.gameplay_.items[name];
 };
 
 ItemService.prototype.getByLevel = function(level) {
@@ -22,5 +22,5 @@ ItemService.prototype.getByTypeAndLevel = function(type, level) {
 };
 
 ItemService.prototype.getEnemyEquipped = function(type) {
-  return _.findWhere(this.gm_.level.enemy, {category: type});
+  return _.findWhere(this.gm_.stage.enemy, {category: type});
 };
