@@ -21,12 +21,15 @@ Accuracy = {
 };
 
 Health = {
-  DEFAULT: 50,
-  PLAYER: 50
+  DEFAULT: 500,
+  PLAYER: 500
 };
 
 di.constant('gameplayFile', {
   stages: {
+    'tri': {
+      level: 0, reward: {item: 1},
+      hull: 'tri'},
     'drakir': {
       level: 0, reward: {item: 1},
       hull: 'drakir'},
@@ -38,7 +41,8 @@ di.constant('gameplayFile', {
   worlds: [
     {  // 0
       stages: [
-        ['drakir', 'drakir'],
+        ['drakir', 'station'],
+        ['drakir', 'drakir', 'drakir'],
         ['station']
       ]
     },
@@ -68,9 +72,9 @@ di.constant('gameplayFile', {
     //'grenade',
     //'razors',
     //'sniper',
-    'missiles',
     //'missiles',
-    //'shotgun',
+    //'stinger',
+    'shotgun',
     //'gatling',
 
     //'stun',
@@ -89,12 +93,15 @@ di.constant('gameplayFile', {
     //'teleport',
     //'ninja',
     //'divide',
-    'sticky',
+    //'stealth',
+    //'sticky',
 
     //'freeze',
     //'warp',
+    'archery',
 
-    'rd2',
+    //'rd2',
+    'tri'
   ],
 
   inventory: [
@@ -161,22 +168,22 @@ di.constant('gameplayFile', {
     'sniper': {
       desc: 'Long range, low rate of rate.',
       id:'primary.sniper',
-      spec: {dmg: 10, cooldown: 3, range: 500},
+      spec: {dmg: 12, cooldown: 3, range: 500},
       level: 3},
     'missiles': {
-      desc: 'Heat seeking missiles.',
+      desc: 'Long range heat seeking missiles.',
       id:'primary.missiles',
       spec: {dmg: 6, seek: _.radians(60), cooldown: 1.6, range: 350},
       level: 5},
     'stinger': {
-      desc: 'Rapid heat seeking missiles.',
+      desc: 'Rapidly firing heat seeking missiles.',
       id:'primary.missiles',
-      spec: {dmg: 3, seek: _.radians(60), cooldown: .7, range: 250, power: 1},
+      spec: {dmg: 2, seek: _.radians(60), cooldown: .5, range: 200, power: 1},
       level: 1},
     'gatling': {
       desc: 'Fires faster and faster over time.',
       id:'primary.gatling',
-      spec: {dmg: 5, cooldown: 1, range: 200},
+      spec: {dmg: 3, cooldown: 1, range: 200},
       level: 4},
 
     'turret': {
@@ -253,7 +260,7 @@ di.constant('gameplayFile', {
       id: 'utility.ninja', spec: {power: 2},
       level: 1},
     'stealth': {
-      desc: 'Ability to turn invisible for a short period of time.',
+      desc: 'Turn invisible, then deal 2x damage.',
       id: 'utility.ninja', spec: {power: 3},
       level: 0},
     'tiny': {
@@ -368,15 +375,22 @@ di.constant('gameplayFile', {
       desc: 'Can fire weapons while stealthed',
       id: 'augment.camo', spec: {}, req: ['stealth'],
       level: 5},
+    'archery': {
+      desc: 'Shoot twice while long range',
+      id: 'augment.archery', spec: {}, req: ['sniper', 'missiles'],
+      level: 3},
 
     'rd2': {
       id: 'hull.basic',
-      spec: {size: 36}},
+      spec: {sprite: 'rd2'}},
     'drakir': {
       id: 'hull.basic',
-      spec: {size: 36}},
+      spec: {sprite: 'drakir'}},
     'station': {
       id: 'hull.basic',
-      spec: {size: 40}}
+      spec: {sprite: 'station'}},
+    'tri': {
+      id: 'hull.basic',
+      spec: {sprite: 'tri'}}
   }
 });

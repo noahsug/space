@@ -9,20 +9,20 @@ ShipFactory.prototype.init = function() {
 ShipFactory.prototype.createEnemyDna = function(stage) {
   // DEBUG.
   return [
-    //'basic laser',
-    'shotgun',
-    'dash',
+    'basic laser',
+    //'shotgun',
+    //'dash',
     //'gatling',
     //'knockback',
     //'divide'
     //'charge'
     //'haze',
-    //'pistol',
+    'pistol',
     //'reflect',
     //'shield',
     //'pull',
     //'tracker',
-    //'teleport',
+    'teleport',
     //'charge',
     stage.hull.name,
   ].map(this.itemService_.getByName.bind(this.itemService_));

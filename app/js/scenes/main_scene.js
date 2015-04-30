@@ -1,6 +1,6 @@
 var MainScene = di.service('MainScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'RoundBtnElement', 'BtnElement',
-  'LabelElement', 'World', 'Inventory', 'Gameplay']);
+  'LabelElement', 'World', 'Inventory', 'Gameplay', 'SpriteService']);
 
 MainScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('main'));
@@ -25,13 +25,15 @@ MainScene.prototype.addEntities_ = function() {
 
   // Stages.
   for (var row = this.gm_.world.stages.length - 1; row >= 0; row--) {
-    if (row < this.gm_.world.stages.length - 1)
+    if (row < this.gm_.world.stages.length - 1) {
       this.layout_.addGap(Padding.STAGE);
+    }
     var stageRow = this.layout_.addNew(this.layoutElement_);
-    stageRow.childHeight = Size.STAGE;
     for (var col = 0; col < this.gm_.world.stages[row].length; col++) {
       if (col) stageRow.addGap(Padding.STAGE);
-      stageRow.add(this.createBtn_(row, col));
+      var btn = this.createBtn_(row, col);
+      stageRow.add(btn);
+      stageRow.childHeight = Math.max(btn.getSize(), stageRow.childHeight || 0);
     }
   }
 
@@ -72,10 +74,14 @@ MainScene.prototype.createPlayerShipBtn_ = function() {
 
 MainScene.prototype.createBtn_ = function(row, col) {
   var btn = this.roundBtnElement_.create();
-  btn.setSize(Size.STAGE);
-
   var stage = this.gm_.world.stages[row][col];
   btn.setProp('stage', stage);
+
+  if (this.spriteService_.getSize(stage.hull.spec.sprite) < 50) {
+    btn.setSize(Size.STAGE);
+  } else {
+    btn.setSize(Size.STAGE_LARGE);
+  }
 
   if (stage.state == 'unlocked') {
     btn.onClick(function() {

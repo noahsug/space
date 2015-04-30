@@ -85,7 +85,7 @@ BasicDecorator.prototype.decorateRotates_ = function(obj, spec) {
   });
 
   obj.update(function(dt) {
-    if (obj.effect.rooted) return;
+    if (obj.dead || obj.effect.rooted || obj.effect.targetlessMovement) return;
     obj.rotation = _.approachAngle(
         obj.rotation, obj.c.targetAngle, obj.turnSpeed * dt);
   });

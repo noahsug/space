@@ -185,8 +185,8 @@ UtilityDecorator.prototype.decorateTeleport_ = function(obj, spec) {
       return;
     }
     obj.utility.teleportPos = {
-      x: obj.target.x + Math.cos(obj.c.targetAngle) * 60,
-      y: obj.target.y + Math.sin(obj.c.targetAngle) * 60
+      x: obj.target.x + Math.cos(obj.c.targetAngle) * obj.target.radius + 45,
+      y: obj.target.y + Math.sin(obj.c.targetAngle) * obj.target.radius + 45
     };
     obj.utility.teleportReady = !this.c_.hitWall(obj.utility.teleportPos);
   }.bind(this));
@@ -197,17 +197,36 @@ UtilityDecorator.prototype.decorateTeleport_ = function(obj, spec) {
     obj.movement.vector = {x: 0, y: 0};
     obj.x = obj.utility.teleportPos.x;
     obj.y = obj.utility.teleportPos.y;
+    obj.rotation = -obj.c.targetAngle;
   }.bind(this);
 };
 
 UtilityDecorator.prototype.decorateInvisible_ = function(obj, spec) {
   this.util_.spec(obj, 'utility', spec, {
     cooldown: 6,
+    dmgRatio: 1.5,
+    dmgDuration: .5,
     effect: 'invisible',
     duration: 2,
     speedMod: .5,
     targetless: true
   });
 
-  this.util_.addEffectAbility(obj, obj.utility);
+  this.util_.addAbility(obj, obj.utility, function() {
+    if (obj.effect[obj.utility.effect]) return 0;
+    obj.addEffect(obj.utility.effect, obj.utility.duration, moreDamage);
+    return obj.utility.cooldown;
+  });
+
+  var moreDamage = function() {
+    obj.addEffect('outOfStealth', obj.utility.dmgDuration, function() {
+      _.each(Game.ITEM_TYPES, function(type) {
+        this.util_.mod(obj, type + '.dmg', 1 / obj.utility.dmgRatio);
+      }, this);
+    }.bind(this));
+
+    _.each(Game.ITEM_TYPES, function(type) {
+      this.util_.mod(obj, type + '.dmg', obj.utility.dmgRatio);
+    }, this);
+  }.bind(this);
 };

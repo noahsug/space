@@ -13,6 +13,7 @@ Padding = {
 Size = {
   WORLD: 50,
   STAGE: 56,
+  STAGE_LARGE: 120,
   ITEM: 54,
   WORLD_TEXT: 16,
   TEXT: 12,

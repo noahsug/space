@@ -1,5 +1,5 @@
 var Background = di.service('Background', [
-  'GameModel as gm', 'Screen', 'canvas', 'ctx', 'bgCtxList',
+  'GameModel as gm', 'Screen', 'canvas', 'ctx', 'textCanvas', 'bgCtxList',
   'RepeatedBackground']);
 
 // Screen should never have a width or height larger than 2x this value.
@@ -62,10 +62,10 @@ Background.prototype.drawSky_ = function(ctx, width, height) {
 };
 
 Background.prototype.draw = function() {
-  //this.canvas_.width = this.canvas_.width;
+  this.textCanvas_.width = this.textCanvas_.width;
 
   this.ctx_.globalCompositeOperation = 'destination-out';
-  this.ctx_.fillStyle = 'rgba(0, 0, 0, .4)';
+  this.ctx_.fillStyle = 'rgba(0, 0, 0, .35)';
   this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
   this.ctx_.globalCompositeOperation = 'source-over';
   _.each(this.bgLayers_, function(bg) { bg.draw(); });

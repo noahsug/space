@@ -63,6 +63,7 @@ AiMovement.prototype.getDesiredDistance_ = function(obj) {
   if (!obj.movement.maxDis ||
       maxDis < obj.movement.maxDis ||
       obj.c.targetDis > obj.movement.maxDis + 100 ||
+      maxDis > obj.movement.maxDis + 200 ||
       obj.movement.maxDisTime < this.gm_.time) {
     obj.movement.maxDis = maxDis;
     obj.movement.maxDisTime = this.gm_.time + 10;
@@ -81,10 +82,12 @@ AiMovement.prototype.computeMaxDistance_ = function(obj) {
   var backAngle = obj.c.targetAngle + _.RADIANS_180;
   var backAngleX = Math.cos(backAngle);
   var xDis = (backAngleX < 0 ? obj.c.wallDisW : obj.c.wallDisE) /
-        Math.abs(backAngleX);
+      Math.abs(backAngleX);
   var backAngleY = Math.sin(backAngle);
   var yDis = (backAngleY < 0 ? obj.c.wallDisN : obj.c.wallDisS) /
-        Math.abs(backAngleY);
+      Math.abs(backAngleY);
+  if (xDis > yDis) xDis = Math.hypot(yDis, obj.c.wallDisY);
+  else yDis = Math.hypot(xDis, obj.c.wallDisX);
   var maxDis = _.distance({x: xDis, y: yDis});
   return Math.max(1, maxDis - maxDis % 50);
 };
@@ -99,13 +102,15 @@ AiMovement.prototype.computeBestDistance_ = function(obj) {
     var self = Math.min(obj.c.ranges[i], obj.movement.maxDis);
     var target = obj.c.targetRanges[targetIndex] || 0;
     if (self > target) {
-      // If we have the longest range attack, stay at max range.
-      if (targetIndex == 0) return obj.c.ranges[i];
+      // If have farthest attack + are out of target range, stay away.
+      if (targetIndex == 0 && obj.c.targetDis > target) {
+        return obj.c.ranges[i];
+      }
 
       numAttacks++;
       if (numAttacks > bestNumAttacks) {
         bestNumAttacks = numAttacks;
-        bestDistance = self;
+        bestDistance = obj.c.ranges[i];
       }
     } else if (self < target) {
       numAttacks--;
@@ -121,7 +126,7 @@ AiMovement.prototype.computeBestDistance_ = function(obj) {
       i--;  // Will be incremented by for loop.
       if (numAttacks > bestNumAttacks) {
         bestNumAttacks = numAttacks;
-        bestDistance = self;
+        bestDistance = obj.c.ranges[i];
       }
     }
   }
@@ -160,7 +165,7 @@ AiMovement.prototype.setDesiredVector_ = function(obj) {
   total += this.addAndGetLength_(v, this.getEnemyDistanceVector_(obj, 6));
   total += this.addAndGetLength_(v, this.getCloneDistanceVector_(obj, 2));
   total += this.addAndGetLength_(v, this.getDodgeVector_(obj, 2));
-  total += this.addAndGetLength_(v, this.getFleeVector_(obj, 4));
+  total += this.addAndGetLength_(v, this.getFleeVector_(obj, 6));
   if (!obj.effect.invisible) {
     _.vector.add(v, this.getCurrentPerpendicularVector_(obj, 1.5));
     _.vector.add(v, this.getPerpendicularVector_(obj, .5, v));
@@ -213,7 +218,7 @@ AiMovement.prototype.getRandomUrgeVector_ = function(obj, weight) {
 
 AiMovement.prototype.getEnemyDistanceVector_ = function(obj, weight) {
   if (!obj.movement.desiredDistance) return _.vector.EMPTY;
-  var panic = 20;
+  var panic = 15;
   var dd = obj.c.targetDis - obj.movement.desiredDistance;
   var r = dd * dd / (panic * panic);
   // If we're a little too close or too far, don't panic.
@@ -281,39 +286,32 @@ AiMovement.prototype.getCurrentPerpendicularVector_ = function(obj, weight) {
   return v;
 };
 
-// TODO: This doesn't really work.
 AiMovement.prototype.getFleeVector_ = function(obj, weight) {
-  if (!obj.movement.fleeing) {
-    if (obj.c.wallDis > 30)
-      return _.vector.EMPTY;
-    if (obj.c.targetDis - obj.movement.desiredDistance > 50)
-      return _.vector.EMPTY;
-    if (obj.c.wallDis != obj.target.c.wallDis)
-      return _.vector.EMPTY;
-    obj.movement.fleeDirection = 0;
-    if (obj.c.wallDisN == obj.c.wallDis) {
-      obj.movement.fleeDirection = _.RADIANS_90;
-    } else if (obj.c.wallDisS == obj.c.wallDis) {
-      obj.movement.fleeDirection = _.RADIANS_270;
-    } else {
-      return _.vector.EMPTY;
+  if (!obj.movement.fleeing &&
+      obj.c.wallDisY <= 25 &&
+      obj.movement.maxDis <= 10 &&
+      obj.c.targetDis <= 150 &&
+      obj.primary.range > obj.target.primary.range) {
+    // Wait 10 frames before fleeing.
+    obj.movement.shouldFlee = obj.movement.shouldFlee || 10;
+    obj.movement.shouldFlee--;
+    if (obj.movement.shouldFlee == 0) {
+      // Flee for 50 frames then give up.
+      obj.movement.fleeing = 50;
+      obj.movement.fleeDirection = obj.c.wallDisN > obj.c.wallDisS ?
+        _.RADIANS_270 : _.RADIANS_90;
     }
-
-    if (obj.movement.fleeDirection) {
-      obj.movement.fleeing = true;
-      if (obj.utility.teleportReady) {
-        obj.utility.useTeleport();
-      } else if (obj.utility.dashReady) {
-        obj.utility.useDash();
-      }
-    }
+  } else {
+    obj.movement.shouldFlee = 0;
   }
+
+  if (obj.movement.fleeing) obj.movement.fleeing--;
   if (!obj.movement.fleeing) return _.vector.EMPTY;
 
-  var wallDis = obj.movement.fleeDirection == _.RADIANS_90 ?
-      obj.c.wallDisS : obj.c.wallDisN;
+  var wallDis = obj.movement.fleeDirection == _.RADIANS_270 ?
+        obj.c.wallDisN : obj.c.wallDisS;
   if (wallDis < 100) {
-    obj.movement.fleeing = false;
+    obj.movement.fleeing = 0;
     return _.vector.EMPTY;
   }
 

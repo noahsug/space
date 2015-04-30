@@ -6,6 +6,30 @@ AugmentDecorator.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'augment');
 };
 
+AugmentDecorator.prototype.decorateArchery_ = function(obj) {
+  var minDistance = 250;
+  var on = false;
+  obj.prefire(function(proj) {
+    if (proj.spec.name != 'primary') return;
+    if (on) {
+      stop();
+      return;
+    }
+    if (obj.c.targetDis < minDistance) return;
+
+    obj.addEffect('setPrimaryCooldown', Infinity, stop);
+    on = true;
+    this.util_.modSet(obj, 'primary.cooldown', .2);
+  }, this);
+
+  var stop = function() {
+    if (!on) return;
+    on = false;
+    obj.effect.setPrimaryCooldown = 0;
+    this.util_.modSet(obj, 'primary.cooldown', null);
+  }.bind(this);
+};
+
 AugmentDecorator.prototype.decorateExtreme_ = function(obj, spec) {
   _.each(Game.ITEM_TYPES, function(type) {
     this.util_.mod(obj, type + '.dmg', 2);

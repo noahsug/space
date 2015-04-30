@@ -77,7 +77,14 @@ SharedComputation.prototype.rangeInfo = function(obj) {
   this.cachedCompute_(obj, 'rangeInfo_');
 };
 SharedComputation.prototype.rangeInfo_ = function(obj) {
-  // TODO: Account for cooldowns in own ranges.
+  //var ranges = [];
+  //ranges.push(obj.primary.range);
+  //if (obj.secondary.range) ranges.push(obj.secondary.range);
+  //if (obj.ability.range) ranges.push(obj.ability.range);
+  //if (obj.primary.range > obj.target.primary.range) {
+  //  return [_.max(ranges)];
+  //}
+
   var ranges = [];
   var wantToCollideWithEnemy =
         obj.collision.dmg < obj.target.collision.dmg ||
@@ -85,8 +92,13 @@ SharedComputation.prototype.rangeInfo_ = function(obj) {
   if (obj.health > obj.collision.dmg && wantToCollideWithEnemy) {
     ranges.push(1);
   }
-  if (obj.primary.range) ranges.push(obj.primary.range);
-  if (obj.primary.range) ranges.push(obj.primary.range);
+  if (obj.primary.range < obj.target.primary.range) {
+    ranges.push(obj.primary.range);
+    ranges.push(obj.primary.range);
+  }
+  ranges.push(obj.primary.range);
+  ranges.push(obj.primary.range);
+  ranges.push(obj.primary.range);
   if (obj.secondary.range) ranges.push(obj.secondary.range);
   if (obj.ability.range) ranges.push(obj.ability.range);
   obj.c.ranges = _.sortBy(ranges).reverse();
@@ -96,8 +108,14 @@ SharedComputation.prototype.rangeInfo_ = function(obj) {
       obj.target.health > obj.health) {
     targetRanges.push(1);
   }
-  if (obj.target.primary.range) targetRanges.push(obj.target.primary.range);
-  if (obj.target.primary.range) targetRanges.push(obj.target.primary.range);
+
+  if (obj.target.primary.range < obj.primary.range) {
+    targetRanges.push(obj.target.primary.range);
+    targetRanges.push(obj.target.primary.range);
+  }
+  targetRanges.push(obj.target.primary.range);
+  targetRanges.push(obj.target.primary.range);
+  targetRanges.push(obj.target.primary.range);
   if (obj.target.secondary.range) targetRanges.push(obj.target.secondary.range);
   if (obj.target.ability.range) targetRanges.push(obj.target.ability.range);
   obj.c.targetRanges = _.sortBy(targetRanges).reverse();

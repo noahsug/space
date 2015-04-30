@@ -11,6 +11,10 @@ RoundBtnElement.prototype.setSize = function(size) {
   this.entity_.radius = this.measure_('size', size) / 2;
 };
 
+RoundBtnElement.prototype.getSize = function() {
+  return this.entity_.radius * 2;
+};
+
 RoundBtnElement.prototype.calcChildWidthHeight_ = function() {
   this.childWidth = this.childHeight = this.entity_.radius * 2;
 };

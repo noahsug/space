@@ -1,5 +1,5 @@
 var HullDecorator = di.service('HullDecorator', [
-  'EntityDecorator', 'DecoratorUtil as util', 'ShipFactory']);
+  'EntityDecorator', 'DecoratorUtil as util', 'ShipFactory', 'SpriteService']);
 
 HullDecorator.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'hull');
@@ -7,8 +7,10 @@ HullDecorator.prototype.init = function() {
 
 HullDecorator.prototype.decorateBasic_ = function(obj, spec) {
   this.util_.spec(obj, 'hull', spec, {
-    size: 0
+    sprite: ''
   });
-  obj.hull.style = _.findWhere(obj.dna, {category: 'hull'}).name;
-  obj.setRadius(obj.hull.size / 2);
+  obj.setRadius(this.spriteService_.getSize(obj.hull.sprite) / 2);
+  if (obj.radius > 30) {
+    this.util_.mod(obj, 'turnSpeed', .75);
+  }
 };
