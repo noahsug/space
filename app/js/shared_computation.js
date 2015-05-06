@@ -25,6 +25,7 @@ SharedComputation.prototype.cachedCompute_ = function(obj, fnName) {
 SharedComputation.prototype.targetInfo_ = function(obj) {
   obj.c.targetDis = _.distance(obj, obj.target);
   obj.c.targetAngle = _.angle(obj, obj.target);
+  obj.c.targetAngleDif = _.angleDif(obj.rotation, obj.c.targetAngle);
 };
 
 SharedComputation.prototype.wallDis = function(obj) {

@@ -12,7 +12,8 @@ SecondaryDecorator.prototype.decoratePistol_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
     length: 6 + 16,
     speed: Speed.DEFAULT,
-    style: 'weak'
+    style: 'weak',
+    maxTargetAngle: MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -31,7 +32,8 @@ SecondaryDecorator.prototype.decorateStun_ = function(obj, spec) {
     speed: Speed.DEFAULT,
     duration: 1,
     style: 'effect',
-    effect: 'stunned disabled'
+    effect: 'stunned disabled',
+    maxTargetAngle: MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -52,7 +54,8 @@ SecondaryDecorator.prototype.decorateEmp_ = function(obj, spec) {
     speed: Speed.SLOW,
     duration: 1.2,
     style: 'effect',
-    effect: 'stunned disabled'
+    effect: 'stunned disabled',
+    maxTargetAngle: MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -72,7 +75,8 @@ SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
     range: 200,
     cooldown: 4,
     stunReduction: 2,
-    def: 1
+    def: 1,
+    maxTargetAngle: MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -80,29 +84,30 @@ SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
     obj.secondary.def = 1.5;
   }
 
+  var collisionRatio = .1;
+  var stopCharge = function() {
+    if (!obj.secondary.charging) return;
+    obj.secondary.charging = false;
+    this.util_.modSet(obj, 'movement.speed', null);
+    obj.collision.dmg /= collisionRatio;
+    obj.collision.stunDuration /= obj.secondary.stunReduction;
+    obj.def /= obj.secondary.def;
+  }.bind(this);
+
   this.util_.addWeapon(obj, obj.secondary, function() {
     obj.addEffect('displaced', duration, stopCharge);
     obj.addEffect('stunned', duration, stopCharge);
-    _.modSet(obj, 'movement.speed', obj.secondary.speed);
+    this.util_.modSet(obj, 'movement.speed', obj.secondary.speed);
 
     obj.movement.vector.x = Math.cos(obj.c.targetAngle);
     obj.movement.vector.y = Math.sin(obj.c.targetAngle);
-    var collisionRatio = .00001;
+
     obj.collision.dmg *= collisionRatio;
     obj.collision.stunDuration /= obj.secondary.stunReduction;
     var duration = obj.secondary.range * 1.2 / obj.movement.speed;
     obj.secondary.charging = true;
     obj.def *= obj.secondary.def;
-
-    var stopCharge = function() {
-      if (!obj.secondary.charging) return;
-      obj.secondary.charging = false;
-      this.util_.modSet(obj.target, 'movement.speed', null);
-      obj.collision.dmg /= collisionRatio;
-      obj.collision.stunDuration /= obj.secondary.stunReduction;
-      obj.def /= obj.secondary.def;
-    };
-  });
+  }.bind(this));
 };
 
 SecondaryDecorator.prototype.decorateTracker_ = function(obj, spec) {
@@ -115,7 +120,8 @@ SecondaryDecorator.prototype.decorateTracker_ = function(obj, spec) {
     effect: 'tagged',
     seekAdd: _.radians(50),
     dmgRatio: 1,
-    range: 300
+    range: 300,
+    maxTargetAngle: MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -164,7 +170,7 @@ SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {
     target.addEffect('displaced', obj.secondary.knockbackDuration, function() {
       this.util_.modSet(target, 'movement.speed', null);
       target.movement.vector = {x: 0, y: 0};
-    });
+    }.bind(this));
     target.movement.vector.x = -Math.cos(obj.c.targetAngle);
     target.movement.vector.y = -Math.sin(obj.c.targetAngle);
     var speed = obj.secondary.knockback / obj.secondary.knockbackDuration;
@@ -185,17 +191,13 @@ SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {
 
 SecondaryDecorator.prototype.decorateTurret_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
-    dmgRatio: .2,
+    dmgRatio: .15,
     targetless: true
   });
 
   this.util_.addWeapon(obj, obj.secondary, function() {
-    var primary = _.sample(['basic laser', 'grenade', 'shotgun']);
-    var secondary = _.sample(['pull', 'knockback']);
-    var dna = [this.itemService_.getByName(primary),
-               this.itemService_.getByName(secondary),
-               // TODO(sugarman): Use turret sprite? Who's turrets are whose?
-               this.itemService_.getByName('drakir')];
+    var dna = [this.itemService_.getByName('basic laser'),
+               this.itemService_.getByName('brown')];
     var turret = obj.addClone(dna);
     this.util_.mod(turret, 'radius', .70);
     this.util_.mod(turret, 'primary.dmg', obj.secondary.dmgRatio);
@@ -203,7 +205,7 @@ SecondaryDecorator.prototype.decorateTurret_ = function(obj, spec) {
     // Needed for the turret to get knocked arounded.
     turret.movement.speed = 50;
     turret.movement.turret = true;
-    turret.setMaxHealth(5);
+    turret.setMaxHealth(8);
 
     var angle = obj.c.targetAngle + this.random_.nextSign() * _.RADIANS_135;
     turret.x = obj.x + Math.cos(angle) * 30;
@@ -213,40 +215,25 @@ SecondaryDecorator.prototype.decorateTurret_ = function(obj, spec) {
   }.bind(this));
 };
 
-//SecondaryDecorator.prototype.decorateMelee_ = function(obj, spec) {
-//  this.util_.spec(obj, 'secondary', spec, {
-//    range: null,
-//    dmgRatio: null,
-//    cooldown: .2
-//  });
-//
-//  var cooldownRatio = 1;
-//  var applied = false;
-//  var used = false;
-//  obj.act(function() {
-//    var inRange = obj.c.targetDis <= obj.secondary.range;
-//    var justFired = obj.primary.lastFired == this.gm_.time;
-//
-//    // TODO use resolve.
-//
-//    if (inRange && !applied) {
-//      cooldownRatio = obj.secondary.cooldown / obj.primary.cooldown;
-//      obj.primary.dmg *= obj.secondary.dmgRatio;
-//      obj.primary.cooldown *= cooldownRatio;
-//      applied = true;
-//    }
-//
-//    if (!inRange && applied) {
-//      obj.primary.dmg /= obj.secondary.dmgRatio;
-//      obj.primary.cooldown /= cooldownRatio;
-//      applied = false;
-//    }
-//
-//    if (applied && justFired) {
-//      cooldownRatio = obj.secondary.cooldown / obj.primary.cooldown;
-//      obj.primary.dmg *= obj.secondary.dmgRatio;
-//      obj.primary.cooldown *= cooldownRatio;
-//      used = true;
-//    }
-//  });
-//};
+SecondaryDecorator.prototype.decorateSpawn_ = function(obj, spec) {
+  this.util_.spec(obj, 'secondary', spec, {
+    dmgRatio: .15,
+    targetless: true
+  });
+
+  this.util_.addWeapon(obj, obj.secondary, function() {
+    var dna = [this.itemService_.getByName('alien laser'),
+               this.itemService_.getByName('alien1')];
+    var spawn = obj.addClone(dna);
+    this.util_.mod(spawn, 'radius', .70);
+    this.util_.mod(spawn, 'primary.dmg', obj.secondary.dmgRatio);
+    this.util_.mod(spawn, 'collision.dmg', .5);
+    spawn.setMaxHealth(8);
+
+    var angle = obj.c.targetAngle + this.random_.nextSign() * _.RADIANS_135;
+    spawn.x = obj.x + Math.cos(angle) * 30;
+    spawn.y = obj.y + Math.sin(angle) * 30;
+
+    spawn.act(Game.UPDATE_RATE);
+  }.bind(this));
+};

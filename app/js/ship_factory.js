@@ -8,40 +8,45 @@ ShipFactory.prototype.init = function() {
 
 ShipFactory.prototype.createEnemyDna = function(stage) {
   // DEBUG.
-  return [
-    'basic laser',
-    //'shotgun',
-    //'dash',
-    //'gatling',
-    //'knockback',
-    //'divide'
-    //'charge'
-    //'haze',
-    'pistol',
-    //'reflect',
-    //'shield',
-    //'pull',
-    //'tracker',
-    'teleport',
-    //'charge',
-    stage.hull.name,
-  ].map(this.itemService_.getByName.bind(this.itemService_));
+  //return [
+  //  'basic laser',
+  //  //'shotgun',
+  //  //'dash',
+  //  //'gatling',
+  //  //'knockback',
+  //  //'divide'
+  //  //'charge'
+  //  //'haze',
+  //  'pistol',
+  //  //'reflect',
+  //  //'shield',
+  //  //'pull',
+  //  //'tracker',
+  //  //'teleport',
+  //  //'charge',
+  //  stage.hull.name,
+  //].map(this.itemService_.getByName.bind(this.itemService_));
 
-  var levels = _.intRandomSplit(
-      Game.ITEM_TYPES.length, stage.level + 1, Game.MAX_ITEM_LEVEL + 1).
-        sort().reverse();
+  return _.newList(Game.ITEM_TYPES.concat(['augment']), function(type) {
+    return (stage[type] && _.sample(stage[type])) || undefined;
+  }).concat([stage.hull]);
 
-  var numItems = levels.reduce(function(p, c) { return p + (c > 0); }, 0);
-  // Ensure every ship has a primary weapon.
-  var types = [Game.ITEM_TYPES[0]].concat(_.shuffle(Game.ITEM_TYPES.slice(1)));
-  if (numItems > 1) _.swap(types, 0, _.r.nextInt(0, numItems - 1));
-
-  var items = _.newList(types, function(type, i) {
-    if (!levels[i]) return undefined;
-    return _.sample(this.itemService_.getByTypeAndLevel(type, levels[i] - 1));
-  }, this);
-  items.push(stage.hull);
-  return items;
+  // Randomly creates enemy config based on level only.
+  //var levels = _.intRandomSplit(
+  //    Game.ITEM_TYPES.length, stage.level + 1, Game.MAX_ITEM_LEVEL + 1).
+  //      sort().reverse();
+  //
+  //var numItems = levels.reduce(function(p, c) { return p + (c > 0); }, 0);
+  //// Ensure every ship has a primary weapon.
+  //var types = [Game.ITEM_TYPES[0]].concat(_.shuffle(Game.ITEM_TYPES.slice(1)));
+  //if (numItems > 1) _.swap(types, 0, _.r.nextInt(0, numItems - 1));
+  //
+  //var items = _.newList(types, function(type, i) {
+  //  if (!levels[i]) return undefined;
+  //  return _.sample(this.itemService_.getByTypeAndLevel(type, levels[i] - 1));
+  //}, this);
+  //items.push(stage.hull);
+  //return items;
 };
 
 ShipFactory.prototype.createEnemy = function() {

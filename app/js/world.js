@@ -5,7 +5,7 @@ World.prototype.initWorlds = function() {
   _.each(this.gm_.worlds, function(world) {
     this.gm_.world = world;
     world.state = world.index ? 'locked' : 'unlocked';
-    world.maxLives = world.lives || 0;
+    world.maxLives = Lives.DEFAULT;
     this.initStages_(world);
     this.resetProgress();
   }, this);
@@ -14,8 +14,8 @@ World.prototype.initWorlds = function() {
 World.prototype.initStages_ = function(world) {
   _.each(world.stages, function(row) {
     _.each(row, function(stage) {
-      stage.enemy = this.shipFactory_.createEnemyDna(stage);
-      if (stage.end) world.end = stage;
+      if (stage.empty) stage.state = 'won';
+      else stage.enemy = this.shipFactory_.createEnemyDna(stage);
     }, this);
   }, this);
 };
@@ -23,7 +23,7 @@ World.prototype.initStages_ = function(world) {
 World.prototype.resetProgress = function() {
   _.each(this.gm_.world.stages, function(row) {
     _.each(row, function(stage) {
-      this.initStage_(stage);
+      if (!stage.empty) this.initStage_(stage);
     }, this);
   }, this);
   this.gm_.world.augments = [];
@@ -33,6 +33,10 @@ World.prototype.resetProgress = function() {
 
 World.prototype.initStage_ = function(stage) {
   stage.state = stage.row == 0 ? 'unlocked' : 'locked';
+  if (this.gm_.world.index == 0) {
+    stage.hasItem = true;
+    return;
+  }
   var rand = Math.random();
   if (rand < stage.reward.item) {
     stage.hasItem = true;
@@ -48,14 +52,18 @@ World.prototype.unlockAdjacent = function(stage) {
 };
 
 World.prototype.won = function() {
-  return this.gm_.world.end.state == 'won';
+  if (this.gm_.stage.row < this.gm_.world.stages.length - 1) return false;
+  return _.last(this.gm_.world.stages).every(function(stage) {
+    return stage.state == 'won';
+  });
 };
 
 World.prototype.lost = function() {
-  if (this.gm_.world.lives > 0) return false;
-  return this.gm_.world.stages.every(function(row) {
-    return row.every(function(stage) { return stage.state != 'unlocked'; });
-  });
+  return this.gm_.world.lives <= 0;
+  //if (this.gm_.world.lives > 0) return false;
+  //return this.gm_.world.stages.every(function(row) {
+  //  return row.every(function(stage) { return stage.state != 'unlocked'; });
+  //});
 };
 
 World.prototype.isValid_ = function(row, col) {

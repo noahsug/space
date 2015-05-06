@@ -13,13 +13,23 @@ MainScene.prototype.addEntities_ = function() {
   this.layout_.addGap(Padding.TOP);
 
   // World label.
-  var labelRow = this.layout_.addNew(this.layoutElement_);
-  labelRow.layout.align = 'top';
-  labelRow.childHeight = Size.TEXT;
-  var livesLabel = labelRow.addNew(this.labelElement_);
-  livesLabel.setText('World ' + (this.gm_.world.index + 1),
+  var titleRow = this.layout_.addNew(this.layoutElement_);
+  titleRow.layout.align = 'top';
+  titleRow.childHeight = Size.TEXT_LG;
+  var titleLabel = titleRow.addNew(this.labelElement_);
+  titleLabel.setText('World ' + (this.gm_.world.index + 1),
+                     {size: Size.TEXT_LG, align: 'left', baseline: 'top'});
+  titleRow.addGap(Padding.STAGE * (COLS - 1) + Size.STAGE * COLS);
+
+  this.layout_.addGap(Padding.TEXT);
+
+  var livesRow = this.layout_.addNew(this.layoutElement_);
+  livesRow.layout.align = 'top';
+  livesRow.childHeight = Size.TEXT;
+  var livesLabel = livesRow.addNew(this.labelElement_);
+  livesLabel.setText('Lives: ' + this.gm_.world.lives,
                      {size: Size.TEXT, align: 'left', baseline: 'top'});
-  labelRow.addGap(Padding.STAGE * (COLS - 1) + Size.STAGE * COLS);
+  livesRow.addGap(Padding.STAGE * (COLS - 1) + Size.STAGE * COLS);
 
   this.layout_.addFlex();
 
@@ -77,7 +87,9 @@ MainScene.prototype.createBtn_ = function(row, col) {
   var stage = this.gm_.world.stages[row][col];
   btn.setProp('stage', stage);
 
-  if (this.spriteService_.getSize(stage.hull.spec.sprite) < 50) {
+  if (stage.empty) {
+    btn.setSize(Size.STAGE / 2);
+  } else if (this.spriteService_.getSize(stage.hull.spec.sprite) < 60) {
     btn.setSize(Size.STAGE);
   } else {
     btn.setSize(Size.STAGE_LARGE);

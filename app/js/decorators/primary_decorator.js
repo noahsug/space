@@ -1,5 +1,6 @@
 var PrimaryDecorator = di.service('PrimaryDecorator', [
-  'EntityDecorator', 'DecoratorUtil as util', 'GameModel as gm']);
+  'EntityDecorator', 'DecoratorUtil as util', 'GameModel as gm',
+  'ItemService', 'Random']);
 
 PrimaryDecorator.prototype.init = function() {
   this.d_ = this.entityDecorator_.getDecorators();
@@ -9,7 +10,8 @@ PrimaryDecorator.prototype.init = function() {
 PrimaryDecorator.prototype.decorateGrenade_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
     speed: Speed.SLOW,
-    radius: 20
+    radius: 20,
+    maxTargetAngle: MaxTargetAngle.DEFAULT
   });
 
   this.util_.addBasicWeapon_(obj, obj.primary, this.util_.proj.bomb);
@@ -17,7 +19,8 @@ PrimaryDecorator.prototype.decorateGrenade_ = function(obj, spec) {
 
 PrimaryDecorator.prototype.decorateBasicLaser_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
-    length: 8 + 16
+    length: 8 + 16,
+    maxTargetAngle: MaxTargetAngle.DEFAULT
   });
 
   this.util_.addBasicWeapon_(obj, obj.primary, this.util_.proj.laser);
@@ -28,7 +31,8 @@ PrimaryDecorator.prototype.decorateShotgun_ = function(obj, spec) {
     length: 4 + 16,
     spread: _.radians(35),
     speed: Speed.VERY_FAST,
-    style: 'weak'
+    style: 'weak',
+    maxTargetAngle: MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -45,7 +49,8 @@ PrimaryDecorator.prototype.decorateRazors_ = function(obj, spec)  {
   this.util_.spec(obj, 'primary', spec, {
     radius: 6,
     spread: _.radians(40),
-    speed: Speed.FAST
+    speed: Speed.FAST,
+    maxTargetAngle: MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -60,7 +65,8 @@ PrimaryDecorator.prototype.decorateMissiles_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
     radius: 6,
     seek: _.radians(50),
-    speed: Speed.DEFAULT
+    speed: Speed.DEFAULT,
+    maxTargetAngle: MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -75,7 +81,8 @@ PrimaryDecorator.prototype.decorateSniper_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
     length: 20 + 16,
     speed: Speed.VERY_FAST,
-    accuracy: Accuracy.ACCURATE
+    accuracy: Accuracy.ACCURATE,
+    maxTargetAngle: MaxTargetAngle.DEFAULT
   });
 
   this.util_.addBasicWeapon_(obj, obj.primary, this.util_.proj.laser);
@@ -87,7 +94,8 @@ PrimaryDecorator.prototype.decorateBurstLaser_ = function(obj, spec)  {
     length: 8 + 16,
     speed: Speed.DEFAULT,
     accuracy: Accuracy.INACCURATE,
-    style: 'weak'
+    style: 'weak',
+    maxTargetAngle: MaxTargetAngle.DEFAULT
   });
 
   var projectilesRemaining = 0;
@@ -112,17 +120,11 @@ PrimaryDecorator.prototype.decorateGatling_ = function(obj, spec)  {
     length: 8 + 16,
     speed: Speed.DEFAULT,
     style: 'weak',
-    breakPoint: _.radians(15)
+    maxTargetAngle: MaxTargetAngle.SMALL
   });
 
   var cooldownRatio = 1;
   this.util_.addWeapon(obj, obj.primary, function() {
-    var da = _.angleDif(obj.rotation, obj.c.targetAngle);
-    if (da > obj.primary.breakPoint) {
-      obj.primary.jammed = true;
-      return 0;
-    }
-
     obj.primary.dangle = obj.rotation - obj.c.targetAngle;
     this.util_.fireBasicProj_(obj, obj.primary, this.util_.proj.laser);
 

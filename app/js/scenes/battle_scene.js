@@ -39,7 +39,8 @@ BattleScene.prototype.update_ = function(dt) {
     this.player_ = this.player_.getLivingClone();
     this.enemy_ = this.enemy_.getLivingClone();
     if (this.player_.dead || this.enemy_.dead) {
-      this.gm_.stage.state = this.player_.dead ? 'locked' : 'won';
+      if (!this.player_.dead) this.gm_.stage.state = 'won';
+      else this.gm_.world.lives--;
       this.battleEnding_ = SLOWDOWN_TIME;
     }
   }

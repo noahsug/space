@@ -10,7 +10,7 @@ AiMovement.prototype.init = function() {
 AiMovement.prototype.aiMovement_ = function(obj, spec) {
   this.util_.spec(obj, 'movement', spec, {
     speed: Speed.SHIP_SPEED,
-    accel: 2.25,
+    accel: Speed.SHIP_ACCEL,
     vector: {x: 0, y: 0},
     intelligence: .1,
     urgeCooldown: 1.5
@@ -385,5 +385,4 @@ AiMovement.prototype.move_ = function(obj, dt) {
   else if (obj.c.wallDisS < 0) obj.y += obj.c.wallDisS;
   if (obj.c.wallDisE < 0) obj.x += obj.c.wallDisE;
   else if (obj.c.wallDisW < 0) obj.x -= obj.c.wallDisW;
-  if (obj.c.hitWall) obj.stopEffect('displaced');
 };

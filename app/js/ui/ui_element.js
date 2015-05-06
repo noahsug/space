@@ -2,6 +2,7 @@ var UiElement = di.factory('UiElement', [
   'Entity', 'EntityDecorator', 'Screen']);
 
 Padding = {
+  TEXT: 2,
   STAGE: 8,
   WORLD: 10,
   ITEM: 10,
@@ -16,11 +17,13 @@ Size = {
   STAGE_LARGE: 120,
   ITEM: 54,
   WORLD_TEXT: 16,
-  TEXT: 12,
+  TEXT: 10,
+  TEXT_LG: 12,
   ITEM_TEXT: 8,
-  SHIP: 50,
-  ITEM_DESC: 12 * 2 + 4  // TEXT * 2 + 4
+  TITLE: 40,
+  SHIP: 50
 };
+Size.ITEM_DESC = Size.TEXT * 2 + Padding.TEXT;
 
 UiElement.prototype.init = function() {
   this.layout = {align: 'center'};

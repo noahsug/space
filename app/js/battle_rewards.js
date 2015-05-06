@@ -34,15 +34,17 @@ BattleRewards.prototype.calculateRewards = function() {
 };
 
 BattleRewards.prototype.getRandomLevel_ = function() {
-  var levelRange = _.r.nextFloat(Game.MAX_ITEM_LEVEL / this.gm_.worlds.length);
-  return Math.round(this.gm_.world.index / this.gm_.worlds.length + levelRange);
-};
-
-BattleRewards.prototype.getRandomItem_ = function(level, returnAugment) {
+  var levelRange = (Game.MAX_ITEM_LEVEL + 3) / this.gm_.worlds.length;
+  var level = Math.round(
+      this.gm_.world.index * levelRange + _.r.nextFloat(levelRange));
   var r = Math.random();
   if (level && r < .52) level--;
   if (level && r < .25) level--;
   if (level && r < .11) level--;
+  return Math.min(level, Game.MAX_ITEM_LEVEL);
+};
+
+BattleRewards.prototype.getRandomItem_ = function(level, returnAugment) {
   return _.sample(this.inventory_.getUnownedByLevel(level, returnAugment));
 };
 

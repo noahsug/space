@@ -70,7 +70,7 @@ BasicDecorator.prototype.decorateClonable_ = function(obj, spec) {
 
   obj.addClone = function(dna, opt_style) {
     var clone = this.shipFactory_.createShip(dna, opt_style || obj.style);
-    this.shipFactory_.setTargets(clone, obj.target);
+    clone.target = obj.target;
     obj.clones.push(clone);
     clone.clones = obj.clones;
     return clone;
@@ -79,15 +79,27 @@ BasicDecorator.prototype.decorateClonable_ = function(obj, spec) {
 
 BasicDecorator.prototype.decorateRotates_ = function(obj, spec) {
   obj.turnSpeed = Speed.TURN_SPEED;
+  obj.turnAccel = Speed.TURN_ACCEL;
+  obj.currentTurnSpeed = 0;
 
   obj.awake(function() {
     obj.rotation = _.angle(obj, obj.target);
   });
 
   obj.update(function(dt) {
-    if (obj.dead || obj.effect.rooted || obj.effect.targetlessMovement) return;
+    if (obj.dead || obj.effect.rooted || obj.effect.targetlessMovement) {
+      obj.currentTurnSpeed = 0;
+    }
+
     obj.rotation = _.approachAngle(
-        obj.rotation, obj.c.targetAngle, obj.turnSpeed * dt);
+        obj.rotation, obj.c.targetAngle, obj.currentTurnSpeed * dt);
+
+    if (obj.rotation == obj.c.targetAngle) {
+      obj.currentTurnSpeed = 0;
+    } else {
+      obj.currentTurnSpeed += obj.turnAccel * dt;
+      obj.currentTurnSpeed = Math.min(obj.currentTurnSpeed, obj.turnSpeed);
+    }
   });
 };
 
@@ -248,6 +260,7 @@ BasicDecorator.prototype.decorateEffectable_ = function(obj) {
   };
 
   obj.act(function(dt) {
+    if (obj.c.hitWall) obj.stopEffect('displaced');
     computeEffects();
     tickEffects(dt);
   });

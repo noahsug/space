@@ -14,6 +14,17 @@ EquipOptionsScene.prototype.addEntities_ = function() {
 
   this.layout_.addFlex();
 
+  // Aug item label.
+  var enemyLabelRow = this.layout_.addNew(this.layoutElement_);
+  enemyLabelRow.layout.align = 'top';
+  enemyLabelRow.childHeight = Size.TEXT_LG;
+  var enemyLabel = enemyLabelRow.addNew(this.labelElement_);
+  enemyLabel.setText(this.gm_.stage.desc,
+                     {size: Size.TEXT_LG, align: 'left', baseline: 'top'});
+  enemyLabelRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+
+  this.layout_.addGap(Padding.MD);
+
   // Item Description.
   var itemDescRow = this.layout_.addNew(this.layoutElement_);
   var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');

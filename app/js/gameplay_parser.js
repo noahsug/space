@@ -21,6 +21,7 @@ GameplayParser.prototype.parseItems_ = function(items) {
       item.type = types[0];
     }
     item.name = name;
+    item.displayName = item.displayName || name;
     result[name] = item;
   });
   return result;
@@ -31,6 +32,12 @@ GameplayParser.prototype.parseStages_ = function(stages, items) {
   _.each(stages, function(stage, name) {
     stage = _.clone(stage);
     stage.hull = items[stage.hull];
+    _.each(Game.ITEM_TYPES.concat(['augment']), function(type) {
+      if (!stage[type]) return;
+      stage[type] = stage[type].map(function(itemName) {
+        return items[itemName];
+      });
+    });
     result[name] = stage;
   });
   return result;
@@ -48,6 +55,7 @@ GameplayParser.prototype.parseWorlds_ = function(worlds, stages) {
 GameplayParser.prototype.parseWorldStages_ = function(names, stages) {
   return names.map(function(row, rowIndex) {
     return row.map(function(stageName, colIndex) {
+      if (stageName == '-') return {empty: true};
       var stage = _.deepClone(stages[stageName]);
       stage.row = rowIndex;
       stage.col = colIndex;

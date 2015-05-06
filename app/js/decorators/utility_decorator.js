@@ -44,10 +44,10 @@ UtilityDecorator.prototype.decorateDruid_ = function(obj, spec) {
 UtilityDecorator.prototype.decorateMink_ = function(obj, spec) {
   this.util_.spec(obj, 'utility', spec, {
     radiusMod: .75,
-    speedMod: 1.3
+    speedMod: 1.15
   });
 
-  this.util_.mod(obj, 'speed', obj.utility.speedMod);
+  this.util_.mod(obj, 'movement.speed', obj.utility.speedMod);
   this.util_.mod(obj, 'radius', obj.utility.radiusMod);
 };
 
@@ -185,8 +185,10 @@ UtilityDecorator.prototype.decorateTeleport_ = function(obj, spec) {
       return;
     }
     obj.utility.teleportPos = {
-      x: obj.target.x + Math.cos(obj.c.targetAngle) * obj.target.radius + 45,
-      y: obj.target.y + Math.sin(obj.c.targetAngle) * obj.target.radius + 45
+      x: obj.target.x + Math.cos(obj.c.targetAngle) *
+          (obj.target.radius + obj.radius + 30),
+      y: obj.target.y + Math.sin(obj.c.targetAngle) *
+          (obj.target.radius + obj.radius + 30)
     };
     obj.utility.teleportReady = !this.c_.hitWall(obj.utility.teleportPos);
   }.bind(this));
@@ -197,7 +199,7 @@ UtilityDecorator.prototype.decorateTeleport_ = function(obj, spec) {
     obj.movement.vector = {x: 0, y: 0};
     obj.x = obj.utility.teleportPos.x;
     obj.y = obj.utility.teleportPos.y;
-    obj.rotation = -obj.c.targetAngle;
+    obj.rotation = obj.c.targetAngle + Math.PI;
   }.bind(this);
 };
 

@@ -67,12 +67,13 @@ DecoratorUtil.prototype.addEffectAbility = function(obj, spec) {
 
 DecoratorUtil.prototype.addAbility = function(obj, spec, ability) {
   this.addCooldown(obj, function() {
-    spec.jammed = false;
+    spec.jammed = false;  // Can't fire weapon.
     if (obj.dead || obj.effect.silenced ||
         // Ship can't use targeted abilities while it has no target.
         obj.effect.targetlessActive && !spec.targetless ||
-        spec.range && obj.c.targetDis > spec.range ||
-        obj.c.targetDis < spec.minRange) {
+        obj.c.targetDis > spec.range ||
+        obj.c.targetDis < spec.minRange ||
+        obj.c.targetAngleDif > spec.maxTargetAngle) {
       spec.jammed = true;
       return 0;
     }
