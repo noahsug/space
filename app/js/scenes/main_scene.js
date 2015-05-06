@@ -1,6 +1,7 @@
 var MainScene = di.service('MainScene', [
-  'GameModel as gm', 'Scene', 'LayoutElement', 'RoundBtnElement', 'BtnElement',
-  'LabelElement', 'World', 'Inventory', 'Gameplay', 'SpriteService']);
+  'GameModel as gm', 'Scene', 'LayoutElement', 'RoundBtnElement',
+  'BtnElement', 'LabelElement', 'World', 'Inventory', 'Gameplay',
+  'SpriteService']);
 
 MainScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('main'));

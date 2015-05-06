@@ -9,8 +9,8 @@ AiMovement.prototype.init = function() {
 
 AiMovement.prototype.aiMovement_ = function(obj, spec) {
   this.util_.spec(obj, 'movement', spec, {
-    speed: Speed.SHIP_SPEED,
-    accel: Speed.SHIP_ACCEL,
+    speed: g.Speed.SHIP_SPEED,
+    accel: g.Speed.SHIP_ACCEL,
     vector: {x: 0, y: 0},
     intelligence: .1,
     urgeCooldown: 1.5
@@ -23,7 +23,7 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
     else this.think_(obj);
     var int = obj.movement.intelligence;
     return this.random_.nextFloat(int - .1, int + .1);
-  }.bind(this));
+  }.bind(this), obj.movement);
 
   obj.update(function(dt) {
     if (obj.dead) return;

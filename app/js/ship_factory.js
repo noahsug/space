@@ -61,8 +61,9 @@ ShipFactory.prototype.createShip = function(dna, style) {
   if (!PROD) _.assert(dna);
   var ship = this.entity_.create('ship');
   ship.dna = dna;  // For future cloning.
+  if (style == 'good') ship.playerControlled = true;
   _.decorate(ship, this.shipDecorator_);
-  if (style == 'good') ship.setMaxHealth(Health.PLAYER);
+  if (style == 'good') ship.setMaxHealth(g.Health.PLAYER);
   this.ed_.decorate(ship, dna);
   ship.style = style;
   this.gm_.entities.add(ship);

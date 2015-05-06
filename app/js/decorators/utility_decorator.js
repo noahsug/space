@@ -28,6 +28,25 @@ UtilityDecorator.prototype.decorateSticky_ = function(obj, spec) {
   }, this);
 };
 
+UtilityDecorator.prototype.decorateRefresh_ = function(obj, spec) {
+  this.util_.spec(obj, 'utility', spec, {
+    cooldownReduction: 4,
+    cooldown: 10
+  });
+
+  var specNames = _.without(Game.ITEM_TYPES, 'utility');
+  this.util_.addWeapon(obj, obj.utility, function() {
+    _.each(specNames, reduceCooldown);
+  });
+
+  function reduceCooldown(type) {
+    var spec = obj[type];
+    if (spec.cooldownRemaining < 0) return;
+    spec.cooldownRemaining -= obj.utility.cooldownReduction;
+    if (spec.cooldownRemaining < 0) spec.cooldownRemaining = 0;
+  };
+};
+
 UtilityDecorator.prototype.decorateDruid_ = function(obj, spec) {
   switch(spec.power) {
   case 3:
@@ -47,31 +66,30 @@ UtilityDecorator.prototype.decorateMink_ = function(obj, spec) {
     speedMod: 1.15
   });
 
-  this.util_.mod(obj, 'movement.speed', obj.utility.speedMod);
-  this.util_.mod(obj, 'radius', obj.utility.radiusMod);
+  this.util_.addOneTimeAbility(obj, obj.utility, function() {
+    this.util_.mod(obj, 'movement.speed', obj.utility.speedMod);
+    this.util_.mod(obj, 'radius', obj.utility.radiusMod);
+  }.bind(this));
 };
 
 UtilityDecorator.prototype.decorateRage_ = function(obj, spec) {
   this.util_.spec(obj, 'utility', spec, {
     radiusMod: 1.5,
-    dmgMod: 2
+    dmgMod: 2,
+    cooldown: 1
   });
 
-  this.util_.mod(obj, 'primary.dmg', obj.utility.dmgMod);
-  this.util_.mod(obj, 'radius', obj.utility.radiusMod);
+  this.util_.addOneTimeAbility(obj, obj.utility, function() {
+    this.util_.mod(obj, 'primary.dmg', obj.utility.dmgMod);
+    this.util_.mod(obj, 'radius', obj.utility.radiusMod);
+  }.bind(this));
 };
 
 UtilityDecorator.prototype.decorateSplit_ = function(obj, spec) {
   this.util_.spec(obj, 'utility', spec, {
-    cooldown: 6,
+    cooldown: 1,
     dmgRatio: .5
   });
-
-  var delay = 3;
-  obj.resolve(function(dt) {
-    if (delay--) return;
-    split(dt);
-  }.bind(this));
 
   var split = function(dt) {
     var dna = getCloneDna(obj);
@@ -110,6 +128,10 @@ UtilityDecorator.prototype.decorateSplit_ = function(obj, spec) {
     this.util_.mod(clone, 'utility.dmgRatio', obj.utility.dmgRatio);
     this.util_.mod(clone, 'health', .5);
   }.bind(this);
+
+  this.util_.addOneTimeAbility(obj, obj.utility, function() {
+    split();
+  }.bind(this));
 };
 
 UtilityDecorator.prototype.decorateRanger_ = function(obj, spec) {
@@ -148,19 +170,32 @@ UtilityDecorator.prototype.decorateDash_ = function(obj, spec) {
     dashSpeed: 200
   });
 
-  obj.addEffect('dashCooldown', obj.utility.cooldown);
-  obj.act(function(dt) {
-    obj.utility.dashReady = !obj.effect.dashCooldown && obj.effect.canDash;
-  });
+  obj.utility.isJammed = function() { return !obj.effect.canDash; };
 
-  obj.utility.useDash = function() {
+  if (obj.playerControlled) {
+    this.util_.addWeapon(obj, obj.utility, function() {
+      dash();
+    }.bind(this));
+
+  } else {
+    obj.addEffect('dashCooldown', obj.utility.cooldown);
+    obj.act(function(dt) {
+      obj.utility.dashReady =
+          !obj.effect.dashCooldown && !obj.utility.isJammed();
+    });
+
+    obj.utility.useDash = function() {
+      dash();
+      obj.utility.dashReady = false;
+      obj.effect.dashCooldown = this.util_.randomCooldown(obj.utility.cooldown);
+    }.bind(this);
+  }
+
+  var dash = function() {
     obj.addEffect('displaced', obj.utility.duration, stopDash);
-
-    obj.utility.dashReady = false;
-    obj.effect.dashCooldown = this.util_.randomCooldown(obj.utility.cooldown);
+    this.util_.modSet(obj, 'movement.speed', 250);
     obj.movement.vector = obj.movement.desiredVector;
     obj.movement.accel *= obj.utility.accel;
-    this.util_.modSet(obj, 'movement.speed', 250);
   }.bind(this);
 
   var stopDash = function() {
@@ -176,26 +211,42 @@ UtilityDecorator.prototype.decorateTeleport_ = function(obj, spec) {
     range: 300
   });
 
-  obj.addEffect('teleportCooldown', obj.utility.cooldown);
-  obj.act(function(dt) {
-    if (!obj.effect.canDash ||
-        obj.effect.teleportCooldown ||
-        obj.c.targetDis > obj.utility.range) {
-      obj.utility.teleportReady = false;
-      return;
-    }
+  obj.utility.isJammed = function() {
+    if (!obj.effect.canDash) return true;
     obj.utility.teleportPos = {
       x: obj.target.x + Math.cos(obj.c.targetAngle) *
           (obj.target.radius + obj.radius + 30),
       y: obj.target.y + Math.sin(obj.c.targetAngle) *
           (obj.target.radius + obj.radius + 30)
     };
-    obj.utility.teleportReady = !this.c_.hitWall(obj.utility.teleportPos);
-  }.bind(this));
+    return this.c_.hitWall(obj.utility.teleportPos);
+  }.bind(this);
+
+  if (obj.playerControlled) {
+    this.util_.addWeapon(obj, obj.utility, function() {
+      teleport();
+    }.bind(this));
+
+  } else {
+    obj.addEffect('teleportCooldown', obj.utility.cooldown);
+    obj.act(function(dt) {
+      obj.utility.teleportReady =
+          !obj.effect.teleportCooldown && !obj.utility.isJammed();
+    });
+
+    obj.utility.useTeleport = function() {
+      teleport();
+      obj.utility.teleportReady = false;
+    }.bind(this);
+  }
 
   obj.utility.useTeleport = function() {
     obj.effect.teleportCooldown =
         this.util_.randomCooldown(obj.utility.cooldown);
+    teleport();
+  }.bind(this);
+
+  var teleport = function() {
     obj.movement.vector = {x: 0, y: 0};
     obj.x = obj.utility.teleportPos.x;
     obj.y = obj.utility.teleportPos.y;
@@ -214,8 +265,11 @@ UtilityDecorator.prototype.decorateInvisible_ = function(obj, spec) {
     targetless: true
   });
 
+  obj.utility.isJammed = function() {
+    return obj.effect[obj.utility.effect];
+  };
+
   this.util_.addAbility(obj, obj.utility, function() {
-    if (obj.effect[obj.utility.effect]) return 0;
     obj.addEffect(obj.utility.effect, obj.utility.duration, moreDamage);
     return obj.utility.cooldown;
   });

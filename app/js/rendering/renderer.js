@@ -311,6 +311,20 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
     this.drawText_(text, textSize, entity.render.pos.x, entity.render.pos.y,
                    {color: color});
   }
+
+  if (entity.cooldownInfo) {
+    var spec = entity.cooldownInfo;
+    var cooldownRatio =
+        (spec.cooldown - spec.cooldownRemaining) / spec.cooldown;
+    if (cooldownRatio < 0) cooldownRatio = 0;
+    else if (cooldownRatio > 1) cooldownRatio = 1;
+    lineWidth = !spec.jammed && cooldownRatio == 1 ? 4 : 2;
+    this.textCtx_.strokeStyle = Gfx.Color.ACTIVE;
+    this.circle_(
+      entity.render.pos.x, entity.render.pos.y, entity.radius, lineWidth,
+      cooldownRatio);
+    this.textCtx_.stroke();
+  }
 };
 
 Renderer.prototype.drawBtn_ = function(entity) {
@@ -379,22 +393,25 @@ Renderer.prototype.addShipStyle_ = function(style) {
   });
 };
 Renderer.prototype.drawShip_ = function(entity, style, dt) {
-  var damage = entity.prevHealth - entity.health;
-  if (damage != entity.render.damageTaken) {
-    entity.render.damageTaken = damage;
-  } else {
-    damage = 0;
-  }
-
   // Shake afer taking damage.
-  if (damage) {
-    entity.render.shaking = Math.floor(4 + damage / 4);
+  if (entity.render.lastDamageTaken != this.gm_.tick) {
+    entity.render.lastDamageTaken = this.gm_.tick;
+    var damage = entity.prevHealth - entity.health;
+    entity.render.damageTaken += damage;
+    if (damage > 0) {
+      entity.render.shaking += Math.sqrt(damage) / 20;
+    }
   }
-  if (entity.render.shaking) {
+  if (entity.render.shaking > 0) {
     var shake = 2 + entity.render.damageTaken / 2;
+    entity.render.damageTaken -= 20 * dt;
     entity.render.pos.x += (.3 + .7 * Math.random()) * shake;
     entity.render.pos.y += (.3 + .7 * Math.random()) * shake;
-    entity.render.shaking--;
+    entity.render.shaking -= dt / this.gm_.gameSpeed;
+    if (entity.render.shaking <= 0) {
+      entity.render.shaking = 0;
+      entity.render.damageTaken = 0;
+    }
   }
 
   var customStyle;
@@ -474,9 +491,9 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
                   entity.rotation, entity.render.radius);
 
   // DEBUG: See the hit box of the ship.
-  this.gfx_.setStyle(style.reflect);
-  this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                   entity.render.radius);
+  //this.gfx_.setStyle(style.reflect);
+  //this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+  //                 entity.render.radius);
 
   // DEBUG: See where the ship is aiming.
   //var dx = entity.render.pos.x - entity.x;
@@ -707,7 +724,8 @@ Renderer.prototype.line_ = function(x1, y1, x2, y2, lineWidth) {
   this.textCtx_.stroke();
 };
 
-Renderer.prototype.circle_ = function(x, y, radius, lineWidth) {
+Renderer.prototype.circle_ = function(x, y, radius, lineWidth, opt_ratio) {
+  var ratio = opt_ratio === undefined ? 1 : opt_ratio;
   x = Math.round(x * this.screen_.upscale);
   y = Math.round(y * this.screen_.upscale);
   radius = Math.round(radius * this.screen_.upscale);
@@ -716,7 +734,8 @@ Renderer.prototype.circle_ = function(x, y, radius, lineWidth) {
     this.textCtx_.lineWidth = lineWidth;
   } else lineWidth = 0;
   this.textCtx_.beginPath();
-  this.textCtx_.arc(x, y, radius - lineWidth / 2, 0, 2 * Math.PI);
+  this.textCtx_.arc(x, y, radius - lineWidth / 2,
+                    0, 2 * Math.PI * ratio);
 };
 
 Renderer.prototype.fillRect_ = function(x, y, width, height) {

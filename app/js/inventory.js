@@ -6,7 +6,7 @@ Inventory.prototype.hasItem = function(item) {
 };
 
 Inventory.prototype.has = function(type) {
-  return !!this.get(type).length;
+  return !!this.getEquipped(type) || !!this.get(type).length;
 };
 
 Inventory.prototype.get = function(type) {

@@ -4,44 +4,49 @@ Gameplay.prototype.init = function() {
   this.gameplayParser_.parse(this.gameplayFile_, this);
 };
 
-Speed = {
-  SLOW: 150,
-  DEFAULT: 200,
-  FAST: 300,
-  VERY_FAST: 400,
+g = {
+  Speed: {
+    SLOW: 150,
+    DEFAULT: 200,
+    FAST: 300,
+    VERY_FAST: 400,
 
-  SHIP_SPEED: 90,
-  SHIP_ACCEL: 2.25,
-  TURN_SPEED: Math.PI / 2,
-  TURN_ACCEL: Math.PI / 2
-};
+    SHIP_SPEED: 90,
+    SHIP_ACCEL: 2.25,
+    TURN_SPEED: Math.PI / 2,
+    TURN_ACCEL: Math.PI / 2
+  },
 
-Accuracy = {
-  DEFAULT: _.radians(10),
-  ACCURATE: _.radians(5),
-  INACCURATE: _.radians(15)
-};
+  Accuracy: {
+    DEFAULT: _.radians(10),
+    ACCURATE: _.radians(5),
+    INACCURATE: _.radians(15)
+  },
 
-Health = {
-  DEFAULT: 50,
-  PLAYER: 65
-};
+  Health: {
+    DEFAULT: 50,
+    PLAYER: 65
+  },
 
-MaxTargetAngle = {
-  DEFAULT: _.radians(45),
-  SMALL: _.radians(15)
-};
+  MaxTargetAngle: {
+    DEFAULT: _.radians(30)
+  },
 
-Lives = {
-  DEFAULT: 3
+  Lives: {
+    DEFAULT: 3
+  },
+
+  Range: {
+    TRAVEL_RATIO: 1.2  // How far bullets actually travel relative to range.
+  }
 };
 
 di.constant('gameplayFile', {
   worlds: [
     {  // 0
       stages: [
-        ['a1', 'a1'],
-        ['a2']
+        ['a1', 'a2', 'a3', 'a4'],
+        ['a5']
       ]
     },
     {  // 1
@@ -118,9 +123,9 @@ di.constant('gameplayFile', {
     'shotgun',
     //'gatling',
 
-    //'stun',
+    'stun',
     //'emp',
-    'pistol',
+    //'pistol',
     //'pull',
     //'charge',
     //'tracker',
@@ -128,11 +133,14 @@ di.constant('gameplayFile', {
 
     //'knockback',
     //'shield',
-    //'reflect',
+    'reflect',
+    //'tank',
     //'haze',
 
     //'teleport',
+    'refresh',
     //'divide',
+    //'huge',
     //'stealth',
     //'sticky',
 
@@ -195,7 +203,7 @@ di.constant('gameplayFile', {
     'shotgun': {
       desc: 'Burst of shots in an arc.',
       id:'primary.shotgun',
-      spec: {dmg: 5, cooldown: 2.1, range: 100, projectiles: 6},
+      spec: {dmg: 5, cooldown: 3, range: 100, projectiles: 6},
       level: 0},
     //'shotgun II': {
     //  desc: 'Burst of shots in an arc.',
@@ -283,7 +291,7 @@ di.constant('gameplayFile', {
     'stun': {
       desc: 'Stun enemy for 1s.',
       id:'secondary.stun',
-      spec: {dmg: 1, cooldown: 1.25, range: 300},
+      spec: {dmg: 1, cooldown: 4, range: 300},
       level: 4},
     'alien stun': {
       desc: 'Stun enemy for 1s.',
@@ -346,6 +354,10 @@ di.constant('gameplayFile', {
     //  id:'secondary.melee', spec: {dmgRatio: .75, range: 50},
     //  level: 1},
 
+    'refresh': {
+      desc: 'Reduces all cooldowns by 4s.',
+      id: 'utility.refresh', spec: {power: 0},
+      level: 0},
     'dash': {
       desc: 'Ability to dash a short distance.',
       id: 'utility.ninja', spec: {power: 1},
@@ -414,7 +426,7 @@ di.constant('gameplayFile', {
     //  level: 5},
     'reflect': {
       desc: 'Reflects any projectile for short time.',
-      id: 'ability.reflect', spec: {duration: 1.75},
+      id: 'ability.reflect', spec: {duration: 1.5, cooldown: 8},
       level: 2},
     //'reflect II': {
     //  desc: 'Reflects shots for 2s',

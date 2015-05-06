@@ -5,7 +5,7 @@ World.prototype.initWorlds = function() {
   _.each(this.gm_.worlds, function(world) {
     this.gm_.world = world;
     world.state = world.index ? 'locked' : 'unlocked';
-    world.maxLives = Lives.DEFAULT;
+    world.maxLives = g.Lives.DEFAULT;
     this.initStages_(world);
     this.resetProgress();
   }, this);

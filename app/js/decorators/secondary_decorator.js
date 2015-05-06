@@ -11,9 +11,9 @@ SecondaryDecorator.prototype.init = function() {
 SecondaryDecorator.prototype.decoratePistol_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
     length: 6 + 16,
-    speed: Speed.DEFAULT,
+    speed: g.Speed.DEFAULT,
     style: 'weak',
-    maxTargetAngle: MaxTargetAngle.DEFAULT
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -29,11 +29,11 @@ SecondaryDecorator.prototype.decoratePistol_ = function(obj, spec) {
 SecondaryDecorator.prototype.decorateStun_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
     length: 4 + 16,
-    speed: Speed.DEFAULT,
+    speed: g.Speed.DEFAULT,
     duration: 1,
     style: 'effect',
-    effect: 'stunned disabled',
-    maxTargetAngle: MaxTargetAngle.DEFAULT
+    effect: 'silenced rooted disabled',
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -51,11 +51,11 @@ SecondaryDecorator.prototype.decorateStun_ = function(obj, spec) {
 SecondaryDecorator.prototype.decorateEmp_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
     radius: 15,
-    speed: Speed.SLOW,
+    speed: g.Speed.SLOW,
     duration: 1.2,
     style: 'effect',
-    effect: 'stunned disabled',
-    maxTargetAngle: MaxTargetAngle.DEFAULT
+    effect: 'silenced rooted disabled',
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -76,7 +76,7 @@ SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
     cooldown: 4,
     stunReduction: 2,
     def: 1,
-    maxTargetAngle: MaxTargetAngle.DEFAULT
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -85,18 +85,24 @@ SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
   }
 
   var collisionRatio = .1;
+  var stopEffects;
   var stopCharge = function() {
     if (!obj.secondary.charging) return;
     obj.secondary.charging = false;
+    stopEffects();
     this.util_.modSet(obj, 'movement.speed', null);
     obj.collision.dmg /= collisionRatio;
     obj.collision.stunDuration /= obj.secondary.stunReduction;
     obj.def /= obj.secondary.def;
   }.bind(this);
 
+  obj.secondary.isJammed = function() { return obj.secondary.charging; };
+
   this.util_.addWeapon(obj, obj.secondary, function() {
-    obj.addEffect('displaced', duration, stopCharge);
-    obj.addEffect('stunned', duration, stopCharge);
+    var duration = obj.secondary.range * 1.2 / obj.movement.speed;
+    obj.addEffect('displaced rooted', duration, stopCharge);
+    obj.addEffect('silenced', duration);
+    stopEffects = obj.stopEffectsFn(['displaced', 'rooted', 'silenced']);
     this.util_.modSet(obj, 'movement.speed', obj.secondary.speed);
 
     obj.movement.vector.x = Math.cos(obj.c.targetAngle);
@@ -104,7 +110,6 @@ SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
 
     obj.collision.dmg *= collisionRatio;
     obj.collision.stunDuration /= obj.secondary.stunReduction;
-    var duration = obj.secondary.range * 1.2 / obj.movement.speed;
     obj.secondary.charging = true;
     obj.def *= obj.secondary.def;
   }.bind(this));
@@ -112,7 +117,7 @@ SecondaryDecorator.prototype.decorateCharge_ = function(obj, spec) {
 
 SecondaryDecorator.prototype.decorateTracker_ = function(obj, spec) {
   this.util_.spec(obj, 'secondary', spec, {
-    speed: Speed.DEFAULT,
+    speed: g.Speed.DEFAULT,
     cooldown: 3,
     length: 4 + 16,
     duration: 1000,
@@ -121,7 +126,7 @@ SecondaryDecorator.prototype.decorateTracker_ = function(obj, spec) {
     seekAdd: _.radians(50),
     dmgRatio: 1,
     range: 300,
-    maxTargetAngle: MaxTargetAngle.DEFAULT
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -160,6 +165,7 @@ SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {
     grow: -500,
     radius: spec.range
   });
+  obj.secondary.maxRange = obj.secondary.range;
 
   switch(spec.power) {
   case 1:
@@ -174,7 +180,7 @@ SecondaryDecorator.prototype.decoratePull_ = function(obj, spec) {
     target.movement.vector.x = -Math.cos(obj.c.targetAngle);
     target.movement.vector.y = -Math.sin(obj.c.targetAngle);
     var speed = obj.secondary.knockback / obj.secondary.knockbackDuration;
-    target.addEffect('stunned', obj.secondary.duration);
+    target.addEffect('silenced rooted disabled', obj.secondary.duration);
     this.util_.modSet(target, 'movement.speed', speed);
   }.bind(this);
 

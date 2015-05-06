@@ -64,7 +64,7 @@ AbilityDecorator.prototype.decorateReflect_ = function(obj, spec) {
 
   obj.receivedPrecollide(function(proj) {
     if (!obj.effect.reflect || proj.type == 'ship') return;
-    proj.rotate && proj.rotate(_.RADIANS_180);
+    proj.rotate(_.RADIANS_180);
     proj.target = obj.target;
     proj.remainingRange = proj.maxRange;
     proj.shouldCollide = false;
@@ -108,11 +108,12 @@ AbilityDecorator.prototype.decorateKnockback_ = function(obj, spec) {
     speed: 300,
     cooldown: 4,
     duration: .75,
-    effect: 'stunned',
+    effect: 'silenced rooted disabled',
     grow: 500,
     maxRadius: 100,
     range: 100
   });
+  obj.ability.maxRange = obj.ability.range;
 
   switch(spec.power) {
   case 1:

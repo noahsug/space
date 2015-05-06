@@ -6,7 +6,6 @@ EquipOptionsScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('equipOptions'));
 };
 
-var ITEM_PADDING = 20;
 EquipOptionsScene.prototype.addEntities_ = function() {
   var COLS = 4;  // Number of columns in the item grid.
 

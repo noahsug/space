@@ -19,9 +19,10 @@ DecoratorUtil.prototype.spec = function(obj, name, overrides, defaults) {
   } else {
     obj[name] = _.defaults(_.clone(overrides) || {}, defaults);
     obj[name].name = name;
-    obj[name].speed = obj[name].speed || Speed.DEFAULT;
-    obj[name].accuracy = obj[name].accuracy || Accuracy.DEFAULT;
+    obj[name].speed = obj[name].speed || g.Speed.DEFAULT;
+    obj[name].accuracy = obj[name].accuracy || g.Accuracy.DEFAULT;
     obj[name].projectiles = obj[name].projectiles || 1;
+    obj[name].maxRange = obj[name].maxRange || 9999;
     return obj[name];
   }
 };
@@ -65,22 +66,25 @@ DecoratorUtil.prototype.addEffectAbility = function(obj, spec) {
   });
 };
 
+DecoratorUtil.prototype.addOneTimeAbility = function(obj, spec, ability) {
+  var used = false;
+  this.addAbility(obj, spec, function() {
+    if (used) return Infinity;
+    used = true;
+    ability(obj, spec);
+    return Infinity;
+  }.bind(this));
+};
+
 DecoratorUtil.prototype.addAbility = function(obj, spec, ability) {
+  spec.initCooldown = spec.initCooldown || this.initCooldown(spec.cooldown);
   this.addCooldown(obj, function() {
-    spec.jammed = false;  // Can't fire weapon.
-    if (obj.dead || obj.effect.silenced ||
-        // Ship can't use targeted abilities while it has no target.
-        obj.effect.targetlessActive && !spec.targetless ||
-        obj.c.targetDis > spec.range ||
-        obj.c.targetDis < spec.minRange ||
-        obj.c.targetAngleDif > spec.maxTargetAngle) {
-      spec.jammed = true;
-      return 0;
-    }
+    spec.jammed = obj.jammed(spec.name);
+    if (spec.jammed || (obj.playerControlled && !spec.use)) return 0;
+    spec.use = false;
     spec.lastFired = this.gm_.time;
-    var cooldown = ability(obj, spec);
-    return this.randomCooldown(cooldown);
-  }.bind(this), this.initCooldown(spec.cooldown));
+    return this.randomCooldown(ability(obj, spec));
+  }.bind(this), spec);
 };
 
 DecoratorUtil.prototype.fireSpread_ = function(obj, spec, fire) {
@@ -136,7 +140,6 @@ DecoratorUtil.prototype.fireAura = function(obj, spec) {
   return this.gm_.entities.arr[this.gm_.entities.length++] = aura;
 };
 
-var EXTRA_RANGE_RATIO = 2.5;
 DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
   projectile.spec = spec;
   projectile.target = obj.target;
@@ -147,7 +150,7 @@ DecoratorUtil.prototype.fireProjectile_ = function(projectile, obj, spec) {
   _.decorate(projectile, this.d_.movement.straight, spec);
   _.decorate(projectile, this.d_.removeOffScreen, spec);
   if (spec.range) {
-    var range = spec.range * EXTRA_RANGE_RATIO;
+    var range = spec.range * Range.TRAVEL_RATIO;
     _.decorate(projectile, this.d_.range, {range: range});
   }
 
@@ -164,12 +167,13 @@ DecoratorUtil.prototype.randomCooldown = function(cooldown) {
   return this.random_.nextFloat(.8, 1.2) * cooldown;
 };
 
-DecoratorUtil.prototype.addCooldown = function(obj, action, opt_initCooldown) {
-  var cooldown = opt_initCooldown || 0;
+DecoratorUtil.prototype.addCooldown = function(obj, action, opt_spec) {
+  var spec = opt_spec || {};
+  spec.cooldownRemaining = spec.initCooldown || 0;
   obj.act(function(dt) {
-    if (cooldown > 0) cooldown -= dt;
-    if (cooldown <= 0) {
-      cooldown += action() || 0;
+    if (spec.cooldownRemaining > 0) spec.cooldownRemaining -= dt;
+    if (spec.cooldownRemaining <= 0) {
+      spec.cooldownRemaining += action() || 0;
     }
   });
 };
