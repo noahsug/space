@@ -9,14 +9,14 @@ BasicDecorator.prototype.init = function() {
 BasicDecorator.prototype.decorateClickable_ = function(obj) {
   obj.update(function() {
     obj.mouseOver = obj.collides(this.mouse_);
-    if (obj.clicked == this.gm_.time) obj.clicked = false;
-    else obj.clicked = obj.mouseOver && this.mouse_.pressed && this.gm_.time;
+    obj.mouseDown = obj.mouseOver && this.mouse_.pressed;
+    obj.clicked = obj.mouseOver && this.mouse_.clicked;
   }.bind(this));
 };
 
 BasicDecorator.prototype.decorateHealth_ = function(obj, spec) {
   spec = this.util_.spec(spec, {
-    health: Health.DEFAULT
+    health: g.Health.DEFAULT
   });
   obj.def = 1;
 
@@ -70,11 +70,37 @@ BasicDecorator.prototype.decorateClonable_ = function(obj, spec) {
 
   obj.addClone = function(dna, opt_style) {
     var clone = this.shipFactory_.createShip(dna, opt_style || obj.style);
-    this.shipFactory_.setTargets(clone, obj.target);
+    clone.target = obj.target;
     obj.clones.push(clone);
     clone.clones = obj.clones;
     return clone;
   }.bind(this);
+};
+
+BasicDecorator.prototype.decorateRotates_ = function(obj, spec) {
+  obj.turnSpeed = g.Speed.TURN_SPEED;
+  obj.turnAccel = g.Speed.TURN_ACCEL;
+  obj.currentTurnSpeed = 0;
+
+  obj.awake(function() {
+    obj.rotation = _.angle(obj, obj.target);
+  });
+
+  obj.update(function(dt) {
+    if (obj.dead || obj.effect.rooted || obj.effect.targetlessMovement) {
+      obj.currentTurnSpeed = 0;
+    }
+
+    obj.rotation = _.approachAngle(
+        obj.rotation, obj.c.targetAngle, obj.currentTurnSpeed * dt);
+
+    if (obj.rotation == obj.c.targetAngle) {
+      obj.currentTurnSpeed = 0;
+    } else {
+      obj.currentTurnSpeed += obj.turnAccel * dt;
+      obj.currentTurnSpeed = Math.min(obj.currentTurnSpeed, obj.turnSpeed);
+    }
+  });
 };
 
 BasicDecorator.prototype.decorateSelectsTarget_ = function(obj, spec) {
@@ -122,7 +148,7 @@ BasicDecorator.prototype.decorateShipCollision_ = function(obj, spec) {
     // Move away from collided target at half speed.
     obj.movement.vector = _.vector.cartesian(
         {angle: obj.c.targetAngle, length: -.5});
-    obj.addEffect('stunned', obj.collision.stunDuration);
+    obj.addEffect('silenced rooted', obj.collision.stunDuration);
     obj.addEffect('collided', obj.collision.collisionDuration);
   });
 };
@@ -198,37 +224,58 @@ BasicDecorator.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
 
 // rooted: stops movement control.
 // silenced: stops actives.
-// stunned: stops actives and movement control.
 // disabled: visually mark the ship as disabled.
 // invisible: stops target from firing projectiles and causes confused movement.
+// displaced: ship is being forcably moved around the map.
 BasicDecorator.prototype.decorateEffectable_ = function(obj) {
-  var effects = [];
   obj.effect = {};
-  obj.onEffectEnd = {};
+  var effects = [];
+  var onEffectEnd = {};
+  var effectLinks = {};
   obj.addEffect = function(effect, duration, opt_onEffectEnd) {
     // Add multiple effects, seperated by a space.
     if (effect.indexOf(' ') != -1) {
       var effectsToAdd = effect.split(' ');
       effect = effectsToAdd[0];
       for (var i = 1; i < effectsToAdd.length; i++) {
-        obj.addEffect(effectsToAdd[i], duration);
+        obj.addEffect(effectsToAdd[i], duration, opt_onEffectEnd);
       }
-    }
-
-    // Stunned = silenced + rooted.
-    if (effect == 'stunned') {
-      obj.addEffect('silenced', duration);
-      obj.addEffect('rooted', duration * .9);
     }
 
     var currentDuration = obj.effect[effect];
     if (!_.isDef(currentDuration)) effects.push(effect);
-    else if (obj.onEffectEnd[effect]) obj.onEffectEnd[effect]();
+    else {
+      if (onEffectEnd[effect]) onEffectEnd[effect]();
+      if (effectLinks[effect]) effectLinks[effect]();
+    }
     obj.effect[effect] = duration;
-    obj.onEffectEnd[effect] = opt_onEffectEnd;
+    onEffectEnd[effect] = opt_onEffectEnd;
+  };
+
+  obj.stopEffect = function(effect) {
+    obj.addEffect(effect, 0);
+  };
+
+  obj.stopEffectsFn = function(effects) {
+    var effectsToStop = {};
+    var stopping = false;
+    for (var i = 0; i < effects.length; i++) {
+      effectsToStop[effects[i]] = true;
+      effectLinks[effects[i]] = function() {
+        if (stopping) return;
+        effectsToStop[effects[i]] = false;
+      };
+    }
+    return function() {
+      stopping = true;
+      for (var i = 0; i < effects.length; i++) {
+        if (effectsToStop[effects[i]]) obj.stopEffect(effects[i]);
+      }
+    };
   };
 
   obj.act(function(dt) {
+    if (obj.c.wallDis <= 0) obj.stopEffect('displaced');
     computeEffects();
     tickEffects(dt);
   });
@@ -236,10 +283,13 @@ BasicDecorator.prototype.decorateEffectable_ = function(obj) {
   function computeEffects() {
     obj.effect.targetlessMovement = obj.target.effect.invisible;
     obj.effect.targetlessActive = obj.target.effect.invisible ||
-                                  obj.effect.invisible;
+        (obj.effect.invisible && !obj.playerControlled);
     obj.effect.canDash = !obj.effect.targetlessMovement &&
                          !obj.effect.silenced &&
                          !obj.effect.rooted;
+    if (!obj.effect.silenced && !obj.effect.stunned) {
+      obj.effect.disabled = 0;
+    }
   }
 
   function tickEffects(dt) {
@@ -247,9 +297,9 @@ BasicDecorator.prototype.decorateEffectable_ = function(obj) {
       var effect = effects[i];
       if (obj.effect[effect] <= dt) {
         obj.effect[effect] = 0;
-        if (obj.onEffectEnd[effect]) {
-          obj.onEffectEnd[effect]();
-          obj.onEffectEnd[effect] = null;
+        if (onEffectEnd[effect]) {
+          onEffectEnd[effect]();
+          onEffectEnd[effect] = null;
         }
       } else {
         obj.effect[effect] -= dt;

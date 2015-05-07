@@ -6,7 +6,7 @@ GameModel.prototype.init = function() {
   this.worlds = [];
 
   this.world = {};
-  this.level = {};
+  this.stage = {};
 
   this.scenes = {};
   this.entities = new List();

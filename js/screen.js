@@ -1,4 +1,5 @@
-var Screen = di.service('Screen', ['window', 'canvas', 'bgCanvasList']);
+var Screen = di.service('Screen', [
+  'window', 'canvas', 'textCanvas', 'bgCanvasList']);
 
 Screen.DESIRED_SURFACE_AREA = 134400;
 
@@ -53,12 +54,20 @@ Screen.prototype.resize = function(opt_options) {
   if (!opt_options || opt_options.resizeBg) {
     _.each(this.bgCanvasList_, this.resizeCanvas_.bind(this));
   }
+  this.resizeCanvasWithoutUpscale_(this.textCanvas_);
 
   this.width = this.canvas_.width;
   this.height = this.canvas_.height;
   this.pixelWidth = this.window_.innerWidth;
   this.pixelHeight = this.window_.innerHeight;
   this.portrait = this.width > this.height;
+};
+
+Screen.prototype.resizeCanvasWithoutUpscale_ = function(canvas) {
+  canvas.style.width = this.window_.innerWidth + 'px';
+  canvas.style.height = this.window_.innerHeight + 'px';
+  canvas.width = this.window_.innerWidth;
+  canvas.height = this.window_.innerHeight;
 };
 
 Screen.prototype.resizeCanvas_ = function(canvas) {

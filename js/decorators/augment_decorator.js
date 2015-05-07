@@ -6,6 +6,30 @@ AugmentDecorator.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'augment');
 };
 
+AugmentDecorator.prototype.decorateArchery_ = function(obj) {
+  var minDistance = 250;
+  var on = false;
+  obj.prefire(function(proj) {
+    if (proj.spec.name != 'primary') return;
+    if (on) {
+      stop();
+      return;
+    }
+    if (obj.c.targetDis < minDistance) return;
+
+    obj.addEffect('setPrimaryCooldown', Infinity, stop);
+    on = true;
+    this.util_.modSet(obj, 'primary.cooldown', .2);
+  }, this);
+
+  var stop = function() {
+    if (!on) return;
+    on = false;
+    obj.effect.setPrimaryCooldown = 0;
+    this.util_.modSet(obj, 'primary.cooldown', null);
+  }.bind(this);
+};
+
 AugmentDecorator.prototype.decorateExtreme_ = function(obj, spec) {
   _.each(Game.ITEM_TYPES, function(type) {
     this.util_.mod(obj, type + '.dmg', 2);
@@ -73,7 +97,7 @@ AugmentDecorator.prototype.decorateFreezeClick_ = function(obj) {
     duration: 2
   };
   this.onClick_(obj, function() {
-    obj.target.addEffect('stunned', spec.duration);
+    obj.target.addEffect('silenced rooted', spec.duration);
     obj.target.movement.vector = {x: 0, y: 0};
   }, this);
 };
@@ -81,7 +105,9 @@ AugmentDecorator.prototype.decorateFreezeClick_ = function(obj) {
 AugmentDecorator.prototype.onClick_ = function(obj, fn, opt_context) {
   obj.update(function() {
     if (obj.active.used) return;
-    if (this.mouse_.pressed) {
+    var overButtons =
+        this.mouse_.screenY > this.screen_.height - Size.ITEM - Padding.ITEM;
+    if (this.mouse_.pressed && !overButtons) {
       fn.call(opt_context);
       obj.active.used = true;
     };

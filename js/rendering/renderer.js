@@ -1,6 +1,6 @@
 var Renderer = di.service('Renderer', [
-  'GameModel as gm', 'Screen', 'ctx', 'Gfx', 'Background', 'Font',
-  'ItemService', 'Inventory']);
+  'GameModel as gm', 'Screen', 'ctx', 'textCtx', 'Gfx', 'Background', 'Font',
+  'ItemService', 'Inventory', 'SpriteService']);
 
 Renderer.prototype.init = function() {
   this.initFns_ = _.pickFunctions(this, {prefix: 'init', suffix: '_'});
@@ -17,13 +17,11 @@ Renderer.prototype.init = function() {
 Renderer.prototype.update = function(dt) {
   this.handleCamera_(dt / this.gm_.gameSpeed);
   this.background_.draw();
-  this.ctx_.save();
   for (var i = 0; i < this.gm_.entities.length; i++) {
     this.drawEntity_(this.gm_.entities.arr[i], dt);
   }
-  this.ctx_.restore();
   this.gfx_.flush();
-  this.drawFps_(dt);
+  //this.drawFps_(dt);
   this.drawTransition_(dt);
 };
 
@@ -42,8 +40,8 @@ Renderer.prototype.drawFps_ = function(dt) {
     this.fpsLastUpdated_ -= .2;
   }
 
-  this.ctx_.textAlign = 'left';
-  this.ctx_.textBaseline = 'top';
+  this.textCtx_.textAlign = 'left';
+  this.textCtx_.textBaseline = 'top';
   this.ctx_.fillStyle = 'black';
   this.ctx_.fillRect(0, 0, 40, 20);
   this.drawText_(this.displayedFps_.toFixed(0), 20, 0, 0, {color: '#ccc'});
@@ -71,10 +69,9 @@ Renderer.prototype.transitionOut_ = function(dt) {
   var x = this.gm_.transition.pos.screenX;
   var y = this.gm_.transition.pos.screenY;
   this.transitionAnimation_ += 450 * (dt / this.gm_.transition.time);
-  this.ctx_.fillStyle = '#000000';
-  this.ctx_.beginPath();
-  this.ctx_.arc(x, y, this.transitionAnimation_, 0, Math.PI * 2);
-  this.ctx_.fill();
+  this.textCtx_.fillStyle = '#000000';
+  this.circle_(x, y, this.transitionAnimation_);
+  this.textCtx_.fill();
 };
 
 Renderer.prototype.transitionIn_ = function(dt) {
@@ -87,8 +84,9 @@ Renderer.prototype.transitionIn_ = function(dt) {
   if (this.transitionAnimation_ < 0) {
     this.transitionAnimation_ = 0;
   } else {
-    this.ctx_.fillStyle = "rgba(0, 0, 0, " + this.transitionAnimation_ + ")";
-    this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
+    this.textCtx_.fillStyle =
+        "rgba(0, 0, 0, " + this.transitionAnimation_ + ")";
+    this.fillRect_(0, 0, this.screen_.width, this.screen_.height);
   }
 };
 
@@ -127,60 +125,51 @@ Renderer.prototype.drawLoadingSplash_ = function(entity) {
   this.ctx_.arc(x, y, x / 2, -Math.PI / 2,
                 -Math.PI / 2 + 2 * Math.PI * entity.loading);
   this.ctx_.stroke();
+  this.ctx_.shadowBlur = 0;
 };
 
 Renderer.prototype.drawIntroSplash_ = function() {
   var fontSize = 70;
-  this.ctx_.textAlign = 'center';
-  this.ctx_.textBaseline = 'alphabetic';
+  this.textCtx_.textAlign = 'center';
+  this.textCtx_.textBaseline = 'alphabetic';
   this.drawTitle_('COSMAL', fontSize,
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
-Renderer.prototype.drawMainSplash_ = function() {
-};
-
-var SCREEN_LEFT_PADDING = .13;
 Renderer.prototype.drawResultSplash_ = function(entity) {
-  this.ctx_.textAlign = 'left';
-  this.ctx_.textBaseline = 'top';
-  var result = this.gm_.level.state == 'won' ? 'victory' : 'defeat';
-  this.drawHeading_(result, 70, entity.render.pos.x, entity.render.pos.y);
+  this.textCtx_.textAlign = 'left';
+  this.textCtx_.textBaseline = 'top';
+  var result = this.gm_.stage.state == 'won' ? 'victory' : 'defeat';
+  this.drawTitle_(result, 70, entity.render.pos.x, entity.render.pos.y);
 };
 
-Renderer.prototype.drawEquipOptionsSplash_ = function() {
-  this.ctx_.strokeStyle = '#FFFFFF';
-  this.ctx_.lineWidth = 1;
-  var x = this.screen_.width * SCREEN_LEFT_PADDING;
-  var y = x;
+Renderer.prototype.drawPlayerSplash_ = function(entity) {
+  this.spriteService_.draw(
+      this.inventory_.getHull().spec.sprite,
+      this.screen_.width / 2, entity.render.pos.y,
+      {rotation: -Math.PI / 2});
+};
 
-  this.ctx_.textAlign = 'left';
-  this.ctx_.textBaseline = 'top';
-  this.drawText_('target: Rank ' + this.getEnemyRank_(this.gm_.level),
-                 12, x, y);
-
-  x += 15;
-  y += 25;
-  var index = 0;
-  _.each(Game.ITEM_TYPES, function(type, i) {
-    var item = this.itemService_.getEnemyEquipped(type);
-    if (item) this.drawText_('- ' + item.name, 12, x, y + 25 * index++);
-  }, this);
+Renderer.prototype.drawEnemySplash_ = function(entity) {
+  this.spriteService_.draw(
+      this.gm_.stage.hull.spec.sprite,
+      this.screen_.width / 2, entity.render.pos.y,
+      {rotation: Math.PI / 2});
 };
 
 Renderer.prototype.drawWonSplash_ = function() {
-  var fontSize = 50;
-  this.ctx_.textAlign = 'center';
-  this.ctx_.textBaseline = 'alphabetic';
-  this.drawTitle_('YOU WIN', fontSize,
+  this.textCtx_.textAlign = 'center';
+  this.textCtx_.textBaseline = 'alphabetic';
+  var text = _.last(this.gm_.worlds) == this.gm_.world ?
+      'You Win' : 'World Clear';
+  this.drawTitle_(text, Size.TITLE,
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
 Renderer.prototype.drawLostSplash_ = function() {
-  var fontSize = 50;
-  this.ctx_.textAlign = 'center';
-  this.ctx_.textBaseline = 'alphabetic';
-  this.drawTitle_('YOU LOSE', fontSize,
+  this.textCtx_.textAlign = 'center';
+  this.textCtx_.textBaseline = 'alphabetic';
+  this.drawTitle_('World Failed', Size.TITLE,
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
@@ -188,10 +177,11 @@ var DESC_ONLY = _.newSet([
   'charge', 'charge II', 'tracker', 'tracker II', 'pull', 'melee',
 ]);
 Renderer.prototype.drawItemDesc_ = function(entity) {
-  var size = 12;
+  var size = Size.TEXT;
+  var padding = Padding.TEXT / 2;
   if (!entity.item) return;
-  this.ctx_.textAlign = 'left';
-  this.ctx_.textBaseline = 'middle';
+  this.textCtx_.textAlign = 'left';
+  this.textCtx_.textBaseline = 'middle';
 
   var tier = Game.MAX_ITEM_LEVEL - entity.item.level + 1;
   var desc = entity.item.desc;
@@ -216,56 +206,42 @@ Renderer.prototype.drawItemDesc_ = function(entity) {
   }
 
   if (textLines.length == 2) {
-    this.drawText_(textLines[0], size,
-                   entity.render.pos.x, entity.render.pos.y - size / 2 - 2);
-    this.drawText_(textLines[1], size,
-                   entity.render.pos.x, entity.render.pos.y + size / 2 + 2);
+    this.drawText_(textLines[0], size, entity.render.pos.x,
+                   entity.render.pos.y - size / 2 - padding);
+    this.drawText_(textLines[1], size, entity.render.pos.x,
+                   entity.render.pos.y + size / 2 + padding);
   } else {
     this.drawText_(textLines[0], size,
                    entity.render.pos.x, entity.render.pos.y);
   }
 };
 
-Renderer.prototype.topLeftHeading_ = function(text) {
-  this.ctx_.textAlign = 'left';
-  this.ctx_.textBaseline = 'top';
-  this.drawHeading_(text, 40, 20, 20 - 16);
-};
-
-Renderer.prototype.topLeftSubHeading_ = function(text, opt_color) {
-  this.ctx_.textAlign = 'left';
-  this.ctx_.textBaseline = 'top';
-  this.drawHeading_(text, 24, 20, 70 - 16, opt_color);
-};
-
 Renderer.prototype.drawBreak_ = function(entity) {
-  this.ctx_.strokeStyle = '#CCC';
-  this.ctx_.lineWidth = 1;
-  this.ctx_.shadowBlur = 0;
+  this.textCtx_.strokeStyle = '#CCC';
+  this.textCtx_.shadowBlur = 0;
   var x = this.screen_.width / 8;
   var y = entity.render.pos.y;
-  this.ctx_.beginPath();
-  this.ctx_.moveTo(this.screen_.width - x, y);
-  this.ctx_.lineTo(x, y);
-  this.ctx_.stroke();
+  this.line_(this.screen_.width - x, y, x, y, 1);
 };
 
-// TODO: Animate level state changes.
+// TODO: Animate stage state changes.
 Renderer.prototype.drawRoundBtn_ = function(entity) {
   if (entity.style == 'hidden') return;
 
   // Draw circle.
   var color = '#FFFFFF';
-  if (entity.level) {
-    switch (entity.level.state) {
-      case 'won':
-        if (entity.style != 'world') return;
-        color = Gfx.Color.BEATEN;
-        break;
-      case 'lost': return;
+  var fillColor = '#000000';
+  var lineWidth = 1;
+  if (entity.stage) {
+    if (entity.stage.state == 'won' || entity.stage.state == 'lost') {
+      return;
+    }
+    fillColor = '';
+    color = entity.stage.state == 'locked' ? '#444' : '#888';
+  } else if (entity.world) {
+    switch (entity.world.state) {
+      case 'won': color = Gfx.Color.BEATEN; break;
       case 'locked': color = Gfx.Color.LOCKED; break;
-      case 'unlocked': color = '#FFFFFF'; break;
-      default: _.fail('invalid state: ', entity.level.state);
     }
   } else if (entity.item) {
     if (entity.rewardBtn) {
@@ -288,39 +264,41 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
   } else if (entity.style == 'locked') {
     color = Gfx.Color.LOCKED;
   }
-  this.ctx_.strokeStyle = color;
-  this.ctx_.fillStyle = '#000000';
-  this.ctx_.lineWidth = 2;
-  this.ctx_.beginPath();
-  this.ctx_.arc(entity.render.pos.x, entity.render.pos.y,
-                entity.radius - 1, 0, 2 * Math.PI);
-  this.ctx_.fill();
-  this.ctx_.stroke();
 
-  // Draw text.
+  this.textCtx_.fillStyle = fillColor;
+  this.textCtx_.strokeStyle = color;
+  this.circle_(
+      entity.render.pos.x, entity.render.pos.y, entity.radius, lineWidth);
+  if (fillColor) this.textCtx_.fill();
+  this.textCtx_.stroke();
+
+  // Draw context.
   var text = entity.text;
   var textSize = Size.ITEM_TEXT;
-  if (entity.level) {
-    if (entity.style == 'world') {
-      if (entity.state == 'won') text = 'W';
-      else text = entity.level.index + 1;
-      textSize = Size.WORLD_TEXT;
-    } else {
-      text = Strings.rank(entity.level.type);
-      textSize = Size.TEXT;
-    }
+  if (entity.stage) {
+    var hull = entity.stage.hull.spec.sprite;
+    var rotation = entity.stage.enemy ? Math.PI / 2 : -Math.PI / 2;
+    var alpha = entity.stage.state == 'locked' ? .1 : 0;
+    this.spriteService_.draw(
+      hull, entity.render.pos.x, entity.render.pos.y,
+      {rotation: rotation, alpha: alpha});
+    return;
+  } else if (entity.world) {
+    if (entity.state == 'won') text = 'W';
+    else text = entity.world.index + 1;
+    textSize = Size.WORLD_TEXT;
   } else if (entity.item) {
     if (entity.enemy && entity.item.name) {
       color = '#FFFFFF';
     }
-    text = entity.item.name || 'none';
+    text = entity.item.displayName || 'none';
     textSize = Size.ITEM_TEXT;
   } else if (entity.category) {
     text = Strings.ItemType[entity.category];
   }
 
-  this.ctx_.textAlign = 'center';
-  this.ctx_.textBaseline = 'middle';
+  this.textCtx_.textAlign = 'center';
+  this.textCtx_.textBaseline = 'middle';
   if (this.font_.width(text, textSize) > entity.radius * 2 - 6) {
     var lines = _.splitText(text);
     this.drawText_(lines[0], textSize, entity.render.pos.x,
@@ -332,6 +310,20 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
   } else {
     this.drawText_(text, textSize, entity.render.pos.x, entity.render.pos.y,
                    {color: color});
+  }
+
+  if (entity.cooldownInfo) {
+    var spec = entity.cooldownInfo;
+    var cooldownRatio =
+        (spec.cooldown - spec.cooldownRemaining) / spec.cooldown;
+    if (cooldownRatio < 0) cooldownRatio = 0;
+    else if (cooldownRatio > 1) cooldownRatio = 1;
+    lineWidth = !spec.jammed && cooldownRatio == 1 ? 4 : 2;
+    this.textCtx_.strokeStyle = Gfx.Color.ACTIVE;
+    this.circle_(
+      entity.render.pos.x, entity.render.pos.y, entity.radius, lineWidth,
+      cooldownRatio);
+    this.textCtx_.stroke();
   }
 };
 
@@ -347,8 +339,8 @@ Renderer.prototype.drawLabel_ = function(entity) {
   } else if (entity.style == 'locked') {
     color = Gfx.Color.LOCKED;
   }
-  this.ctx_.textAlign = entity.align;
-  this.ctx_.textBaseline = entity.baseline;
+  this.textCtx_.textAlign = entity.align;
+  this.textCtx_.textBaseline = entity.baseline;
   this.drawText_(entity.text, entity.size,
                  entity.render.pos.x, entity.render.pos.y,
                  {color: color, bold: entity.style == 'active'});
@@ -362,7 +354,6 @@ Renderer.prototype.drawHitbox_ = function(entity) {
 };
 
 var DEATH_ANIMATION_DURATION = .3;
-var SHIP_SHRINKAGE = 2;
 Renderer.prototype.initShip_ = function(entity) {
   entity.render.damageTaken = 0;
   entity.render.shaking = 0;
@@ -371,70 +362,60 @@ Renderer.prototype.initShip_ = function(entity) {
   entity.render.radius = entity.radius;
 };
 Renderer.prototype.addShipStyle_ = function(style) {
-  var baseStyle = {
-    lineWidth: 3
-  };
-  style.good = this.gfx_.addStyle(_.extend({
-    stroke: Gfx.Color.GREEN,
-    shadow: 'none'
-  }, baseStyle));
-  style.bad = this.gfx_.addStyle(_.extend({
-    stroke: Gfx.Color.BLUE,
-    shadow: 'none'
-  }, baseStyle));
-  style.goodDmged = this.gfx_.addStyle({
-    lineWidth: 5,
-    stroke: Gfx.Color.OPAC_RED,
+  style.normal = this.gfx_.addStyle({
     shadow: 'none'
   });
-  style.badDmged = this.gfx_.addStyle({
-    lineWidth: 5,
-    stroke: Gfx.Color.MORE_OPAC_RED,
-    shadow: 'none'
+  style.dmged = this.gfx_.addStyle({
+    shadow: Gfx.Color.RED,
+    shadowBlur: 5
   });
   style.disabled = this.gfx_.addStyle({
-    lineWidth: 5,
-    stroke: Gfx.Color.OPAC_BLUE,
-    shadow: 'none'
+    shadow: Gfx.Color.BLUE,
+    shadowBlur: 5
   });
   style.tagged = this.gfx_.addStyle({
-    fill: Gfx.Color.OPAC_RED
+    stroke: Gfx.Color.OPAC_RED,
+    lineWidth: 2,
+    shadow: Gfx.Color.BLACK,
+    shadowBlur: 2,
+    layer: 6
   });
   style.shield = this.gfx_.addStyle({
-    lineWidth: 2,
-    fill: Gfx.Color.MORE_OPAC_BLUE,
-    stroke: Gfx.Color.OPAC_BLUE
+    lineWidth: 1,
+    stroke: Gfx.Color.MORE_OPAC_BLUE
   });
   style.reflect = this.gfx_.addStyle({
-    lineWidth: 2,
+    lineWidth: 1,
     stroke: Gfx.Color.OPAC_YELLOW
   });
   style.haze = this.gfx_.addStyle({
     fill: Gfx.Color.OPAC_GRAY
   });
-  style.invisible = this.gfx_.addStyle({
-    stroke: Gfx.Color.LESS_OPAC_GRAY,
-    lineWidth: 3
-  });
 };
 Renderer.prototype.drawShip_ = function(entity, style, dt) {
-  var damage = entity.prevHealth - entity.health;
-  if (damage != entity.render.damageTaken) {
-    entity.render.damageTaken = damage;
-  } else {
-    damage = 0;
-  }
-
   // Shake afer taking damage.
-  if (damage) {
-    entity.render.shaking = Math.floor(4 + damage / 4);
+  if (entity.render.lastDamageTaken != this.gm_.tick) {
+    entity.render.lastDamageTaken = this.gm_.tick;
+    var damage = entity.prevHealth - entity.health;
+    entity.render.damageTaken += damage;
+    if (damage > 0) {
+      entity.render.shaking += Math.sqrt(damage) / 20;
+    }
   }
-  if (entity.render.shaking) {
+  if (entity.render.shaking > 0) {
     var shake = 2 + entity.render.damageTaken / 2;
+    entity.render.damageTaken -= 20 * dt;
     entity.render.pos.x += (.3 + .7 * Math.random()) * shake;
     entity.render.pos.y += (.3 + .7 * Math.random()) * shake;
-    entity.render.shaking--;
+    entity.render.shaking -= dt / this.gm_.gameSpeed;
+    if (entity.render.shaking <= 0) {
+      entity.render.shaking = 0;
+      entity.render.damageTaken = 0;
+    }
   }
+
+  var customStyle;
+  var shipStyle = style.normal;
 
   if (!entity.dead) {
     // Don't resize instantly.
@@ -446,13 +427,6 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
       } else {
         entity.render.radius += dr;
       }
-    }
-
-    // Draw disabled indicator.
-    if (entity.effect.disabled) {
-      this.gfx_.setStyle(style.disabled);
-      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                       entity.render.radius - 5);
     }
 
     // Draw tagged indicator.
@@ -475,18 +449,16 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
                        entity.radius * 1.5);
     }
 
-    // Draw reflect indicator.
+    // Draw haze indicator.
     if (entity.effect.haze) {
       this.gfx_.setStyle(style.haze);
       this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
                        entity.radius * 1.5);
     }
 
-    // Draw invisible indicator.
-    if (entity.effect.invisible) {
-      this.gfx_.setStyle(style.invisible);
-      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                       entity.render.radius - SHIP_SHRINKAGE);
+    // Draw disabled indicator.
+    if (entity.effect.disabled) {
+      shipStyle = style.disabled;
     }
 
     // Draw health indicator.
@@ -494,28 +466,34 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
       entity.render.healthIndicator = 30;
     }
     if (entity.render.healthIndicator) {
-      var healthStyle = style[entity.style + 'Dmged'];
-      this.gfx_.setStyle(healthStyle);
-      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                       entity.render.radius - 5);
+      shipStyle = style.dmged;
       entity.render.healthIndicator--;
+    }
+
+    if (entity.effect.invisible) {
+      customStyle = {};
+      customStyle.globalAlpha = .4;
+    }
+  } else {
+    // Death animation.
+    if (entity.dead) {
+      customStyle = {
+        globalAlpha: entity.render.deathAnimation / DEATH_ANIMATION_DURATION
+      };
+      entity.render.deathAnimation -= dt;
+      if (entity.render.deathAnimation < 0) entity.render.deathAnimation = 0;
     }
   }
 
-  // Death animation.
-  var customStyle;
-  if (entity.dead) {
-    customStyle = {
-      globalAlpha: entity.render.deathAnimation / DEATH_ANIMATION_DURATION
-    };
-    entity.render.deathAnimation -= dt;
-    if (entity.render.deathAnimation < 0) entity.render.deathAnimation = 0;
-  }
-
   // Draw ship.
-  this.gfx_.setStyle(style[entity.style], customStyle);
-  this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                   entity.render.radius - SHIP_SHRINKAGE);
+  this.gfx_.setStyle(shipStyle, customStyle);
+  this.gfx_.image(entity.hull.sprite, entity.render.pos.x, entity.render.pos.y,
+                  entity.rotation, entity.render.radius);
+
+  // DEBUG: See the hit box of the ship.
+  //this.gfx_.setStyle(style.reflect);
+  //this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+  //                 entity.render.radius);
 
   // DEBUG: See where the ship is aiming.
   //var dx = entity.render.pos.x - entity.x;
@@ -543,6 +521,10 @@ Renderer.prototype.addLaserStyle_ = function(style) {
     stroke: Gfx.Color.PINK,
     lineWidth: 4
   });
+  style.alien = this.gfx_.addStyle({
+    stroke: Gfx.Color.PURPLE,
+    lineWidth: 3
+  });
 };
 Renderer.prototype.drawLaser_ = function(entity, style) {
   if (entity.dead) {
@@ -550,35 +532,35 @@ Renderer.prototype.drawLaser_ = function(entity, style) {
     return;
   }
 
-  if (entity.style == 'weak') {
-    this.gfx_.setStyle(style.weak);
-  } else if (entity.style == 'effect') {
-    this.gfx_.setStyle(style.effect);
-  } else {
-    this.gfx_.setStyle(style.strong);
-  }
+  this.gfx_.setStyle(style[entity.style || 'strong']);
   var dx = Math.cos(entity.rotation) * SPEED_FUDGING;
   var dy = Math.sin(entity.rotation) * SPEED_FUDGING;
   this.gfx_.line(entity.render.pos.x + dx, entity.render.pos.y + dy,
                  entity.dx - dx * 2, entity.dy - dy * 2);
 };
 
-var EXPLOSION_DURATION = .1;
+var EXPLOSION_DURATION = .05;
 var NORMAL_SIZE = .2;
 Renderer.prototype.addBombStyle_ = function(style) {
   style.normal = this.gfx_.addStyle({
     stroke: Gfx.Color.BLUE,
-    lineWidth: 2
+    lineWidth: 1
   });
   style.effect = this.gfx_.addStyle({
     stroke: Gfx.Color.PINK,
-    lineWidth: 2
+    lineWidth: 1
   });
-  style.explode = this.gfx_.addStyle({
+  style.alien = this.gfx_.addStyle({
+    fill: Gfx.Color.PURPLE
+  });
+  style.normalExplode = this.gfx_.addStyle({
     fill: Gfx.Color.YELLOW
   });
   style.effectExplode = this.gfx_.addStyle({
     fill: Gfx.Color.BLUE
+  });
+  style.alienExplode = this.gfx_.addStyle({
+    fill: Gfx.Color.PINK
   });
 };
 Renderer.prototype.drawBomb_ = function(entity, style, dt) {
@@ -591,21 +573,13 @@ Renderer.prototype.drawBomb_ = function(entity, style, dt) {
 
     entity.render.explodeTime += dt;
     var ratio = Math.min(entity.render.explodeTime / EXPLOSION_DURATION, 1);
-    if (entity.style == 'effect') {
-      this.gfx_.setStyle(style.effectExplode);
-    } else {
-      this.gfx_.setStyle(style.explode);
-    }
+    this.gfx_.setStyle(style[(entity.style || 'normal') + 'Explode']);
     this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
                      Math.pow(ratio, 2) * entity.radius);
 
     if (ratio == 1) entity.remove = true;
   } else {
-    if (entity.style == 'effect') {
-      this.gfx_.setStyle(style.effect);
-    } else {
-      this.gfx_.setStyle(style.normal);
-    }
+    this.gfx_.setStyle(style[entity.style || 'normal']);
     this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
                      entity.radius * NORMAL_SIZE);
   }
@@ -648,6 +622,10 @@ Renderer.prototype.addBladeStyle_ = function(style) {
     stroke: Gfx.Color.BLUE,
     lineWidth: 2
   });
+  style.alien = this.gfx_.addStyle({
+    stroke: Gfx.Color.PURPLE,
+    lineWidth: 2
+  });
 };
 Renderer.prototype.drawBlade_ = function(entity, style, dt) {
   if (entity.dead) {
@@ -657,7 +635,7 @@ Renderer.prototype.drawBlade_ = function(entity, style, dt) {
   var triangle = _.geometry.circumscribeTriangle(
       entity.render.pos.x, entity.render.pos.y,
       entity.radius - 1, entity.rotation);
-  this.gfx_.setStyle(style.normal);
+  this.gfx_.setStyle(style[entity.style || 'normal']);
   this.gfx_.triangle(triangle.x1, triangle.y1,
                      triangle.x2, triangle.y2,
                      triangle.x3, triangle.y3);
@@ -667,30 +645,17 @@ Renderer.prototype.drawBlade_ = function(entity, style, dt) {
 Renderer.prototype.drawText_ = function(text, size, x, y, opt_options) {
   var options = opt_options || {};
   var color = options.color || '#FFFFFF';
-  this.ctx_.fillStyle = color;
-  this.ctx_.shadowBlur = 0;
-  this.ctx_.font = (options.bold ? 'bold ' : '') + size + 'px ' + Gfx.Font.TEXT;
-  this.ctx_.fillText(text, x, y);
+  this.textCtx_.fillStyle = color;
+  this.textCtx_.shadowBlur = 0;
+  this.setFont_(size, Gfx.Font.TEXT, options.bold);
+  this.fillText_(text, x, y);
 };
 
 Renderer.prototype.drawTitle_ = function(text, size, x, y) {
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
-  this.ctx_.fillStyle = '#FFFFFF';
-  this.ctx_.shadowBlur = size / 8;
-  this.ctx_.lineWidth = 2;
-  this.ctx_.font = size + 'px ' + Gfx.Font.TITLE;
-  this.ctx_.strokeText(text, x, y);
-  this.ctx_.fillText(text, x, y);
-};
-
-Renderer.prototype.drawHeading_ = function(text, size, x, y, opt_color) {
-  var color = opt_color || '#FFFFFF';
-  this.ctx_.fillStyle = this.ctx_.strokeStyle = color;
-  this.ctx_.shadowBlur = 0;
-  this.ctx_.lineWidth = 1;
-  this.ctx_.font = size + 'px ' + Gfx.Font.TITLE;
-  this.ctx_.strokeText(text, x, y);
-  this.ctx_.fillText(text, x, y);
+  this.textCtx_.fillStyle = '#FFFFFF';
+  this.textCtx_.shadowBlur = 0;
+  this.setFont_(size, Gfx.Font.TITLE);
+  this.fillText_(text, x, y);
 };
 
 Renderer.prototype.underlineLabel_ = function(entity, opt_options) {
@@ -705,25 +670,19 @@ Renderer.prototype.underlineLabel_ = function(entity, opt_options) {
 };
 
 Renderer.prototype.underlineText_ = function(text, size, x, y, opt_options) {
+  var lineWidth = 1;
   var options = opt_options || {};
   options.color = options.color || '#FFFFFF';
   options.lineDirection = options.lineDirection || 'right';
   y += size + 5;
-  this.ctx_.lineWidth = 1;
-  this.ctx_.shadowBlur = 2;
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = options.color;
-  this.ctx_.beginPath();
+  this.textCtx_.strokeStyle = options.color;
 
   if (options.lineDirection == 'right') {
-    this.ctx_.moveTo(x, y);
-    this.ctx_.lineTo(x + this.screen_.width, y);
+    this.line_(x, y, x + this.screen_.width, y, lineWidth);
   } else {
     var width = this.font_.width(text, size);
-    this.ctx_.moveTo(x + width, y);
-    this.ctx_.lineTo(0, y);
+    this.line_(x + width, y, 0, y, lineWidth);
   }
-
-  this.ctx_.stroke();
 };
 
 // NOT USED.
@@ -748,4 +707,59 @@ Renderer.prototype.circleText_ = function(entity) {
 
   this.ctx_.fill();
   this.ctx_.stroke();
+};
+
+Renderer.prototype.line_ = function(x1, y1, x2, y2, lineWidth) {
+  x1 = Math.round(x1 * this.screen_.upscale);
+  y1 = Math.round(y1 * this.screen_.upscale);
+  x2 = Math.round(x2 * this.screen_.upscale);
+  y2 = Math.round(y2 * this.screen_.upscale);
+  if (lineWidth) {
+    lineWidth = Math.round(lineWidth * this.screen_.upscale);
+    this.textCtx_.lineWidth = lineWidth;
+  }
+  this.textCtx_.beginPath();
+  this.textCtx_.moveTo(x1, y1);
+  this.textCtx_.lineTo(x2, y2);
+  this.textCtx_.stroke();
+};
+
+Renderer.prototype.circle_ = function(x, y, radius, lineWidth, opt_ratio) {
+  var ratio = opt_ratio === undefined ? 1 : opt_ratio;
+  x = Math.round(x * this.screen_.upscale);
+  y = Math.round(y * this.screen_.upscale);
+  radius = Math.round(radius * this.screen_.upscale);
+  if (lineWidth) {
+    lineWidth = Math.round(lineWidth * this.screen_.upscale);
+    this.textCtx_.lineWidth = lineWidth;
+  } else lineWidth = 0;
+  this.textCtx_.beginPath();
+  this.textCtx_.arc(x, y, radius - lineWidth / 2,
+                    0, 2 * Math.PI * ratio);
+};
+
+Renderer.prototype.fillRect_ = function(x, y, width, height) {
+  x = Math.round(x * this.screen_.upscale);
+  y = Math.round(y * this.screen_.upscale);
+  width = Math.round(width * this.screen_.upscale);
+  height = Math.round(height * this.screen_.upscale);
+  this.textCtx_.fillRect(0, 0, width, height);
+};
+
+Renderer.prototype.setFont_ = function(size, font, bold) {
+  size = Math.round(size * this.screen_.upscale);
+  this.textCtx_.font =
+      (bold ? 'bold ' : '') + size + 'px ' + font;
+};
+
+Renderer.prototype.strokeText_ = function(text, x, y) {
+  x = Math.round(x * this.screen_.upscale);
+  y = Math.round(y * this.screen_.upscale);
+  this.textCtx_.strokeText(text, x, y);
+};
+
+Renderer.prototype.fillText_ = function(text, x, y) {
+  x = Math.round(x * this.screen_.upscale);
+  y = Math.round(y * this.screen_.upscale);
+  this.textCtx_.fillText(text, x, y);
 };

@@ -14,6 +14,8 @@ ShapeDecorator.prototype.decorateCircle_ = function(obj, spec) {
   };
   obj.setRadius(spec.radius);
 
+  obj.rotate = function(angle) {obj.rotation += angle;};
+
   obj.collides = function(target) {
     var collisionFn;
     if (target.radius) collisionFn = this.collision_.circleCircle;
@@ -86,6 +88,8 @@ ShapeDecorator.prototype.decorateRect_ = function(obj, spec) {
   });
   obj.width = spec.width;
   obj.height = spec.height;
+
+  obj.rotate = function(angle) {obj.rotation += angle;};
 
   obj.setCenter = function(x, y) {
     obj.setPos(x - obj.width / 2, y - obj.height / 2);

@@ -5,12 +5,16 @@ di.ready(function() {
   di.constant('canvas', canvas);
   di.constant('ctx', canvas.getContext('2d'));
 
+  var textCanvas = window.document.getElementById('text-fg');
+  di.constant('textCanvas', textCanvas);
+  di.constant('textCtx', textCanvas.getContext('2d'));
+
   var bgs = [];
   var bgCtxs = [];
   for (var i = 0; i < 3; i++) {
-    var canvas = window.document.getElementById('bg' + (i + 1));
-    bgs.push(canvas);
-    bgCtxs.push(canvas.getContext('2d'));
+    var bgCanvas = window.document.getElementById('bg' + (i + 1));
+    bgs.push(bgCanvas);
+    bgCtxs.push(bgCanvas.getContext('2d'));
   }
   di.constant('bgCanvasList', bgs);
   di.constant('bgCtxList', bgCtxs);

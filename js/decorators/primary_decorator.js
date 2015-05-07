@@ -1,5 +1,6 @@
 var PrimaryDecorator = di.service('PrimaryDecorator', [
-  'EntityDecorator', 'DecoratorUtil as util']);
+  'EntityDecorator', 'DecoratorUtil as util', 'GameModel as gm',
+  'ItemService', 'Random']);
 
 PrimaryDecorator.prototype.init = function() {
   this.d_ = this.entityDecorator_.getDecorators();
@@ -8,8 +9,9 @@ PrimaryDecorator.prototype.init = function() {
 
 PrimaryDecorator.prototype.decorateGrenade_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
-    speed: Speed.SLOW,
-    radius: 20
+    speed: g.Speed.SLOW,
+    radius: 20,
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
   this.util_.addBasicWeapon_(obj, obj.primary, this.util_.proj.bomb);
@@ -17,7 +19,8 @@ PrimaryDecorator.prototype.decorateGrenade_ = function(obj, spec) {
 
 PrimaryDecorator.prototype.decorateBasicLaser_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
-    length: 8 + 16
+    length: 8 + 16,
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
   this.util_.addBasicWeapon_(obj, obj.primary, this.util_.proj.laser);
@@ -27,8 +30,9 @@ PrimaryDecorator.prototype.decorateShotgun_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
     length: 4 + 16,
     spread: _.radians(35),
-    speed: Speed.VERY_FAST,
-    style: 'weak'
+    speed: g.Speed.VERY_FAST,
+    style: 'weak',
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -45,7 +49,8 @@ PrimaryDecorator.prototype.decorateRazors_ = function(obj, spec)  {
   this.util_.spec(obj, 'primary', spec, {
     radius: 6,
     spread: _.radians(40),
-    speed: Speed.FAST
+    speed: g.Speed.FAST,
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -60,7 +65,8 @@ PrimaryDecorator.prototype.decorateMissiles_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
     radius: 6,
     seek: _.radians(50),
-    speed: Speed.DEFAULT
+    speed: g.Speed.DEFAULT,
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
   switch(spec.power) {
@@ -74,8 +80,9 @@ PrimaryDecorator.prototype.decorateMissiles_ = function(obj, spec) {
 PrimaryDecorator.prototype.decorateSniper_ = function(obj, spec) {
   this.util_.spec(obj, 'primary', spec, {
     length: 20 + 16,
-    speed: Speed.VERY_FAST,
-    accuracy: Accuracy.ACCURATE
+    speed: g.Speed.VERY_FAST,
+    accuracy: g.Accuracy.ACCURATE,
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
   this.util_.addBasicWeapon_(obj, obj.primary, this.util_.proj.laser);
@@ -85,9 +92,10 @@ PrimaryDecorator.prototype.decorateBurstLaser_ = function(obj, spec)  {
   this.util_.spec(obj, 'primary', spec, {
     miniCooldown: .12,
     length: 8 + 16,
-    speed: Speed.DEFAULT,
-    accuracy: Accuracy.INACCURATE,
-    style: 'weak'
+    speed: g.Speed.DEFAULT,
+    accuracy: g.Accuracy.INACCURATE,
+    style: 'weak',
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
   var projectilesRemaining = 0;
@@ -108,40 +116,29 @@ PrimaryDecorator.prototype.decorateBurstLaser_ = function(obj, spec)  {
 PrimaryDecorator.prototype.decorateGatling_ = function(obj, spec)  {
   this.util_.spec(obj, 'primary', spec, {
     minCooldownRatio: .17,
-    cooldownReduceSpeed: .4,
+    cooldownReduceSpeed: .9,
     length: 8 + 16,
-    speed: Speed.DEFAULT,
+    speed: g.Speed.DEFAULT,
     style: 'weak',
-    breakPoint: _.radians(90),
-    turnSpeed: _.radians(35)
+    maxTargetAngle: g.MaxTargetAngle.DEFAULT
   });
 
-  var angle = 0;
   var cooldownRatio = 1;
-  var firing = false;
-  obj.awake(function(dt) {
-    angle = _.angle(obj, obj.target);
-  });
+  this.util_.addWeapon(obj, obj.primary, function() {
+    obj.primary.dangle = obj.rotation - obj.c.targetAngle;
+    this.util_.fireBasicProj_(obj, obj.primary, this.util_.proj.laser);
+
+    obj.primary.cooldown /= cooldownRatio;
+    cooldownRatio *= obj.primary.cooldownReduceSpeed;
+    cooldownRatio = Math.max(cooldownRatio, obj.primary.minCooldownRatio);
+    obj.primary.cooldown *= cooldownRatio;
+    return obj.primary.cooldown;
+  }.bind(this));
+
   obj.act(function(dt) {
-    var da = _.angleDif(angle, obj.c.targetAngle);
-    if (da > obj.primary.breakPoint) {
+    if (obj.primary.jammed) {
       obj.primary.cooldown /= cooldownRatio;
       cooldownRatio = 1;
-      angle = obj.c.targetAngle;
-      firing = false;
-    } else if (firing) {
-      angle = _.approachAngle(
-          angle, obj.c.targetAngle, obj.primary.turnSpeed * dt);
-      obj.primary.cooldown /= cooldownRatio;
-      cooldownRatio *= 1 - obj.primary.cooldownReduceSpeed * dt;
-      cooldownRatio = Math.max(cooldownRatio, obj.primary.minCooldownRatio);
-      obj.primary.cooldown *= cooldownRatio;
     }
-  });
-
-  this.util_.addWeapon(obj, obj.primary, function() {
-    if (!firing) firing = true;
-    obj.primary.dangle = angle - obj.c.targetAngle;
-    this.util_.fireBasicProj_(obj, obj.primary, this.util_.proj.laser);
   }.bind(this));
 };

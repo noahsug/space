@@ -6,6 +6,8 @@ Mouse.prototype.init = function() {
   this.down = false;
   this.pressed = false;
   this.released = false;
+  this.clicked = false;
+  this.keysPressed = {};
 };
 
 Mouse.prototype.onMouseMove = function(e) {
@@ -19,6 +21,7 @@ Mouse.prototype.onMouseMove = function(e) {
 Mouse.prototype.onMouseDown = function() {
   this.down = true;
   this.pressed = true;
+  this.clicked = true;
 };
 
 Mouse.prototype.onMouseUp = function() {
@@ -26,6 +29,13 @@ Mouse.prototype.onMouseUp = function() {
   this.released = true;
 };
 
+Mouse.prototype.onKeyDown = function(number) {
+  this.keysPressed[number] = true;
+};
+
 Mouse.prototype.clearInput = function() {
-  this.pressed = this.released = false;
+  this.clicked = false;
+  this.pressed = this.down;
+  this.released = !this.down;
+  this.keysPressed = {};
 };

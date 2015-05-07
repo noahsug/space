@@ -8,6 +8,8 @@ Game.UPDATE_RATE = .06;
 Game.ITEM_TYPES = ['primary', 'secondary', 'ability', 'utility'];
 Game.MAX_ITEM_LEVEL = 5;
 Game.MAX_LEVEL = (Game.MAX_ITEM_LEVEL + 1) * Game.ITEM_TYPES.length - 1;
+// actual enemy level = (enemyLevel / MAX_ENEMY_LEVEL) * MAX_LEVEL
+Game.MAX_ENEMY_LEVEL = 9;
 
 Game.prototype.start = function() {
   this.nextAction_ = 0;
@@ -26,20 +28,20 @@ Game.prototype.start = function() {
   ];
 
   // DEBUG
-  this.gm_.world = this.gm_.worlds[0];
-  this.gm_.level = this.gm_.world.levels[2];
-  this.gm_.level.state = 'won';
-  this.battleRewards_.calculateRewards();
+  //this.gm_.world = this.gm_.worlds[1];
+  //this.gm_.stage = this.gm_.world.stages[1][2];
+  //this.gm_.stage.state = 'won';
+  //this.battleRewards_.calculateRewards();
   //this.gm_.equipping = 'primary';
 
-  this.scenes_[6].start();
+  this.scenes_[0].start();
 };
 
 Game.prototype.initGameModel_ = function() {
   this.gm_.inventory = this.gameplay_.inventory;
   this.gm_.player = this.gameplay_.player;
   this.gm_.worlds = this.gameplay_.worlds;
-  this.world_.createWorlds();
+  this.world_.initWorlds();
 };
 
 Game.prototype.update = function(dt) {

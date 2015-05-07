@@ -12,7 +12,7 @@ ResultScene.prototype.addEntities_ = function() {
 
   this.selectedReward_ = undefined;
   var hasRewards =
-      this.gm_.level.state == 'won' && this.battleRewards_.numItems();
+      this.gm_.stage.state == 'won' && this.battleRewards_.numItems();
   this.continueBtn_ = this.btnElement_.create();
   if (hasRewards && this.battleRewards_.numItems() > 1) {
     this.continueBtn_.setStyle('locked');
@@ -82,7 +82,7 @@ ResultScene.prototype.addEntities_ = function() {
       // Item Description.
       var itemDescRow = this.layout_.addNew(this.layoutElement_);
       var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');
-      itemDesc.childHeight = Size.TEXT * 2 + 4;
+      itemDesc.childHeight = Size.ITEM_DESC;
       itemDesc.getEntity().update(function() {
         if (this.selectedReward_) {
           itemDesc.setProp('item', this.selectedReward_.getProp('item'));
@@ -113,10 +113,6 @@ ResultScene.prototype.addEntities_ = function() {
         this.inventory_.equip(item);
       }
       this.gm_.world.aquired.push(this.selectedReward_.getProp('item'));
-    }
-    if (this.gm_.level.state == 'lost' && this.gm_.world.lives > 0) {
-      this.gm_.level.state = 'unlocked';
-      this.gm_.world.lives--;
     }
     if (this.world_.won()) {
       this.transition_('won');

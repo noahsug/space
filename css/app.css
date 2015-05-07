@@ -4,6 +4,10 @@ canvas {
   left: 0;
 }
 
+canvas#text-fg {
+  z-index: 4;
+}
+
 canvas#fg {
   z-index: 3;
 }

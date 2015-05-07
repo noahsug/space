@@ -8,7 +8,6 @@ WorldSelectScene.prototype.init = function() {
 
 WorldSelectScene.prototype.addEntities_ = function() {
   var COLS = 4;  // Number of columns in the world grid.
-
   this.layout_ = this.layoutElement_.create({direction: 'vertical'});
 
   // World select label.
@@ -37,27 +36,26 @@ WorldSelectScene.prototype.addEntities_ = function() {
   this.layout_.addGap(Padding.WORLD * 3);
 
   // Sandbox + ranked.
-  var btnRow = this.layout_.addNew(this.layoutElement_);
-  var sandboxBtn = btnRow.addNew(this.roundBtnElement_);
-  sandboxBtn.setSize(Size.WORLD);
-  sandboxBtn.setProp('text', 'sandbox');
-  sandboxBtn.setStyle('locked');
-
-  btnRow.addGap(Size.WORLD);
-
-  var rankedBtn = btnRow.addNew(this.roundBtnElement_);
-  rankedBtn.setSize(Size.WORLD);
-  rankedBtn.setProp('text', 'ranked');
-  rankedBtn.setStyle('locked');
-
-  btnRow.childHeight = Size.WORLD;
+  //var btnRow = this.layout_.addNew(this.layoutElement_);
+  //var sandboxBtn = btnRow.addNew(this.roundBtnElement_);
+  //sandboxBtn.setSize(Size.WORLD);
+  //sandboxBtn.setProp('text', 'sandbox');
+  //sandboxBtn.setStyle('locked');
+  //
+  //btnRow.addGap(Size.WORLD);
+  //
+  //var rankedBtn = btnRow.addNew(this.roundBtnElement_);
+  //rankedBtn.setSize(Size.WORLD);
+  //rankedBtn.setProp('text', 'ranked');
+  //rankedBtn.setStyle('locked');
+  //
+  //btnRow.childHeight = Size.WORLD;
 };
 
 WorldSelectScene.prototype.createWorldBtn_ = function(world) {
   var btn = this.roundBtnElement_.create();
-  btn.setStyle('world');
   btn.setSize(Size.WORLD);
-  btn.setProp('level', world);
+  btn.setProp('world', world);
 
   if (world.state == 'unlocked') {
     btn.onClick(function() {

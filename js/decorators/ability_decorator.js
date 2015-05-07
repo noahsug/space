@@ -1,5 +1,6 @@
 var AbilityDecorator = di.service('AbilityDecorator', [
-  'EntityDecorator', 'DecoratorUtil as util', 'ShipFactory']);
+  'EntityDecorator', 'DecoratorUtil as util', 'ShipFactory',
+  'GameModel as gm']);
 
 AbilityDecorator.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'ability');
@@ -63,7 +64,7 @@ AbilityDecorator.prototype.decorateReflect_ = function(obj, spec) {
 
   obj.receivedPrecollide(function(proj) {
     if (!obj.effect.reflect || proj.type == 'ship') return;
-    proj.rotate && proj.rotate(_.RADIANS_180);
+    proj.rotate(_.RADIANS_180);
     proj.target = obj.target;
     proj.remainingRange = proj.maxRange;
     proj.shouldCollide = false;
@@ -105,14 +106,14 @@ AbilityDecorator.prototype.decorateHaze_ = function(obj, spec) {
 AbilityDecorator.prototype.decorateKnockback_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
     speed: 300,
-    cooldown: 3,
+    cooldown: 4,
     duration: .75,
-    effect: 'stunned',
-    knockback: 550,
+    effect: 'silenced rooted disabled',
     grow: 500,
     maxRadius: 100,
     range: 100
   });
+  obj.ability.maxRange = obj.ability.range;
 
   switch(spec.power) {
   case 1:
@@ -121,13 +122,13 @@ AbilityDecorator.prototype.decorateKnockback_ = function(obj, spec) {
 
   var knockback = function(target) {
     target.addEffect(obj.ability.effect, obj.ability.duration);
+    target.addEffect('displaced', obj.ability.duration, function() {
+      this.util_.modSet(target, 'movement.speed', null);
+    }.bind(this));
+
     target.movement.vector.x = Math.cos(obj.c.targetAngle);
     target.movement.vector.y = Math.sin(obj.c.targetAngle);
-    var ratio = obj.ability.knockback / (obj.ability.speed || 1);
-    target.movement.speed *= ratio;
-    target.addEffect('knockback', obj.ability.duration, function() {
-      target.movement.speed /= ratio;
-    }.bind(this));
+    this.util_.modSet(target, 'movement.speed', obj.ability.speed);
   }.bind(this);
 
   this.util_.addWeapon(obj, obj.ability, function() {

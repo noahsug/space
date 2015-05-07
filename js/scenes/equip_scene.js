@@ -43,7 +43,7 @@ EquipScene.prototype.addEntities_ = function() {
 
   this.layout_.addGap(Padding.MD);
 
-  // Levels.
+  // Stages.
   var row;
   var items = this.inventory_.get(this.gm_.equipping);
   for (var i = 0; i < items.length || i % COLS; i++) {
@@ -68,7 +68,7 @@ EquipScene.prototype.addEntities_ = function() {
   // Item Description.
   var itemDescRow = this.layout_.addNew(this.layoutElement_);
   var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');
-  itemDesc.childHeight = Size.TEXT * 2 + 4;
+  itemDesc.childHeight = Size.ITEM_DESC;
   itemDesc.getEntity().update(function() {
     if (this.equippedBtn_) {
       itemDesc.setProp('item', this.equippedBtn_.getProp('item'));

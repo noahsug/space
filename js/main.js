@@ -27,11 +27,16 @@ Main.prototype.start = function() {
     this.mouse_.onMouseUp();
   }, {running:true});
 
+  this.on_('keydown', function(e) {
+    // Detect numbers 1-4.
+    if (e.which >= 49 && e.which <= 52) {
+      this.mouse_.onKeyDown(e.keyCode - 49);
+    }
+  }, {running:true});
+
   //this.random_.seed(.02);
   //this.random_.useTrueRandom();
   this.screen_.setSurfaceArea(Screen.DESIRED_SURFACE_AREA);
-  // Hack to fix the screen sometimes not resizing.
-  setTimeout(this.screen_.resize.bind(this.screen_), 1);
   this.gameRunner_.start();
 };
 
