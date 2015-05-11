@@ -28,7 +28,7 @@ Game.prototype.start = function() {
   ];
 
   // DEBUG
-  this.gm_.world = this.gm_.worlds[0];
+  this.gm_.world = this.gm_.worlds[1];
   this.gm_.stage = this.gm_.world.stages[0][0];
   //this.gm_.stage.state = 'won';
   //this.battleRewards_.calculateRewards();

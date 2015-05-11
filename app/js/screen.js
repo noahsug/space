@@ -1,7 +1,7 @@
 var Screen = di.service('Screen', [
   'window', 'canvas', 'textCanvas', 'bgCanvasList']);
 
-Screen.DESIRED_SURFACE_AREA = 134400;
+Screen.DEFAULT_SURFACE_AREA = 134400;
 
 Screen.prototype.init = function() {
   this.resize();

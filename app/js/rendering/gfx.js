@@ -7,6 +7,17 @@ Gfx.Font = {
 };
 
 Gfx.Color = {
+  // UI Colors
+  FG: '#FFFFFF',
+  FG_MUTED: '#C3C9CD',
+  ACTIVE: '#FDBE31',
+  // TODO: Make these all have opacity.
+  BG: 'rgba(48, 53, 55, 1)',
+  BG_MUTED: 'rgba(22, 23, 25, 1)',
+  FADED: 'rgba(22, 23, 25, .5)',
+  COOLDOWN: 'rgba(0, 0, 0, .35)',
+
+  // Battle Colors
   BLACK: '#000000',
   WHITE: '#FFFFFF',
   OPAC_WHITE: 'rgba(255, 255, 255, .12)',

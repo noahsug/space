@@ -11,6 +11,14 @@ Padding = {
   TOP: 25
 };
 
+/*
+ * Font sizes:
+ * TEXT: 6,
+ * BUTTON: 10,
+ * HEADING: 12,
+ * HEADING_LARGE: 16
+ */
+
 Size = {
   WORLD: 50,
   STAGE: 56,
