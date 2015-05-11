@@ -14,13 +14,6 @@ BtnElement.prototype.init = function() {
   }, this);
 
   this.setLineDirection('right');
-
-  this.addUnit_('pad-bot', 'btn', 25);
-  this.addUnit_('pad-bot', 'btn-lg', 30);
-  this.addUnit_('pad-left', 'btn-mix', .1);
-  this.addUnit_('pad-right', 'btn-mix', .1);
-
-  this.addUnit_('pad-left', 'btn-sm', .75);
 };
 
 BtnElement.prototype.setLineDirection = function(direction) {
@@ -36,7 +29,7 @@ BtnElement.prototype.setText = function(text, spec) {
   spec.baseline = 'top';
   this.label_.setText(text, spec);
 
-  this.entity_.height = spec.size + 4;
+  this.entity_.height = spec.size + 24;
 };
 
 BtnElement.prototype.setWidth = function(width) {
@@ -54,5 +47,9 @@ BtnElement.prototype.positionChild_ = function(x, y) {
   if (this.label_.entity_.lineDirection == 'left') {
     x -= HITBOX_WIDTH - this.childWidth;
   }
-  this.entity_.setPos(x, y);
+  if (this.label_.entity_.lineDirection == 'left') {
+    this.entity_.setPos(x + 10, y - 10);
+  } else {
+    this.entity_.setPos(x - 10, y - 10);
+  }
 };

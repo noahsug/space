@@ -73,7 +73,7 @@ AbilityDecorator.prototype.decorateReflect_ = function(obj, spec) {
 
 AbilityDecorator.prototype.decorateHaze_ = function(obj, spec) {
   this.util_.spec(obj, 'ability', spec, {
-    speed: Speed.SLOW,
+    speed: g.Speed.SLOW,
     seek: _.radians(85),
     radius: 3,
     accuracy: 0,
