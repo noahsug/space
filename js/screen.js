@@ -64,26 +64,25 @@ Screen.prototype.resize = function(opt_options) {
 };
 
 Screen.prototype.resizeCanvasWithoutUpscale_ = function(canvas) {
-  //canvas.style.width = this.window_.innerWidth + 'px';
-  //canvas.style.height = this.window_.innerHeight + 'px';
-  //canvas.width = this.window_.innerWidth;
-  //canvas.height = this.window_.innerHeight;
+  canvas.style.width = this.window_.innerWidth + 'px';
+  canvas.style.height = this.window_.innerHeight + 'px';
+  canvas.width = this.window_.innerWidth;
+  canvas.height = this.window_.innerHeight;
 };
 
 Screen.prototype.resizeCanvas_ = function(canvas) {
   console.log('resizeCanvas_', canvas.width, canvas.height,
               canvas.style.width, canvas.style.height);
-  //canvas.width = this.window_.innerWidth / this.upscale;
-  //canvas.height = this.window_.innerHeight / this.upscale;
-  //canvas.style.width = this.window_.innerWidth + 'px';
-  //canvas.style.height = this.window_.innerHeight + 'px';
+  canvas.width = this.window_.innerWidth / this.upscale;
+  canvas.height = this.window_.innerHeight / this.upscale;
+  canvas.style.width = this.window_.innerWidth + 'px';
+  canvas.style.height = this.window_.innerHeight + 'px';
 };
 
 Screen.prototype.getUpscale_ = function() {
+  if (_.isDef(this.surfaceArea_)) {
+    var actualSurfaceArea = this.window_.innerHeight * this.window_.innerWidth;
+    return Math.sqrt(actualSurfaceArea / this.surfaceArea_);
+  }
   return 1;
-  //if (_.isDef(this.surfaceArea_)) {
-  //  var actualSurfaceArea = this.window_.innerHeight * this.window_.innerWidth;
-  //  return Math.sqrt(actualSurfaceArea / this.surfaceArea_);
-  //}
-  //return 1;
 };
