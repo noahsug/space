@@ -36,7 +36,7 @@ Main.prototype.start = function() {
 
   //this.random_.seed(.02);
   //this.random_.useTrueRandom();
-  this.screen_.setSurfaceArea(Screen.DESIRED_SURFACE_AREA);
+  this.screen_.setSurfaceArea(Screen.DEFAULT_SURFACE_AREA);
   this.gameRunner_.start();
 };
 
