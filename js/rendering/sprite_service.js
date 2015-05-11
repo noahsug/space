@@ -74,7 +74,7 @@ SpriteService.prototype.sprites_ = {
     image: Sprite.ALIEN4,
     size: 32,
     actualSize: 46,
-    offset: {x: 0, y: -3}
+    offset: {x: 0, y: 5}
   },
   'alien_boss': {
     image: Sprite.ALIENSHIPTEX,

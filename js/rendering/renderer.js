@@ -47,14 +47,14 @@ Renderer.prototype.drawFps_ = function(dt) {
   this.drawText_(this.displayedFps_.toFixed(0), 20, 0, 0, {color: '#ccc'});
 };
 
-var INTRO_SCROLL_SPEED = 16;
+var STAR_SCROLL_SPEED = 16;
 Renderer.prototype.handleCamera_ = function(dt) {
   if (this.gm_.scenes['battle'] != 'inactive' ||
       this.gm_.scenes['loading'] != 'inactive') {
     return;
   }
-  this.screen_.x -= INTRO_SCROLL_SPEED * dt;
-  this.screen_.y -= INTRO_SCROLL_SPEED * dt;
+  this.screen_.x -= STAR_SCROLL_SPEED * dt;
+  this.screen_.y -= STAR_SCROLL_SPEED * dt;
 };
 
 Renderer.prototype.drawTransition_ = function(dt) {
@@ -174,7 +174,7 @@ Renderer.prototype.drawLostSplash_ = function() {
 };
 
 var DESC_ONLY = _.newSet([
-  'charge', 'charge II', 'tracker', 'tracker II', 'pull', 'melee',
+  'charge', 'tracker', 'pull', 'turret', 'alien spawn'
 ]);
 Renderer.prototype.drawItemDesc_ = function(entity) {
   var size = Size.TEXT;
@@ -237,7 +237,7 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
       return;
     }
     fillColor = '';
-    color = entity.stage.state == 'locked' ? '#444' : '#888';
+    color = entity.stage.state == 'locked' ? '' : '#888';
   } else if (entity.world) {
     switch (entity.world.state) {
       case 'won': color = Gfx.Color.BEATEN; break;
@@ -270,7 +270,7 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
   this.circle_(
       entity.render.pos.x, entity.render.pos.y, entity.radius, lineWidth);
   if (fillColor) this.textCtx_.fill();
-  this.textCtx_.stroke();
+  if (color) this.textCtx_.stroke();
 
   // Draw context.
   var text = entity.text;
@@ -278,7 +278,7 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
   if (entity.stage) {
     var hull = entity.stage.hull.spec.sprite;
     var rotation = entity.stage.enemy ? Math.PI / 2 : -Math.PI / 2;
-    var alpha = entity.stage.state == 'locked' ? .1 : 0;
+    var alpha = entity.stage.state == 'locked' ? .3 : 0;
     this.spriteService_.draw(
       hull, entity.render.pos.x, entity.render.pos.y,
       {rotation: rotation, alpha: alpha});
@@ -491,9 +491,9 @@ Renderer.prototype.drawShip_ = function(entity, style, dt) {
                   entity.rotation, entity.render.radius);
 
   // DEBUG: See the hit box of the ship.
-  //this.gfx_.setStyle(style.reflect);
-  //this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-  //                 entity.render.radius);
+  this.gfx_.setStyle(style.reflect);
+  this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
+                   entity.render.radius);
 
   // DEBUG: See where the ship is aiming.
   //var dx = entity.render.pos.x - entity.x;
