@@ -71,8 +71,6 @@ Screen.prototype.resizeCanvasWithoutUpscale_ = function(canvas) {
 };
 
 Screen.prototype.resizeCanvas_ = function(canvas) {
-  console.log('resizeCanvas_', canvas.width, canvas.height,
-              canvas.style.width, canvas.style.height);
   canvas.width = this.window_.innerWidth / this.upscale;
   canvas.height = this.window_.innerHeight / this.upscale;
   canvas.style.width = this.window_.innerWidth + 'px';
