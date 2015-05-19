@@ -1,7 +1,7 @@
 var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene', 'MainScene',
   'EquipOptionsScene', 'EquipScene', 'ResultScene', 'WonScene', 'LostScene',
-  'Gameplay', 'World', 'BattleRewards', 'WorldSelectScene']);
+  'Gameplay', 'MissionService', 'BattleRewards', 'MissionSelectScene']);
 
 Game.UPDATE_RATE = .06;
 
@@ -17,7 +17,7 @@ Game.prototype.start = function() {
   this.scenes_ = [
     /* 0 */ this.loadingScene_,
     /* 1 */ this.introScene_,
-    /* 2 */ this.worldSelectScene_,
+    /* 2 */ this.missionSelectScene_,
     /* 3 */ this.mainScene_,
     /* 4 */ this.equipOptionsScene_,
     /* 5 */ this.equipScene_,
@@ -28,20 +28,21 @@ Game.prototype.start = function() {
   ];
 
   // DEBUG
-  this.gm_.world = this.gm_.worlds[1];
-  this.gm_.stage = this.gm_.world.stages[0][0];
+  this.gm_.mission = this.gm_.world.missions[0];
+  this.gm_.stage = this.gm_.mission.stages[0][0];
   //this.gm_.stage.state = 'won';
   //this.battleRewards_.calculateRewards();
   //this.gm_.equipping = 'primary';
 
-  this.scenes_[3].start();
+  this.scenes_[0].start();
 };
 
 Game.prototype.initGameModel_ = function() {
   this.gm_.inventory = this.gameplay_.inventory;
   this.gm_.player = this.gameplay_.player;
   this.gm_.worlds = this.gameplay_.worlds;
-  this.world_.initWorlds();
+  this.missionService_.start();
+  this.gm_.world = this.gm_.worlds[0];
 };
 
 Game.prototype.update = function(dt) {

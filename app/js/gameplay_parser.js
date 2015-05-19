@@ -47,12 +47,21 @@ GameplayParser.prototype.parseWorlds_ = function(worlds, stages) {
   return _.map(worlds, function(world, index) {
     world = _.clone(world);
     world.index = index;
-    world.stages = this.parseWorldStages_(world.stages, stages);
+    world.missions = this.parseMissions_(world.missions, stages);
     return world;
   }, this);
 };
 
-GameplayParser.prototype.parseWorldStages_ = function(names, stages) {
+GameplayParser.prototype.parseMissions_ = function(missions, stages) {
+  return _.map(missions, function(mission, index) {
+    mission = _.clone(mission);
+    mission.index = index;
+    mission.stages = this.parseMissionStages_(mission.stages, stages);
+    return mission;
+  }, this);
+};
+
+GameplayParser.prototype.parseMissionStages_ = function(names, stages) {
   return names.map(function(row, rowIndex) {
     return row.map(function(stageName, colIndex) {
       if (stageName == '-') return {empty: true};

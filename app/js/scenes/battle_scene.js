@@ -1,5 +1,5 @@
 var BattleScene = di.service('BattleScene', [
-  'Scene', 'GameModel as gm', 'ShipFactory', 'EntityDecorator', 'World',
+  'Scene', 'GameModel as gm', 'ShipFactory', 'EntityDecorator', 'MissionService',
   'BattleRewards', 'LayoutElement', 'RoundBtnElement', 'Inventory', 'Mouse']);
 
 var SLOWDOWN_TIME = 2;
@@ -80,7 +80,7 @@ BattleScene.prototype.update_ = function(dt) {
     this.enemy_ = this.enemy_.getLivingClone();
     if (this.player_.dead || this.enemy_.dead) {
       if (!this.player_.dead) this.gm_.stage.state = 'won';
-      else this.gm_.world.lives--;
+      else this.gm_.mission.lives--;
       this.battleEnding_ = SLOWDOWN_TIME;
     }
   }
@@ -101,9 +101,9 @@ BattleScene.prototype.transitionOver_ = function() {
 
 BattleScene.prototype.handleWin_ = function() {
   this.battleRewards_.calculateRewards();
-  this.world_.unlockAdjacent(this.gm_.stage);
+  this.missionService_.unlockAdjacent(this.gm_.stage);
 };
 
 BattleScene.prototype.handleLoss_ = function() {
-  if (this.world_.lost()) this.transition_('lost');
+  if (this.missionService_.lost()) this.transition_('lost');
 };

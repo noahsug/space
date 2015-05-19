@@ -44,58 +44,60 @@ g = {
 di.constant('gameplayFile', {
   worlds: [
     {  // 0
-      stages: [
-        ['a1', 'a2', 'a3', 'a4'],
-        ['a5']
+      missions: [
+        {  // 0
+          stages: [
+            ['a1', 'a2', 'a3', 'a4'],
+            ['a5']
+          ]
+        },
+        {  // 1
+          stages: [
+            ['a1', 'a2', 'a1'],
+            ['a2', '-', 'a3', '-', 'a2']
+          ]
+        },
+        {  // 2
+          stages: [
+            ['a2'],
+            ['a2', '-', 'a2'],
+            ['a2', '-', 'a4', '-', 'a2'],
+          ]
+        },
+        {  // 3
+          stages: [
+            ['a2', 'a3', 'a2'],
+            ['a3', 'a4', 'a4', 'a3'],
+            ['a5']
+          ]
+        },
       ]
-    },
-    {  // 1
-      stages: [
-        ['a1', 'a2', 'a1'],
-        ['a2', '-', 'a3', '-', 'a2']
-      ]
-    },
-    {  // 2
-      stages: [
-        ['a2'],
-        ['a2', '-', 'a2'],
-        ['a2', '-', 'a4', '-', 'a2'],
-      ]
-    },
-    {  // 3
-      stages: [
-        ['a2', 'a3', 'a2'],
-        ['a3', 'a4', 'a4', 'a3'],
-        ['a5']
-      ]
-    },
+    }
   ],
 
   stages: {
     'a1': {
       desc: 'Hive Scout',
-      level: 0, reward: {item: .5, augment: .5},
+      level: 0,
       hull: 'alien1',
       primary: ['alien laser', 'alien burst'],
       utility: ['dash', 'teleport', '']},
     'a2': {
       desc: 'Hive Dart',
-      level: 1, reward: {item: .5, augment: .5},
+      level: 1,
       hull: 'alien2',
       primary: ['alien sniper', 'alien doubleshot'],
-      secondary: ['alien knockback'],
-      augment: ['fast']},
+      secondary: ['alien knockback']},
     'a3': {
       desc: 'Hive Ram',
-      level: 2, reward: {item: .5, augment: .5},
+      level: 2,
       hull: 'alien3',
       primary: ['alien grenade', 'alien stinger'],
       secondary: ['charge'],
-      ability: ['shield'],
-      augment: ['beefy']},
+      ability: ['shield']},
     'a4': {
       desc: 'Hive Infestor',
-      level: 3, reward: {item: .5, augment: .5},
+      level: 3,
       hull: 'alien4',
       primary: ['alien blades'],
       secondary: ['alien emp', 'pull', 'alien stun'],
@@ -104,12 +106,11 @@ di.constant('gameplayFile', {
     },
     'a5': {
       desc: 'Hive Queen',
-      level: 4, reward: {item: .5, augment: .5},
+      level: 4,
       hull: 'alien_boss',
       primary: ['alien gatling'],
       secondary: ['alien spawn'],
-      ability: ['knockback'],
-      augment: ['beefy']}
+      ability: ['knockback']}
   },
 
   player: [

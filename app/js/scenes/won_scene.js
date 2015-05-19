@@ -1,5 +1,5 @@
 var WonScene = di.service('WonScene', [
-  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement', 'World']);
+  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement', 'MissionService']);
 
 WonScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('won'));
@@ -11,7 +11,7 @@ WonScene.prototype.addEntities_ = function() {
   var continueBtn = this.btnElement_.create();
   continueBtn.setText('exit', {size: 'btn-sm'});
   continueBtn.onClick(function() {
-    this.transition_('worldSelect');
+    this.transition_('missionSelect');
   }.bind(this));
 
   this.layout_ = this.layoutElement_.create({
@@ -22,10 +22,10 @@ WonScene.prototype.addEntities_ = function() {
 };
 
 WonScene.prototype.start_ = function() {
-  this.world_.resetProgress();
-  this.gm_.world.state = 'won';
-  if (this.gm_.world.index < this.gm_.worlds.length - 1) {
-    this.gm_.worlds[this.gm_.world.index + 1].state = 'unlocked';
+  this.missionService_.resetProgress();
+  this.gm_.mission.state = 'won';
+  if (this.gm_.mission.index < this.gm_.world.missions.length - 1) {
+    this.gm_.world.missions[this.gm_.mission.index + 1].state = 'unlocked';
   }
 };
 

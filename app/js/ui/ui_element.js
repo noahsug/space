@@ -4,7 +4,7 @@ var UiElement = di.factory('UiElement', [
 Padding = {
   TEXT: 2,
   STAGE: 8,
-  WORLD: 10,
+  MISSION: 10,
   ITEM: 10,
   MD: 25,
   BOT: 30,
@@ -20,11 +20,11 @@ Padding = {
  */
 
 Size = {
-  WORLD: 50,
+  MISSION: 50,
   STAGE: 56,
   STAGE_LARGE: 120,
   ITEM: 54,
-  WORLD_TEXT: 16,
+  MISSION_TEXT: 16,
   TEXT: 10,
   TEXT_LG: 12,
   ITEM_TEXT: 8,

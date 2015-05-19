@@ -1,5 +1,5 @@
 var LostScene = di.service('LostScene', [
-  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement', 'World',
+  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement', 'MissionService',
   'Inventory']);
 
 LostScene.prototype.init = function() {
@@ -12,7 +12,7 @@ LostScene.prototype.addEntities_ = function() {
   var continueBtn = this.btnElement_.create();
   continueBtn.setText('exit', {size: 'btn-sm'});
   continueBtn.onClick(function() {
-    this.transition_('worldSelect');
+    this.transition_('missionSelect');
   }.bind(this));
 
   this.layout_ = this.layoutElement_.create({
@@ -23,15 +23,7 @@ LostScene.prototype.addEntities_ = function() {
 };
 
 LostScene.prototype.start_ = function() {
-  _.each(this.gm_.world.aquired, function(item) {
-    this.inventory_.remove(item);
-  }, this);
-  _.each(Game.ITEM_TYPES, function(type) {
-    if (!this.inventory_.isEquipped(type)) {
-      this.inventory_.equip(this.inventory_.get(type)[0]);
-    }
-  }, this);
-  this.world_.resetProgress();
+  this.missionService_.resetProgress();
 };
 
 LostScene.prototype.update_ = function(dt, state) {

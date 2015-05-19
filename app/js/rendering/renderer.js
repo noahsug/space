@@ -160,8 +160,8 @@ Renderer.prototype.drawEnemySplash_ = function(entity) {
 Renderer.prototype.drawWonSplash_ = function() {
   this.textCtx_.textAlign = 'center';
   this.textCtx_.textBaseline = 'alphabetic';
-  var text = _.last(this.gm_.worlds) == this.gm_.world ?
-      'You Win' : 'World Clear';
+  var text = _.last(this.gm_.missions) == this.gm_.mission ?
+      'You Win' : 'Mission Clear';
   this.drawTitle_(text, Size.TITLE,
                   this.screen_.width / 2, this.screen_.height / 2);
 };
@@ -169,7 +169,7 @@ Renderer.prototype.drawWonSplash_ = function() {
 Renderer.prototype.drawLostSplash_ = function() {
   this.textCtx_.textAlign = 'center';
   this.textCtx_.textBaseline = 'alphabetic';
-  this.drawTitle_('World Failed', Size.TITLE,
+  this.drawTitle_('Mission Failed', Size.TITLE,
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
@@ -238,8 +238,8 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
     }
     fillColor = '';
     color = entity.stage.state == 'locked' ? '' : '#888';
-  } else if (entity.world) {
-    switch (entity.world.state) {
+  } else if (entity.mission) {
+    switch (entity.mission.state) {
       case 'won': color = Gfx.Color.BEATEN; break;
       case 'locked': color = Gfx.Color.LOCKED; break;
     }
@@ -283,10 +283,10 @@ Renderer.prototype.drawRoundBtn_ = function(entity) {
       hull, entity.render.pos.x, entity.render.pos.y,
       {rotation: rotation, alpha: alpha});
     return;
-  } else if (entity.world) {
+  } else if (entity.mission) {
     if (entity.state == 'won') text = 'W';
-    else text = entity.world.index + 1;
-    textSize = Size.WORLD_TEXT;
+    else text = entity.mission.index + 1;
+    textSize = Size.MISSION_TEXT;
   } else if (entity.item) {
     if (entity.enemy && entity.item.name) {
       color = '#FFFFFF';

@@ -1,7 +1,7 @@
 var ResultScene = di.service('ResultScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'BtnElement', 'EntityElement',
-  'RoundBtnElement', 'ItemService', 'Inventory', 'BattleRewards', 'World',
-  'LabelElement']);
+  'RoundBtnElement', 'ItemService', 'Inventory', 'BattleRewards',
+  'MissionService', 'LabelElement']);
 
 ResultScene.prototype.init = function() {
   _.class.extend(this, this.scene_.create('result'));
@@ -36,61 +36,44 @@ ResultScene.prototype.addEntities_ = function() {
     rewardRow.childHeight = Size.TEXT;
     var rewardLabel = rewardRow.addNew(this.labelElement_);
     var selectText;
-    if (this.battleRewards_.items_['augment']) {
-      selectText = 'New ' + Strings.ItemType['augment'] + ' found:';
-    } else {
-      selectText = this.battleRewards_.numItems() > 1 ?
-        'Select reward:' : 'New item found:';
-    }
+    selectText = this.battleRewards_.numItems() > 1 ?
+      'Select reward:' : 'New item found:';
     rewardLabel.setText(selectText,
                         {size: Size.TEXT, align: 'left', baseline: 'top'});
     rewardRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
 
     this.layout_.addGap(Padding.MD);
 
-    if (this.battleRewards_.items_['augment']) {
-      // Augment reward.
-      var augRow = this.layout_.addNew(this.layoutElement_);
-      augRow.layout.align = 'top';
-      augRow.childHeight = Size.TEXT;
-      var augLabel = augRow.addNew(this.labelElement_);
-      augLabel.setText('-  ' + this.battleRewards_.items_['augment'].desc,
-          {size: Size.TEXT, align: 'left', baseline: 'top'});
-      augLabel.padding.left = Padding.ITEM;
-      augRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+    // Rewards.
+    var row;
+    _.each(Game.ITEM_TYPES, function(type, i) {
+      var pos = i % COLS;
+      // Gap between rows.
+      if (pos == 0 && i) this.layout_.addGap(Padding.ITEM);
+      // New row.
+      if (pos == 0) {
+        row = this.layout_.addNew(this.layoutElement_);
+        row.childHeight = Size.ITEM;
+      }
+      // Gap between btns.
+      if (pos) row.addGap(Padding.ITEM);
+      // The btn.
+      row.add(this.createRewardButton_(type));
+    }, this);
 
-    } else {
-      // Rewards.
-      var row;
-      _.each(Game.ITEM_TYPES, function(type, i) {
-        var pos = i % COLS;
-        // Gap between rows.
-        if (pos == 0 && i) this.layout_.addGap(Padding.ITEM);
-        // New row.
-        if (pos == 0) {
-          row = this.layout_.addNew(this.layoutElement_);
-          row.childHeight = Size.ITEM;
-        }
-        // Gap between btns.
-        if (pos) row.addGap(Padding.ITEM);
-        // The btn.
-        row.add(this.createRewardButton_(type));
-      }, this);
+    this.layout_.addGap(Padding.ITEM);
 
-      this.layout_.addGap(Padding.ITEM);
-
-      // Item Description.
-      var itemDescRow = this.layout_.addNew(this.layoutElement_);
-      var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');
-      itemDesc.childHeight = Size.ITEM_DESC;
-      itemDesc.getEntity().update(function() {
-        if (this.selectedReward_) {
-          itemDesc.setProp('item', this.selectedReward_.getProp('item'));
-        }
-      }.bind(this));
-      itemDescRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
-      itemDescRow.childHeight = itemDesc.childHeight;
-    }
+    // Item Description.
+    var itemDescRow = this.layout_.addNew(this.layoutElement_);
+    var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');
+    itemDesc.childHeight = Size.ITEM_DESC;
+    itemDesc.getEntity().update(function() {
+      if (this.selectedReward_) {
+        itemDesc.setProp('item', this.selectedReward_.getProp('item'));
+      }
+    }.bind(this));
+    itemDescRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
+    itemDescRow.childHeight = itemDesc.childHeight;
   }
 
   this.layout_.addFlex();
@@ -112,9 +95,8 @@ ResultScene.prototype.addEntities_ = function() {
       if (!this.inventory_.getEquipped(item.category)) {
         this.inventory_.equip(item);
       }
-      this.gm_.world.aquired.push(this.selectedReward_.getProp('item'));
     }
-    if (this.world_.won()) {
+    if (this.missionService_.won()) {
       this.transition_('won');
     } else {
       this.transition_('main');

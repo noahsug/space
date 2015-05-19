@@ -1,6 +1,6 @@
 var MainScene = di.service('MainScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'RoundBtnElement',
-  'BtnElement', 'LabelElement', 'World', 'Inventory', 'Gameplay',
+  'BtnElement', 'LabelElement', 'MissionService', 'Inventory', 'Gameplay',
   'SpriteService']);
 
 MainScene.prototype.init = function() {
@@ -13,12 +13,12 @@ MainScene.prototype.addEntities_ = function() {
 
   this.layout_.addGap(Padding.TOP);
 
-  // World label.
+  // Mission label.
   var titleRow = this.layout_.addNew(this.layoutElement_);
   titleRow.layout.align = 'top';
   titleRow.childHeight = Size.TEXT_LG;
   var titleLabel = titleRow.addNew(this.labelElement_);
-  titleLabel.setText('World ' + (this.gm_.world.index + 1),
+  titleLabel.setText('Mission ' + (this.gm_.mission.index + 1),
                      {size: Size.TEXT_LG, align: 'left', baseline: 'top'});
   titleRow.addGap(Padding.STAGE * (COLS - 1) + Size.STAGE * COLS);
 
@@ -28,19 +28,19 @@ MainScene.prototype.addEntities_ = function() {
   livesRow.layout.align = 'top';
   livesRow.childHeight = Size.TEXT;
   var livesLabel = livesRow.addNew(this.labelElement_);
-  livesLabel.setText('Lives: ' + this.gm_.world.lives,
+  livesLabel.setText('Lives: ' + this.gm_.mission.lives,
                      {size: Size.TEXT, align: 'left', baseline: 'top'});
   livesRow.addGap(Padding.STAGE * (COLS - 1) + Size.STAGE * COLS);
 
   this.layout_.addFlex();
 
   // Stages.
-  for (var row = this.gm_.world.stages.length - 1; row >= 0; row--) {
-    if (row < this.gm_.world.stages.length - 1) {
+  for (var row = this.gm_.mission.stages.length - 1; row >= 0; row--) {
+    if (row < this.gm_.mission.stages.length - 1) {
       this.layout_.addGap(Padding.STAGE);
     }
     var stageRow = this.layout_.addNew(this.layoutElement_);
-    for (var col = 0; col < this.gm_.world.stages[row].length; col++) {
+    for (var col = 0; col < this.gm_.mission.stages[row].length; col++) {
       if (col) stageRow.addGap(Padding.STAGE);
       var btn = this.createBtn_(row, col);
       stageRow.add(btn);
@@ -68,7 +68,7 @@ MainScene.prototype.addEntities_ = function() {
   backBtn.setText('back', {size: Size.TEXT});
   backBtn.setLineDirection('left');
   backBtn.onClick(function() {
-    this.transition_('worldSelect');
+    this.transition_('missionSelect');
   }.bind(this));
 };
 
@@ -85,7 +85,7 @@ MainScene.prototype.createPlayerShipBtn_ = function() {
 
 MainScene.prototype.createBtn_ = function(row, col) {
   var btn = this.roundBtnElement_.create();
-  var stage = this.gm_.world.stages[row][col];
+  var stage = this.gm_.mission.stages[row][col];
   btn.setProp('stage', stage);
 
   if (stage.empty) {

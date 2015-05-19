@@ -11,7 +11,7 @@ IntroScene.prototype.addEntities_ = function() {
   var newGameBtn = this.btnElement_.create();
   newGameBtn.setText('new game', {size: 'btn'});
   newGameBtn.onClick(function() {
-    this.transition_('worldSelect');
+    this.transition_('missionSelect');
   }.bind(this));
 
   this.layout_ = this.layoutElement_.create({

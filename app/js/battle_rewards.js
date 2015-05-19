@@ -34,9 +34,9 @@ BattleRewards.prototype.calculateRewards = function() {
 };
 
 BattleRewards.prototype.getRandomLevel_ = function() {
-  var levelRange = (Game.MAX_ITEM_LEVEL + 3) / this.gm_.worlds.length;
+  var levelRange = (Game.MAX_ITEM_LEVEL + 3) / this.gm_.missions.length;
   var level = Math.round(
-      this.gm_.world.index * levelRange + _.r.nextFloat(levelRange));
+      this.gm_.mission.index * levelRange + _.r.nextFloat(levelRange));
   var r = Math.random();
   if (level && r < .52) level--;
   if (level && r < .25) level--;
@@ -53,7 +53,7 @@ BattleRewards.prototype.rewardItem_ = function(item) {
   this.numItems_++;
   if (item.category == 'augment') {
     this.inventory_.equip(item);
-    this.gm_.world.augments.push(item);
+    this.gm_.mission.augments.push(item);
   }
 };
 
