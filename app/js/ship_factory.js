@@ -42,7 +42,7 @@ ShipFactory.prototype.createPlayer = function() {
 
 ShipFactory.prototype.createShip = function(dna, style) {
   if (!PROD) _.assert(dna);
-  var ship = this.entity_.create('ship');
+  var ship = this.Entity_.new('ship');
   ship.dna = dna;  // For future cloning.
   if (style == 'good') ship.playerControlled = true;
   _.decorate(ship, this.shipDecorator_);

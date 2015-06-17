@@ -65,7 +65,7 @@ describe('DI', function() {
     var Car, SmallTire, BigTire;
     given(function() {
       SmallTire = di.service('SmallTire');
-      SmallTire.prototype.init = function() { this.friction = 0.3 };
+      SmallTire.prototype.init = function() { this.friction = 0.3; };
 
       Car = di.service('Car', ['SmallTire', 'BigTire']);
       setTestInit(Car, function(car) {
@@ -73,7 +73,7 @@ describe('DI', function() {
       });
 
       BigTire = di.service('BigTire');
-      BigTire.prototype.init = function() { this.friction = 0.8 };
+      BigTire.prototype.init = function() { this.friction = 0.8; };
     });
 
     expect(Car.instance.friction).toBe(0.55);
@@ -83,10 +83,10 @@ describe('DI', function() {
     var Car, SmallTire, BigTire;
     given(function() {
       SmallTire = di.service('SmallTire');
-      SmallTire.prototype.init = function() { this.friction = 0.3 };
+      SmallTire.prototype.init = function() { this.friction = 0.3; };
 
       BigTire = di.service('BigTire');
-      BigTire.prototype.init = function() { this.friction = 0.8 };
+      BigTire.prototype.init = function() { this.friction = 0.8; };
 
       Car = di.service('Car', ['Tire']);
       setTestInit(Car);
@@ -228,7 +228,7 @@ describe('DI', function() {
         setTestInit(Car);
       });
 
-      var tire = Car.instance.tire_.create();
+      var tire = Car.instance.tire_.new();
       expect(tire.axel_).toBeDefined();
     });
 
@@ -242,7 +242,7 @@ describe('DI', function() {
         setTestInit(Car);
       });
 
-      expect(Car.instance.tire_.create()).toBeDefined();
+      expect(Car.instance.tire_.new()).toBeDefined();
     });
 
     it('allows arguments to be passed into create()', function() {
@@ -255,7 +255,7 @@ describe('DI', function() {
         setTestInit(Car);
       });
 
-      Car.instance.tire_.create('arg1', 'arg2');
+      Car.instance.tire_.new('arg1', 'arg2');
       expect(Tire.instance.args).toEqual(['arg1', 'arg2']);
     });
 
@@ -270,7 +270,7 @@ describe('DI', function() {
       });
 
       expect(Tire.instance).not.toBeDefined();
-      Car.instance.tire_.create();
+      Car.instance.tire_.new();
       expect(Tire.instance).toBeDefined();
     });
 
@@ -286,8 +286,8 @@ describe('DI', function() {
         setTestInit(Jeep);
       });
 
-      var carTire = Car.instance.tire_.create();
-      var jeepTire = Car.instance.tire_.create();
+      var carTire = Car.instance.tire_.new();
+      var jeepTire = Car.instance.tire_.new();
       expect(carTire).not.toBe(jeepTire);
     });
   });

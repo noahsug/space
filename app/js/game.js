@@ -1,11 +1,13 @@
 var Game = di.service('Game', [
-  'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene', 'MainScene',
-  'EquipOptionsScene', 'EquipScene', 'ResultScene', 'WonScene', 'LostScene',
-  'Gameplay', 'MissionService', 'BattleRewards', 'MissionSelectScene']);
+  'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene',
+  'EquipScene', 'StageResultScene', 'MissionResultScene',
+  'Gameplay', 'MissionService', 'BattleRewards', 'MissionSelectScene',
+  'StageSelectScene']);
 
 Game.UPDATE_RATE = .06;
 
 Game.ITEM_TYPES = ['primary', 'secondary', 'ability', 'utility'];
+Game.NUM_ITEMS = 4;
 Game.MAX_ITEM_LEVEL = 5;
 Game.MAX_LEVEL = (Game.MAX_ITEM_LEVEL + 1) * Game.ITEM_TYPES.length - 1;
 // actual enemy level = (enemyLevel / MAX_ENEMY_LEVEL) * MAX_LEVEL
@@ -15,16 +17,16 @@ Game.prototype.start = function() {
   this.nextAction_ = 0;
   this.initGameModel_();
   this.scenes_ = [
-    /* 0 */ this.loadingScene_,
-    /* 1 */ this.introScene_,
-    /* 2 */ this.missionSelectScene_,
-    /* 3 */ this.mainScene_,
-    /* 4 */ this.equipOptionsScene_,
-    /* 5 */ this.equipScene_,
-    /* 6 */ this.battleScene_,
-    /* 7 */ this.resultScene_,
-    /* 8 */ this.wonScene_,
-    /* 9 */ this.lostScene_
+    // Models
+    /* 0 */ this.stageResultScene_,
+    /* 1 */ this.missionResultScene_,
+    /* 2 */ this.equipScene_,
+
+    /* 3 */ this.loadingScene_,
+    /* 4 */ this.introScene_,
+    /* 5 */ this.missionSelectScene_,
+    /* 6 */ this.stageSelectScene_,
+    /* 7 */ this.battleScene_,
   ];
 
   // DEBUG
@@ -34,7 +36,7 @@ Game.prototype.start = function() {
   //this.battleRewards_.calculateRewards();
   //this.gm_.equipping = 'primary';
 
-  this.scenes_[0].start();
+  this.scenes_[6].start();
 };
 
 Game.prototype.initGameModel_ = function() {
@@ -78,6 +80,7 @@ Game.prototype.updateEntities_ = function(dt) {
 };
 
 Game.prototype.entityAction_ = function(dt) {
+  this.gm_.actTime = this.gm_.time;
   this.gm_.tick++;
   for (var i = 0; i < this.gm_.entities.length; i++) {
     this.gm_.entities.arr[i].act(dt);

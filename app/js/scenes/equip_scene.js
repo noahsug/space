@@ -1,154 +1,166 @@
 var EquipScene = di.service('EquipScene', [
-  'GameModel as gm', 'Scene', 'LayoutElement', 'BtnElement', 'EntityElement',
-  'LabelElement', 'Inventory', 'RoundBtnElement']);
+  'GameModel as gm', 'Scene', 'LayoutElement', 'BackdropElement',
+  'LabelElement', 'ItemElement', 'Inventory', 'ItemService']);
 
 EquipScene.prototype.init = function() {
-  _.class.extend(this, this.scene_.create('equip'));
+  _.class.extend(this, this.Scene_.new('equip'));
+};
+
+EquipScene.prototype.onStart_ = function() {
+  this.btns_ = [];
+  this.selectedBtn_ = null;
+  this.addEntities_();
 };
 
 EquipScene.prototype.addEntities_ = function() {
-  var COLS = 4;  // Number of columns in the item grid.
+  this.layout_ = this.LayoutElement_.new('vertical')
+    .consumeOnClick()
+    .setChildrenBaselineAlign('bottom', 'center')
+    .setPadding('bottom', Padding.MARGIN * 2 + Size.BUTTON * 2)
+    .add(this.LayoutElement_.new('vertical')
+       .modify(this.addItemDescContainer_, this)
 
-  this.equippedBtn_ = undefined;
-  this.layout_ = this.layoutElement_.create({direction: 'vertical'});
-  this.layout_.padding.top = Padding.MD;
+      .addGap(Padding.MARGIN_SM)
 
-  // Player items.
+      .add(this.LayoutElement_.new('vertical')
+        .onNotClick(this.closeAsModal_, this)
+        .setBgFill(true)
+        .setPadding(Padding.MODAL_MARGIN_SM)
+        .setPadding('bottom', Padding.MODAL_MARGIN_SM)
+        .setBgStyle('muted_dark')
+        .setBorderStyle('primary')
+
+        // Item cols.
+        .add(this.LayoutElement_.new('horizontal')
+          .modify(this.addItemCols_, this))));
+
+  this.updateItemDesc_();
+  this.updateBtnStyles_();
+};
+
+EquipScene.prototype.addItemDescContainer_ = function(layout) {
+  this.itemDescContainer_ = this.LayoutElement_.new('vertical')
+    .setPadding(Padding.MODAL_MARGIN_SM)
+    .setBgFill(true)
+    .setBgStyle('muted_dark')
+    .setBorderStyle('primary')
+    .modify(this.addItemDesc_, this);
+  layout.add(this.itemDescContainer_);
+};
+
+EquipScene.prototype.addItemDesc_ = function(layout) {
+  this.itemDescTitle_ = this.LabelElement_.new()
+    .setBg('primary', Padding.DESC_SM_BG)
+    .setText('', Size.DESC_SM);
+  this.itemDescBody_ = this.LabelElement_.new()
+    .setLayoutFill(true)
+    .setNumLines(2)
+    .setLineWrap(true)
+    .setBg('none', Padding.DESC_SM_BG)
+    .setText('', Size.DESC_SM);
+
+  layout
+    .add(this.itemDescTitle_)
+    .add(this.itemDescBody_);
+};
+
+EquipScene.prototype.addItemCols_ = function(layout) {
   _.each(Game.ITEM_TYPES, function(type, i) {
-    var pos = i % COLS;
-    // Gap between rows.
-    if (pos == 0 && i) this.layout_.addGap(Padding.ITEM);
-    // New row.
-    if (pos == 0) {
-      row = this.layout_.addNew(this.layoutElement_);
-      row.childHeight = Size.ITEM * 1.3;
-    }
-    // Gap between btns.
-    if (pos) row.addGap(Padding.ITEM);
-    // The btn.
-    row.add(this.createPlayerTypeButton_(type));
+    if (i) layout.addGap(Padding.ITEM);
+    layout.add(this.LayoutElement_.new('vertical')
+      .setChildrenBaseline('bottom')
+      .modify(this.addItemCol_.bind(this, type)));
   }, this);
-
-  this.layout_.addGap(Padding.MD);
-
-  // Label.
-  this.layout_.addNew(this.entityElement_, 'break');
-  //var labelRow = this.layout_.addNew(this.layoutElement_);
-  //labelRow.layout.align = 'top';
-  //labelRow.childHeight = Size.TEXT + Padding.ITEM;
-  //var label = labelRow.addNew(this.labelElement_);
-  //label.setText('equip ' + Strings.ItemType[this.gm_.equipping] + ':',
-  //              {size: Size.TEXT, align: 'left', baseline: 'top'});
-  //labelRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
-
-  this.layout_.addGap(Padding.MD);
-
-  // Stages.
-  var row;
-  var items = this.inventory_.get(this.gm_.equipping);
-  for (var i = 0; i < items.length || i % COLS; i++) {
-    var item = items[i];
-    var pos = i % COLS;
-    // Gap between rows.
-    if (pos == 0 && i) this.layout_.addGap(Padding.ITEM);
-    // New row.
-    if (pos == 0) {
-      row = this.layout_.addNew(this.layoutElement_);
-      row.childHeight = Size.ITEM;
-    }
-    // Gap between btns.
-    if (pos) row.addGap(Padding.ITEM);
-    // The btn or gap where the btn would be.
-    if (item) row.add(this.createItemBtn_(item));
-    else row.addGap(Size.ITEM);
-  }
-
-  this.layout_.addGap(Padding.MD);
-
-  // Item Description.
-  var itemDescRow = this.layout_.addNew(this.layoutElement_);
-  var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');
-  itemDesc.childHeight = Size.ITEM_DESC;
-  itemDesc.getEntity().update(function() {
-    if (this.equippedBtn_) {
-      itemDesc.setProp('item', this.equippedBtn_.getProp('item'));
-    }
-  }.bind(this));
-  itemDescRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
-  itemDescRow.childHeight = itemDesc.childHeight;
-
-  this.layout_.addFlex();
-
-  // Back button.
-  var btnRow = this.layout_.addNew(this.layoutElement_);
-  btnRow.setAlign('left');
-  btnRow.layout.align = 'top';
-  btnRow.childHeight = Size.TEXT + Padding.BOT;
-  var backBtn = btnRow.addNew(this.btnElement_);
-  backBtn.layout.align = 'left';
-  backBtn.padding.left = Padding.MD;
-  backBtn.setText('back', {size: Size.TEXT});
-  backBtn.setLineDirection('left');
-  backBtn.onClick(function() {
-    this.transitionFast_(this.gm_.transition.prev);
-  }.bind(this));
 };
 
-EquipScene.prototype.createPlayerTypeButton_ = function(type) {
-  var btn = this.roundBtnElement_.create();
-  if (this.gm_.equipping == type) {
-    btn.setStyle('selected');
-    btn.setSize(Size.ITEM * 1.3);
-  } else {
-    btn.setSize(Size.ITEM * .9);
-  }
-  btn.setProp('category', type);
-  if (this.inventory_.has(type)) {
-    btn.onClick(function() {
-      this.gm_.equipping = type;
-      this.updateItems_();
-    }.bind(this));
-  }
-  return btn;
-};
-
-EquipScene.prototype.updateItems_ = function() {
-  this.removeEntities_();
-  this.addEntities_();
-  this.update_();
+EquipScene.prototype.addItemCol_ = function(type, layout) {
+  var items = this.inventory_.get(type);
+  _.each(items, function(item, i) {
+    layout.add(this.createItemBtn_(item));
+  }, this);
+  if (!items.length) layout.addGap(Size.ITEM);
+  layout.modify(this.addItemColLabel_.bind(this, type));
 };
 
 EquipScene.prototype.createItemBtn_ = function(item) {
-  var btn = this.roundBtnElement_.create();
-  btn.setSize(Size.ITEM);
-  btn.setProp('item', item);
-  if (this.inventory_.isEquipped(item)) {
-    btn.setStyle('equipped');
-    this.equippedBtn_ = btn;
-  }
-  if (item.name) {
-    btn.onClick(this.onItemBtnClick_.bind(this));
-  } else {
-    btn.setStyle('hidden');
-  }
-  return btn;
+  this.btns_.push(this.ItemElement_.new()
+    .setSize(Size.ITEM)
+    .setProp('item', item)
+    .modify(this.addInputHandler_, this));
+  return _.last(this.btns_);
 };
 
-EquipScene.prototype.onItemBtnClick_ = function(btn) {
-  if (this.equippedBtn_) {
-    this.inventory_.unequip(this.equippedBtn_.getProp('item'));
-    this.equippedBtn_.setStyle('unequipped');
-    if (this.equippedBtn_.getProp('item').name == btn.getProp('item').name &&
-        btn.getProp('item').category != 'primary') {
-      this.equippedBtn_ = null;
-      return;
+EquipScene.prototype.addInputHandler_ = function(btn) {
+  btn.onClick(function() {
+    if (this.selectedBtn_ == btn) {
+      this.unselectBtn_();
+      this.maybeUnequipBtnItem_(btn);
+    } else {
+      this.selectBtn_(btn);
+      this.equipBtnItem_(btn);
     }
-  }
-  this.inventory_.equip(btn.getProp('item'));
-  btn.setStyle('equipped');
-  this.equippedBtn_ = btn;
+    this.updateBtnStyles_();
+    this.updateItemDesc_();
+  }, this);
 };
 
-EquipScene.prototype.update_ = function(dt) {
-  this.layout_.update();
+EquipScene.prototype.selectBtn_ = function(btn) {
+  if (this.selectedBtn_) this.unselectBtn_();
+  this.selectedBtn_ = btn;
+  btn.setProp('selected', true);
+};
+
+EquipScene.prototype.unselectBtn_ = function() {
+  this.selectedBtn_.setProp('selected', false);
+  this.selectedBtn_ = null;
+};
+
+EquipScene.prototype.equipBtnItem_ = function(btn) {
+  var type = btn.getProp('item').category;
+  var equipped = this.inventory_.getEquipped(type);
+  if (equipped) this.inventory_.unequip(equipped);
+  this.inventory_.equip(btn.getProp('item'));
+};
+
+EquipScene.prototype.maybeUnequipBtnItem_ = function(btn) {
+  if (btn.getProp('item') == this.inventory_.getEquipped('primary')) {
+    // Can't unequip primary weapon.
+    return;
+  }
+  this.inventory_.unequip(btn.getProp('item'));
+};
+
+EquipScene.prototype.addItemColLabel_ = function(type, layout) {
+  layout.add(this.LayoutElement_.new('horizontal')
+    .setStyle('muted')
+    .setBgStyle('primary')
+    .setBgFill(true)
+    .setLayoutFill(true)
+    .add(this.LabelElement_.new()
+      .setLayoutAlign('center')
+      .setText(Strings.ItemType[type], Size.DESC_SM)
+      .setBg('', Padding.DESC_SM_BG)));
+};
+
+EquipScene.prototype.updateItemDesc_ = function() {
+  var item = this.selectedBtn_ && this.selectedBtn_.getProp('item');
+  if (item) {
+    this.itemDescTitle_.setText(item.displayName, Size.DESC_SM);
+    this.itemDescTitle_.setStyle('muted');
+    this.itemDescBody_.setText(
+        this.itemService_.getDesc(item), Size.DESC_SM);
+    this.itemDescBody_.setStyle('muted');
+    this.itemDescContainer_.setStyle('');
+  } else {
+    this.itemDescTitle_.setStyle('hidden');
+    this.itemDescBody_.setStyle('hidden');
+    this.itemDescContainer_.setStyle('hidden');
+  }
+};
+
+EquipScene.prototype.updateBtnStyles_ = function() {
+  _.each(this.btns_, function(btn) {
+    var item = btn.getProp('item');
+    btn.setStyle(this.inventory_.isEquipped(item) ? 'equipped' : 'unequipped');
+  }, this);
 };

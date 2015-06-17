@@ -1,6 +1,6 @@
 var Renderer = di.service('Renderer', [
-  'GameModel as gm', 'Screen', 'ctx', 'textCtx', 'Gfx', 'Background', 'Font',
-  'ItemService', 'Inventory', 'SpriteService']);
+  'GameModel as gm', 'Screen', 'ctx', 'textCtx', 'Gfx', 'Background',
+  'TextService', 'ItemService', 'Inventory', 'SpriteService']);
 
 Renderer.prototype.init = function() {
   this.initFns_ = _.pickFunctions(this, {prefix: 'init', suffix: '_'});
@@ -47,7 +47,7 @@ Renderer.prototype.drawFps_ = function(dt) {
   this.drawText_(this.displayedFps_.toFixed(0), 20, 0, 0, {color: '#ccc'});
 };
 
-var STAR_SCROLL_SPEED = 16;
+var STAR_SCROLL_SPEED = 7;
 Renderer.prototype.handleCamera_ = function(dt) {
   if (this.gm_.scenes['battle'] != 'inactive' ||
       this.gm_.scenes['loading'] != 'inactive') {
@@ -90,24 +90,26 @@ Renderer.prototype.transitionIn_ = function(dt) {
   }
 };
 
-Renderer.prototype.drawEntity_ = function(entity, dt) {
-  if (!entity.render) {
-    entity.render = {};
-    this.initFns_[entity.type] && this.initFns_[entity.type](entity);
+Renderer.prototype.drawEntity_ = function(e, dt) {
+  if (!e.r) {
+    e.r = {};
+    this.initFns_[e.type] && this.initFns_[e.type](e);
   }
-  entity.render.pos = this.getPos_(entity);
-  this.drawFns_[entity.type](entity, this.style_[entity.type], dt);
+  var pos = this.getPos_(e);
+  e.r.x = pos.x;
+  e.r.y = pos.y;
+  this.drawFns_[e.type](e, this.style_[e.type], dt);
 };
 
-Renderer.prototype.getPos_ = function(entity) {
-  if (entity.staticPosition) {
-    return this.screen_.screenToDraw(entity.screenX, entity.screenY);
+Renderer.prototype.getPos_ = function(e) {
+  if (e.staticPosition) {
+    return this.screen_.screenToDraw(e.screenX, e.screenY);
   } else {
-    return this.screen_.canvasToDraw(entity.x, entity.y);
+    return this.screen_.canvasToDraw(e.x, e.y);
   }
 };
 
-Renderer.prototype.drawLoadingSplash_ = function(entity) {
+Renderer.prototype.drawLoadingSplash_ = function(e) {
   this.ctx_.font = 10 + 'px ' + Gfx.Font.TITLE;
   this.ctx_.fillText('.', 0, 0);
   this.ctx_.font = 10 + 'px ' + Gfx.Font.TEXT;
@@ -123,74 +125,66 @@ Renderer.prototype.drawLoadingSplash_ = function(entity) {
   this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
   this.ctx_.beginPath();
   this.ctx_.arc(x, y, x / 2, -Math.PI / 2,
-                -Math.PI / 2 + 2 * Math.PI * entity.loading);
+                -Math.PI / 2 + 2 * Math.PI * e.loading);
   this.ctx_.stroke();
   this.ctx_.shadowBlur = 0;
 };
 
-Renderer.prototype.drawIntroSplash_ = function() {
-  var fontSize = 70;
-  this.textCtx_.textAlign = 'center';
-  this.textCtx_.textBaseline = 'alphabetic';
-  this.drawTitle_('COSMAL', fontSize,
-                  this.screen_.width / 2, this.screen_.height / 2);
-};
-
-Renderer.prototype.drawResultSplash_ = function(entity) {
+Renderer.prototype.drawResultSplash_ = function(e) {
   this.textCtx_.textAlign = 'left';
   this.textCtx_.textBaseline = 'top';
   var result = this.gm_.stage.state == 'won' ? 'victory' : 'defeat';
-  this.drawTitle_(result, 70, entity.render.pos.x, entity.render.pos.y);
+  this.drawText_(result, 70, e.r.x, e.r.y);
 };
 
-Renderer.prototype.drawPlayerSplash_ = function(entity) {
+Renderer.prototype.drawPlayerSplash_ = function(e) {
   this.spriteService_.draw(
       this.inventory_.getHull().spec.sprite,
-      this.screen_.width / 2, entity.render.pos.y,
+      this.screen_.width / 2, e.r.y,
       {rotation: -Math.PI / 2});
 };
 
-Renderer.prototype.drawEnemySplash_ = function(entity) {
+Renderer.prototype.drawEnemySplash_ = function(e) {
   this.spriteService_.draw(
       this.gm_.stage.hull.spec.sprite,
-      this.screen_.width / 2, entity.render.pos.y,
+      this.screen_.width / 2, e.r.y,
       {rotation: Math.PI / 2});
 };
 
 Renderer.prototype.drawWonSplash_ = function() {
   this.textCtx_.textAlign = 'center';
   this.textCtx_.textBaseline = 'alphabetic';
-  var text = _.last(this.gm_.missions) == this.gm_.mission ?
+  var text = _.last(this.gm_.world.missions) == this.gm_.mission ?
       'You Win' : 'Mission Clear';
-  this.drawTitle_(text, Size.TITLE,
+  this.drawText_(text, Size.TITLE,
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
 Renderer.prototype.drawLostSplash_ = function() {
   this.textCtx_.textAlign = 'center';
   this.textCtx_.textBaseline = 'alphabetic';
-  this.drawTitle_('Mission Failed', Size.TITLE,
+  this.drawText_('Mission Failed', Size.TITLE,
                   this.screen_.width / 2, this.screen_.height / 2);
 };
 
 var DESC_ONLY = _.newSet([
   'charge', 'tracker', 'pull', 'turret', 'alien spawn'
 ]);
-Renderer.prototype.drawItemDesc_ = function(entity) {
+Renderer.prototype.drawItemDesc_ = function(e) {
   var size = Size.TEXT;
   var padding = Padding.TEXT / 2;
-  if (!entity.item) return;
+  if (!e.item) return;
   this.textCtx_.textAlign = 'left';
   this.textCtx_.textBaseline = 'middle';
 
-  var tier = Game.MAX_ITEM_LEVEL - entity.item.level + 1;
-  var desc = entity.item.desc;
+  var tier = Game.MAX_ITEM_LEVEL - e.item.level + 1;
+  var desc = e.item.desc;
 
   var textLines = [desc];
-  var type = entity.item.category;
+  var type = e.item.category;
   if ((type == 'primary' || type == 'secondary') &&
-      !(entity.item.name in DESC_ONLY)) {
-    var spec = entity.item.spec;
+      !(e.item.name in DESC_ONLY)) {
+    var spec = e.item.spec;
     var dps = spec.dmg / spec.cooldown;
     var stats = 'DPS: ' + dps.toFixed(1);
     if (spec.projectiles > 1) stats += ' x' + spec.projectiles;
@@ -199,167 +193,238 @@ Renderer.prototype.drawItemDesc_ = function(entity) {
     textLines[1] = stats;
   }
 
-  var width = this.font_.width(desc, size);
-  if (width > this.screen_.width - entity.render.pos.x * 2) {
+  var width = this.textService_.width(desc, size);
+  if (width > this.screen_.width - e.r.x * 2) {
     if (textLines[1]) desc += ' ' + textLines[1];
     textLines = _.splitText(desc);
   }
 
   if (textLines.length == 2) {
-    this.drawText_(textLines[0], size, entity.render.pos.x,
-                   entity.render.pos.y - size / 2 - padding);
-    this.drawText_(textLines[1], size, entity.render.pos.x,
-                   entity.render.pos.y + size / 2 + padding);
+    this.drawText_(textLines[0], size, e.r.x,
+                   e.r.y - size / 2 - padding);
+    this.drawText_(textLines[1], size, e.r.x,
+                   e.r.y + size / 2 + padding);
   } else {
     this.drawText_(textLines[0], size,
-                   entity.render.pos.x, entity.render.pos.y);
+                   e.r.x, e.r.y);
   }
 };
 
-Renderer.prototype.drawBreak_ = function(entity) {
+Renderer.prototype.drawBreak_ = function(e) {
   this.textCtx_.strokeStyle = '#CCC';
   this.textCtx_.shadowBlur = 0;
   var x = this.screen_.width / 8;
-  var y = entity.render.pos.y;
+  var y = e.r.y;
   this.line_(this.screen_.width - x, y, x, y, 1);
 };
 
-// TODO: Animate stage state changes.
-Renderer.prototype.drawRoundBtn_ = function(entity) {
-  if (entity.style == 'hidden') return;
+Renderer.prototype.drawRoundBtn_ = function(e) {
+  if (e.style == 'hidden') return;
 
   // Draw circle.
   var color = '#FFFFFF';
   var fillColor = '#000000';
   var lineWidth = 1;
-  if (entity.stage) {
-    if (entity.stage.state == 'won' || entity.stage.state == 'lost') {
+  if (e.stage) {
+    if (e.stage.state == 'won' || e.stage.state == 'lost') {
       return;
     }
     fillColor = '';
-    color = entity.stage.state == 'locked' ? '' : '#888';
-  } else if (entity.mission) {
-    switch (entity.mission.state) {
+    color = e.stage.state == 'locked' ? '' : '#888';
+  } else if (e.mission) {
+    switch (e.mission.state) {
       case 'won': color = Gfx.Color.BEATEN; break;
       case 'locked': color = Gfx.Color.LOCKED; break;
     }
-  } else if (entity.item) {
-    if (entity.rewardBtn) {
-      if (!entity.item.name) color = Gfx.Color.LOCKED;
-      if (entity.style == 'active') color = Gfx.Color.ACTIVE;
-    } else if (entity.enemy) {
-      if (entity.style == 'active') color = Gfx.Color.ACTIVE_LOCKED;
+  } else if (e.item) {
+    if (e.rewardBtn) {
+      if (!e.item.name) color = Gfx.Color.LOCKED;
+      if (e.style == 'active') color = Gfx.Color.ACTIVE;
+    } else if (e.enemy) {
+      if (e.style == 'active') color = Gfx.Color.ACTIVE_LOCKED;
       else color = Gfx.Color.LOCKED;
-    } else if (!this.inventory_.has(entity.item.category)) {
+    } else if (!this.inventory_.has(e.item.category)) {
       color = Gfx.Color.LOCKED;
-    } else if (entity.style == 'equipped' || entity.style == 'active') {
+    } else if (e.style == 'equipped' || e.style == 'active') {
       color = Gfx.Color.ACTIVE;
     }
-  } else if (entity.category) {
-    if (!this.inventory_.has(entity.category)) {
+  } else if (e.category) {
+    if (!this.inventory_.has(e.category)) {
       color = Gfx.Color.LOCKED;
-    } else if (entity.style != 'selected') {
+    } else if (e.style != 'selected') {
       color = Gfx.Color.UNSELECTED;
     }
-  } else if (entity.style == 'locked') {
+  } else if (e.style == 'locked') {
     color = Gfx.Color.LOCKED;
   }
 
   this.textCtx_.fillStyle = fillColor;
   this.textCtx_.strokeStyle = color;
   this.circle_(
-      entity.render.pos.x, entity.render.pos.y, entity.radius, lineWidth);
+      e.r.x, e.r.y, e.radius, lineWidth);
   if (fillColor) this.textCtx_.fill();
   if (color) this.textCtx_.stroke();
 
   // Draw context.
-  var text = entity.text;
+  var text = e.text;
   var textSize = Size.ITEM_TEXT;
-  if (entity.stage) {
-    var hull = entity.stage.hull.spec.sprite;
-    var rotation = entity.stage.enemy ? Math.PI / 2 : -Math.PI / 2;
-    var alpha = entity.stage.state == 'locked' ? .3 : 0;
+  if (e.stage) {
+    var hull = e.stage.hull.spec.sprite;
+    var rotation = e.stage.enemy ? Math.PI / 2 : -Math.PI / 2;
+    var alpha = e.stage.state == 'locked' ? .3 : 0;
     this.spriteService_.draw(
-      hull, entity.render.pos.x, entity.render.pos.y,
+      hull, e.r.x, e.r.y,
       {rotation: rotation, alpha: alpha});
     return;
-  } else if (entity.mission) {
-    if (entity.state == 'won') text = 'W';
-    else text = entity.mission.index + 1;
+  } else if (e.mission) {
+    if (e.state == 'won') text = 'W';
+    else text = e.mission.index + 1;
     textSize = Size.MISSION_TEXT;
-  } else if (entity.item) {
-    if (entity.enemy && entity.item.name) {
+  } else if (e.item) {
+    if (e.enemy && e.item.name) {
       color = '#FFFFFF';
     }
-    text = entity.item.displayName || 'none';
+    text = e.item.displayName || 'none';
     textSize = Size.ITEM_TEXT;
-  } else if (entity.category) {
-    text = Strings.ItemType[entity.category];
+  } else if (e.category) {
+    text = Strings.ItemType[e.category];
   }
 
   this.textCtx_.textAlign = 'center';
   this.textCtx_.textBaseline = 'middle';
-  if (this.font_.width(text, textSize) > entity.radius * 2 - 6) {
+  if (this.textService_.width(text, textSize) > e.radius * 2 - 6) {
     var lines = _.splitText(text);
-    this.drawText_(lines[0], textSize, entity.render.pos.x,
-                   entity.render.pos.y - textSize / 2 - 2,
-                   {color: color});
-    this.drawText_(lines[1], textSize, entity.render.pos.x,
-                   entity.render.pos.y + textSize / 2 + 2,
-                   {color: color});
+    this.drawText_(lines[0], textSize, e.r.x,
+                   e.r.y - textSize / 2 - 2, {color: color});
+    this.drawText_(lines[1], textSize, e.r.x,
+                   e.r.y + textSize / 2 + 2, {color: color});
   } else {
-    this.drawText_(text, textSize, entity.render.pos.x, entity.render.pos.y,
-                   {color: color});
+    this.drawText_(text, textSize, e.r.x, e.r.y, {color: color});
   }
 
-  if (entity.cooldownInfo) {
-    var spec = entity.cooldownInfo;
+  if (e.cooldownInfo) {
+    var spec = e.cooldownInfo;
     var cooldownRatio =
         (spec.cooldown - spec.cooldownRemaining) / spec.cooldown;
     if (cooldownRatio < 0) cooldownRatio = 0;
     else if (cooldownRatio > 1) cooldownRatio = 1;
     lineWidth = !spec.jammed && cooldownRatio == 1 ? 4 : 2;
     this.textCtx_.strokeStyle = Gfx.Color.ACTIVE;
-    this.circle_(
-      entity.render.pos.x, entity.render.pos.y, entity.radius, lineWidth,
-      cooldownRatio);
+    this.circle_(e.r.x, e.r.y, e.radius, lineWidth, cooldownRatio);
     this.textCtx_.stroke();
   }
 };
 
-Renderer.prototype.drawBtn_ = function(entity) {
-  this.underlineLabel_(entity, {direction: entity.direction});
-  this.drawLabel_(entity);
+Renderer.prototype.drawBackdrop_ = function(e) {
+  var bgColor = 'rgba(0, 0, 0, .65)';
+  this.textCtx_.fillStyle = bgColor;
+  this.fillRect_(0, 0, this.screen_.width, this.screen_.height);
 };
 
-Renderer.prototype.drawLabel_ = function(entity) {
-  var color = null;
-  if (entity.style == 'equipped' || entity.style == 'active') {
-    color = Gfx.Color.ACTIVE;
-  } else if (entity.style == 'locked') {
-    color = Gfx.Color.LOCKED;
+Renderer.prototype.drawContainer_ = function(e) {
+  if (e.style == 'hidden') return;
+  var bgColor = this.getBgColor_(e.bgStyle);
+  if (bgColor) {
+    this.textCtx_.fillStyle = bgColor;
+    this.fillRect_(e.r.x, e.r.y, e.width, e.height);
   }
-  this.textCtx_.textAlign = entity.align;
-  this.textCtx_.textBaseline = entity.baseline;
-  this.drawText_(entity.text, entity.size,
-                 entity.render.pos.x, entity.render.pos.y,
-                 {color: color, bold: entity.style == 'active'});
+
+  var borderColor = this.getBgColor_(e.borderStyle);
+  if (borderColor) {
+    this.textCtx_.strokeStyle = borderColor;
+    this.textCtx_.lineWidth = 2;
+    this.strokeRect_(e.r.x, e.r.y, e.width, e.height);
+  }
+
+  // DEBUG: Draw layouts.
+  //this.ctx_.fillStyle = 'rgba(255, 0, 0, .1)';
+  //this.ctx_.strokeStyle = 'rgba(50, 50, 50, .5)';
+  //this.ctx_.lineWidth = 2;
+  //this.ctx_.fillRect(e.r.x, e.r.y, e.width, e.height);
+  //this.ctx_.strokeRect(e.r.x, e.r.y, e.width, e.height);
 };
 
-Renderer.prototype.drawHitbox_ = function(entity) {
-  // DEBUG.
-  //this.ctx_.fillStyle = 'red';
-  //this.ctx_.fillRect(entity.render.pos.x, entity.render.pos.y,
-  //                   entity.width, entity.height);
+Renderer.prototype.drawItem_ = function(e) {
+  // DEBUG: Draw item box.
+  //this.textCtx_.fillStyle = 'rgba(0, 255, 0, .5)';
+  //this.textCtx_.strokeStyle = 'rgba(50, 50, 50, .5)';
+  //this.textCtx_.lineWidth = 2;
+  //this.fillRect_(e.r.x, e.r.y, e.size, e.size);
+  //this.strokeRect_(e.r.x, e.r.y, e.size, e.size);
+
+  if (e.style == 'hidden') return;
+  this.drawItemBorder_(e);
+  if (e.stage) this.drawStageItem_(e);
+  if (e.item) this.drawEquipItem_(e);
+};
+
+Renderer.prototype.drawItemBorder_ = function(e) {
+  // TODO.
+};
+
+Renderer.prototype.drawStageItem_ = function(e) {
+  var hull = e.stage.hull.spec.sprite;
+  var rotation = e.stage.enemy ? Math.PI / 2 : -Math.PI / 2;
+  var alpha = e.stage.state == 'locked' ? .3 : 0;
+  this.spriteService_.draw(
+      hull, e.r.x + e.size / 2, e.r.y + e.size / 2,
+      {rotation: rotation, alpha: alpha});
+};
+
+Renderer.prototype.drawEquipItem_ = function(e) {
+  if (!e.item.name) return;
+
+  var options = {rotation: -Math.PI / 2};
+
+  // Draw cooldown.
+  if (e.cdInfo) {
+    var cdRatio =
+        (e.cdInfo.cooldownRemaining - (this.gm_.time - this.gm_.actTime)) /
+        e.cdInfo.initCooldown;
+    if (cdRatio < 0) cdRatio = 0;
+    this.textCtx_.fillStyle = Gfx.Color.COOLDOWN;
+    this.fillRect_(e.r.x, e.r.y + e.size * (1 - cdRatio),
+                   e.size, e.size * cdRatio);
+    if (cdRatio > 0 || e.cdInfo.jammed) options.alpha = .75;
+  } else {
+    options.ctx = 'text';
+  }
+
+  // Draw as faded if not equipped.
+  if (e.style == 'unequipped') {
+    options.alpha = .5;
+  }
+
+  this.spriteService_.draw(
+      e.item.name, e.r.x + e.size / 2, e.r.y + e.size / 2, options);
+};
+
+Renderer.prototype.drawLabel_ = function(e) {
+  if (e.style == 'hidden') return;
+  var bgColor = this.getBgColor_(e.bgStyle);
+  if (bgColor) {
+    this.textCtx_.fillStyle = bgColor;
+    this.fillRect_(e.r.x - e.bgMargin.left, e.r.y - e.bgMargin.top,
+                   e.width + e.bgMargin.left + e.bgMargin.right,
+                   e.height + e.bgMargin.top + e.bgMargin.bottom);
+  }
+
+  var fgColor = this.getFgColor_(e.style);
+  for (var i = 0; i < e.lines.length; i++) {
+    this.textCtx_.textAlign = 'left';
+    this.textCtx_.textBaseline = 'top';
+    this.drawText_(
+        e.lines[i], e.size, e.r.x, e.r.y + i * e.lineHeight, {color: fgColor});
+  };
 };
 
 var DEATH_ANIMATION_DURATION = .3;
-Renderer.prototype.initShip_ = function(entity) {
-  entity.render.damageTaken = 0;
-  entity.render.shaking = 0;
-  entity.render.healthIndicator = 0;
-  entity.render.deathAnimation = DEATH_ANIMATION_DURATION;
-  entity.render.radius = entity.radius;
+Renderer.prototype.initShip_ = function(e) {
+  e.r.damageTaken = 0;
+  e.r.shaking = 0;
+  e.r.healthIndicator = 0;
+  e.r.deathAnimation = DEATH_ANIMATION_DURATION;
+  e.r.radius = e.radius;
 };
 Renderer.prototype.addShipStyle_ = function(style) {
   style.normal = this.gfx_.addStyle({
@@ -392,118 +457,113 @@ Renderer.prototype.addShipStyle_ = function(style) {
     fill: Gfx.Color.OPAC_GRAY
   });
 };
-Renderer.prototype.drawShip_ = function(entity, style, dt) {
+Renderer.prototype.drawShip_ = function(e, style, dt) {
   // Shake afer taking damage.
-  if (entity.render.lastDamageTaken != this.gm_.tick) {
-    entity.render.lastDamageTaken = this.gm_.tick;
-    var damage = entity.prevHealth - entity.health;
-    entity.render.damageTaken += damage;
+  if (e.r.lastDamageTaken != this.gm_.tick) {
+    e.r.lastDamageTaken = this.gm_.tick;
+    var damage = e.prevHealth - e.health;
+    e.r.damageTaken += damage;
     if (damage > 0) {
-      entity.render.shaking += Math.sqrt(damage) / 20;
+      e.r.shaking += Math.sqrt(damage) / 20;
     }
   }
-  if (entity.render.shaking > 0) {
-    var shake = 2 + entity.render.damageTaken / 2;
-    entity.render.damageTaken -= 20 * dt;
-    entity.render.pos.x += (.3 + .7 * Math.random()) * shake;
-    entity.render.pos.y += (.3 + .7 * Math.random()) * shake;
-    entity.render.shaking -= dt / this.gm_.gameSpeed;
-    if (entity.render.shaking <= 0) {
-      entity.render.shaking = 0;
-      entity.render.damageTaken = 0;
+  if (e.r.shaking > 0) {
+    var shake = 2 + e.r.damageTaken / 2;
+    e.r.damageTaken -= 20 * dt;
+    e.r.x += (.3 + .7 * Math.random()) * shake;
+    e.r.y += (.3 + .7 * Math.random()) * shake;
+    e.r.shaking -= dt / this.gm_.gameSpeed;
+    if (e.r.shaking <= 0) {
+      e.r.shaking = 0;
+      e.r.damageTaken = 0;
     }
   }
 
   var customStyle;
   var shipStyle = style.normal;
 
-  if (!entity.dead) {
+  if (!e.dead) {
     // Don't resize instantly.
-    var rGap = entity.radius - entity.render.radius;
+    var rGap = e.radius - e.r.radius;
     if (rGap) {
       var dr = Math.sign(rGap) * 10 * dt;
       if (Math.abs(rGap) < Math.abs(dr)) {
-        entity.render.radius = entity.radius;
+        e.r.radius = e.radius;
       } else {
-        entity.render.radius += dr;
+        e.r.radius += dr;
       }
     }
 
     // Draw tagged indicator.
-    if (entity.effect.tagged) {
+    if (e.effect.tagged) {
       this.gfx_.setStyle(style.tagged);
-      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y, 3);
+      this.gfx_.circle(e.r.x, e.r.y, 3);
     }
 
     // Draw shield indicator.
-    if (entity.effect.shield) {
+    if (e.effect.shield) {
       this.gfx_.setStyle(style.shield);
-      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                       entity.radius * 1.5);
+      this.gfx_.circle(e.r.x, e.r.y, e.radius * 1.5);
     }
 
     // Draw reflect indicator.
-    if (entity.effect.reflect) {
+    if (e.effect.reflect) {
       this.gfx_.setStyle(style.reflect);
-      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                       entity.radius * 1.5);
+      this.gfx_.circle(e.r.x, e.r.y, e.radius * 1.5);
     }
 
     // Draw haze indicator.
-    if (entity.effect.haze) {
+    if (e.effect.haze) {
       this.gfx_.setStyle(style.haze);
-      this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                       entity.radius * 1.5);
+      this.gfx_.circle(e.r.x, e.r.y, e.radius * 1.5);
     }
 
     // Draw disabled indicator.
-    if (entity.effect.disabled) {
+    if (e.effect.disabled) {
       shipStyle = style.disabled;
     }
 
     // Draw health indicator.
-    if (entity.health <= 10 && damage) {
-      entity.render.healthIndicator = 30;
+    if (e.health <= 10 && damage) {
+      e.r.healthIndicator = 30;
     }
-    if (entity.render.healthIndicator) {
+    if (e.r.healthIndicator) {
       shipStyle = style.dmged;
-      entity.render.healthIndicator--;
+      e.r.healthIndicator--;
     }
 
-    if (entity.effect.invisible) {
+    if (e.effect.invisible) {
       customStyle = {};
       customStyle.globalAlpha = .4;
     }
   } else {
     // Death animation.
-    if (entity.dead) {
+    if (e.dead) {
       customStyle = {
-        globalAlpha: entity.render.deathAnimation / DEATH_ANIMATION_DURATION
+        globalAlpha: e.r.deathAnimation / DEATH_ANIMATION_DURATION
       };
-      entity.render.deathAnimation -= dt;
-      if (entity.render.deathAnimation < 0) entity.render.deathAnimation = 0;
+      e.r.deathAnimation -= dt;
+      if (e.r.deathAnimation < 0) e.r.deathAnimation = 0;
     }
   }
 
   // Draw ship.
   this.gfx_.setStyle(shipStyle, customStyle);
-  this.gfx_.image(entity.hull.sprite, entity.render.pos.x, entity.render.pos.y,
-                  entity.rotation, entity.render.radius);
+  this.gfx_.image(e.hull.sprite, e.r.x, e.r.y, e.rotation, e.r.radius);
 
   // DEBUG: See the hit box of the ship.
-  this.gfx_.setStyle(style.reflect);
-  this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                   entity.render.radius);
+  //this.gfx_.setStyle(style.reflect);
+  //this.gfx_.circle(e.r.x, e.r.y, e.r.radius);
 
   // DEBUG: See where the ship is aiming.
-  //var dx = entity.render.pos.x - entity.x;
-  //var dy = entity.render.pos.y - entity.y;
-  //if (entity.aimPos) {
-  //  this.gfx_.circle(entity.aimPos.x + dx, entity.aimPos.y + dy, 3);
+  //var dx = e.r.x - e.x;
+  //var dy = e.r.y - e.y;
+  //if (e.aimPos) {
+  //  this.gfx_.circle(e.aimPos.x + dx, e.aimPos.y + dy, 3);
   //}
-  //if (entity.utility.teleportPos) {
-  //  this.gfx_.circle(entity.utility.teleportPos.x + dx,
-  //                   entity.utility.teleportPos.y + dy, 3);
+  //if (e.utility.teleportPos) {
+  //  this.gfx_.circle(e.utility.teleportPos.x + dx,
+  //                   e.utility.teleportPos.y + dy, 3);
   //}
 };
 
@@ -526,17 +586,16 @@ Renderer.prototype.addLaserStyle_ = function(style) {
     lineWidth: 3
   });
 };
-Renderer.prototype.drawLaser_ = function(entity, style) {
-  if (entity.dead) {
-    entity.remove = true;
+Renderer.prototype.drawLaser_ = function(e, style) {
+  if (e.dead) {
+    e.remove = true;
     return;
   }
 
-  this.gfx_.setStyle(style[entity.style || 'strong']);
-  var dx = Math.cos(entity.rotation) * SPEED_FUDGING;
-  var dy = Math.sin(entity.rotation) * SPEED_FUDGING;
-  this.gfx_.line(entity.render.pos.x + dx, entity.render.pos.y + dy,
-                 entity.dx - dx * 2, entity.dy - dy * 2);
+  this.gfx_.setStyle(style[e.style || 'strong']);
+  var dx = Math.cos(e.rotation) * SPEED_FUDGING;
+  var dy = Math.sin(e.rotation) * SPEED_FUDGING;
+  this.gfx_.line(e.r.x + dx, e.r.y + dy, e.dx - dx * 2, e.dy - dy * 2);
 };
 
 var EXPLOSION_DURATION = .05;
@@ -563,25 +622,23 @@ Renderer.prototype.addBombStyle_ = function(style) {
     fill: Gfx.Color.PINK
   });
 };
-Renderer.prototype.drawBomb_ = function(entity, style, dt) {
-  if (entity.remove) return;
-  if (entity.dead) {
+Renderer.prototype.drawBomb_ = function(e, style, dt) {
+  if (e.remove) return;
+  if (e.dead) {
     // Draw explosion.
-    if (!_.isDef(entity.render.explodeTime)) {
-      entity.render.explodeTime = 0;
+    if (!_.isDef(e.r.explodeTime)) {
+      e.r.explodeTime = 0;
     }
 
-    entity.render.explodeTime += dt;
-    var ratio = Math.min(entity.render.explodeTime / EXPLOSION_DURATION, 1);
-    this.gfx_.setStyle(style[(entity.style || 'normal') + 'Explode']);
-    this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                     Math.pow(ratio, 2) * entity.radius);
+    e.r.explodeTime += dt;
+    var ratio = Math.min(e.r.explodeTime / EXPLOSION_DURATION, 1);
+    this.gfx_.setStyle(style[(e.style || 'normal') + 'Explode']);
+    this.gfx_.circle(e.r.x, e.r.y, Math.pow(ratio, 2) * e.radius);
 
-    if (ratio == 1) entity.remove = true;
+    if (ratio == 1) e.remove = true;
   } else {
-    this.gfx_.setStyle(style[entity.style || 'normal']);
-    this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                     entity.radius * NORMAL_SIZE);
+    this.gfx_.setStyle(style[e.style || 'normal']);
+    this.gfx_.circle(e.r.x, e.r.y, e.radius * NORMAL_SIZE);
   }
 };
 
@@ -590,14 +647,13 @@ Renderer.prototype.addBallStyle_ = function(style) {
     fill: Gfx.Color.GRAY
   });
 };
-Renderer.prototype.drawBall_ = function(entity, style, dt) {
-  if (entity.dead) {
-    entity.remove = true;
+Renderer.prototype.drawBall_ = function(e, style, dt) {
+  if (e.dead) {
+    e.remove = true;
     return;
   }
   this.gfx_.setStyle(style.normal);
-  this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                   entity.radius);
+  this.gfx_.circle(e.r.x, e.r.y, e.radius);
 };
 
 Renderer.prototype.addAuraStyle_ = function(style) {
@@ -606,14 +662,13 @@ Renderer.prototype.addAuraStyle_ = function(style) {
     lineWidth: 16
   });
 };
-Renderer.prototype.drawAura_ = function(entity, style, dt) {
-  if (entity.dead) {
-    entity.remove = true;
+Renderer.prototype.drawAura_ = function(e, style, dt) {
+  if (e.dead) {
+    e.remove = true;
     return;
   }
   this.gfx_.setStyle(style.normal);
-  this.gfx_.circle(entity.render.pos.x, entity.render.pos.y,
-                   entity.radius);
+  this.gfx_.circle(e.r.x, e.r.y, e.radius);
 
 };
 
@@ -627,15 +682,14 @@ Renderer.prototype.addBladeStyle_ = function(style) {
     lineWidth: 2
   });
 };
-Renderer.prototype.drawBlade_ = function(entity, style, dt) {
-  if (entity.dead) {
-    entity.remove = true;
+Renderer.prototype.drawBlade_ = function(e, style, dt) {
+  if (e.dead) {
+    e.remove = true;
     return;
   }
   var triangle = _.geometry.circumscribeTriangle(
-      entity.render.pos.x, entity.render.pos.y,
-      entity.radius - 1, entity.rotation);
-  this.gfx_.setStyle(style[entity.style || 'normal']);
+      e.r.x, e.r.y, e.radius - 1, e.rotation);
+  this.gfx_.setStyle(style[e.style || 'normal']);
   this.gfx_.triangle(triangle.x1, triangle.y1,
                      triangle.x2, triangle.y2,
                      triangle.x3, triangle.y3);
@@ -643,32 +697,27 @@ Renderer.prototype.drawBlade_ = function(entity, style, dt) {
 };
 
 Renderer.prototype.drawText_ = function(text, size, x, y, opt_options) {
+  var offset = this.textService_.offset(size);
   var options = opt_options || {};
-  var color = options.color || '#FFFFFF';
+  var color = options.color || Gfx.Color.FG;
   this.textCtx_.fillStyle = color;
   this.textCtx_.shadowBlur = 0;
   this.setFont_(size, Gfx.Font.TEXT, options.bold);
-  this.fillText_(text, x, y);
+  this.fillText_(text, x + offset.x, y + offset.y);
 };
 
-Renderer.prototype.drawTitle_ = function(text, size, x, y) {
-  this.textCtx_.fillStyle = '#FFFFFF';
-  this.textCtx_.shadowBlur = 0;
-  this.setFont_(size, Gfx.Font.TITLE);
-  this.fillText_(text, x, y);
-};
-
-Renderer.prototype.underlineLabel_ = function(entity, opt_options) {
+// NOT USED.
+Renderer.prototype.underlineLabel_ = function(e, opt_options) {
   var options = opt_options || {};
   options.color = '#FFFFFF';
-  if (entity.style == 'equipped' || entity.style == 'active') {
+  if (e.style == 'equipped' || e.style == 'active') {
     options.color = Gfx.Color.ACTIVE;
   }
-  options.lineDirection = entity.lineDirection;
-  this.underlineText_(entity.text, entity.size,
-                      entity.render.pos.x, entity.render.pos.y, options);
+  options.lineDirection = e.lineDirection;
+  this.underlineText_(e.text, e.size, e.r.x, e.r.y, options);
 };
 
+// NOT USED.
 Renderer.prototype.underlineText_ = function(text, size, x, y, opt_options) {
   var lineWidth = 1;
   var options = opt_options || {};
@@ -680,23 +729,23 @@ Renderer.prototype.underlineText_ = function(text, size, x, y, opt_options) {
   if (options.lineDirection == 'right') {
     this.line_(x, y, x + this.screen_.width, y, lineWidth);
   } else {
-    var width = this.font_.width(text, size);
+    var width = this.textService_.width(text, size);
     this.line_(x + width, y, 0, y, lineWidth);
   }
 };
 
 // NOT USED.
-Renderer.prototype.circleText_ = function(entity) {
+Renderer.prototype.circleText_ = function(e) {
   // TODO: This is currently dependant on text length.
   this.ctx_.shadowBlur = 2;
   this.ctx_.lineWidth = 2;
   this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
   this.ctx_.fillStyle = '#000000';
-  var width = this.font_.width(entity.text, entity.size);
-  var endPadding = entity.size * 1.4;
-  var topPadding = entity.size * 1;
-  var y = entity.render.pos.y + entity.size / 10;
-  var x = entity.render.pos.x - width / 2 - endPadding;
+  var width = this.textService_.width(e.text, e.size);
+  var endPadding = e.size * 1.4;
+  var topPadding = e.size * 1;
+  var y = e.r.y + e.size / 10;
+  var x = e.r.x - width / 2 - endPadding;
   var x2 = x + width + endPadding * 2;
 
   this.ctx_.beginPath();
@@ -709,13 +758,15 @@ Renderer.prototype.circleText_ = function(entity) {
   this.ctx_.stroke();
 };
 
+// TextCtx draw functions.
+
 Renderer.prototype.line_ = function(x1, y1, x2, y2, lineWidth) {
-  x1 = Math.round(x1 * this.screen_.upscale);
-  y1 = Math.round(y1 * this.screen_.upscale);
-  x2 = Math.round(x2 * this.screen_.upscale);
-  y2 = Math.round(y2 * this.screen_.upscale);
+  x1 = x1 * this.screen_.upscale;
+  y1 = y1 * this.screen_.upscale;
+  x2 = x2 * this.screen_.upscale;
+  y2 = y2 * this.screen_.upscale;
   if (lineWidth) {
-    lineWidth = Math.round(lineWidth * this.screen_.upscale);
+    lineWidth = lineWidth * this.screen_.upscale;
     this.textCtx_.lineWidth = lineWidth;
   }
   this.textCtx_.beginPath();
@@ -726,11 +777,11 @@ Renderer.prototype.line_ = function(x1, y1, x2, y2, lineWidth) {
 
 Renderer.prototype.circle_ = function(x, y, radius, lineWidth, opt_ratio) {
   var ratio = opt_ratio === undefined ? 1 : opt_ratio;
-  x = Math.round(x * this.screen_.upscale);
-  y = Math.round(y * this.screen_.upscale);
-  radius = Math.round(radius * this.screen_.upscale);
+  x = x * this.screen_.upscale;
+  y = y * this.screen_.upscale;
+  radius = radius * this.screen_.upscale;
   if (lineWidth) {
-    lineWidth = Math.round(lineWidth * this.screen_.upscale);
+    lineWidth = lineWidth * this.screen_.upscale;
     this.textCtx_.lineWidth = lineWidth;
   } else lineWidth = 0;
   this.textCtx_.beginPath();
@@ -739,27 +790,51 @@ Renderer.prototype.circle_ = function(x, y, radius, lineWidth, opt_ratio) {
 };
 
 Renderer.prototype.fillRect_ = function(x, y, width, height) {
-  x = Math.round(x * this.screen_.upscale);
-  y = Math.round(y * this.screen_.upscale);
-  width = Math.round(width * this.screen_.upscale);
-  height = Math.round(height * this.screen_.upscale);
-  this.textCtx_.fillRect(0, 0, width, height);
+  x = x * this.screen_.upscale;
+  y = y * this.screen_.upscale;
+  width = width * this.screen_.upscale;
+  height = height * this.screen_.upscale;
+  this.textCtx_.fillRect(x, y, width, height);
 };
 
-Renderer.prototype.setFont_ = function(size, font, bold) {
-  size = Math.round(size * this.screen_.upscale);
-  this.textCtx_.font =
-      (bold ? 'bold ' : '') + size + 'px ' + font;
+Renderer.prototype.strokeRect_ = function(x, y, width, height) {
+  x = x * this.screen_.upscale;
+  y = y * this.screen_.upscale;
+  width = width * this.screen_.upscale;
+  height = height * this.screen_.upscale;
+  this.textCtx_.strokeRect(x, y, width, height);
+};
+
+Renderer.prototype.setFont_ = function(size, face, bold) {
+  size = size * this.screen_.upscale;
+  this.textCtx_.font = (bold ? 'bold ' : '') + size + 'px ' + face;
 };
 
 Renderer.prototype.strokeText_ = function(text, x, y) {
-  x = Math.round(x * this.screen_.upscale);
-  y = Math.round(y * this.screen_.upscale);
+  x = x * this.screen_.upscale;
+  y = y * this.screen_.upscale;
   this.textCtx_.strokeText(text, x, y);
 };
 
 Renderer.prototype.fillText_ = function(text, x, y) {
-  x = Math.round(x * this.screen_.upscale);
-  y = Math.round(y * this.screen_.upscale);
+  x = x * this.screen_.upscale;
+  y = y * this.screen_.upscale;
   this.textCtx_.fillText(text, x, y);
+};
+
+Renderer.prototype.getFgColor_ = function(style) {
+  switch (style) {
+    case 'muted': return Gfx.Color.FG_MUTED;
+    case 'active': return Gfx.Color.FG_ACTIVE;
+  }
+  return Gfx.Color.FG;
+};
+
+Renderer.prototype.getBgColor_ = function(style) {
+  switch (style) {
+    case 'muted': return Gfx.Color.BG_MUTED;
+    case 'muted_dark': return Gfx.Color.BG_MUTED_DARK;
+    case 'primary': return Gfx.Color.BG;
+  }
+  return '';
 };

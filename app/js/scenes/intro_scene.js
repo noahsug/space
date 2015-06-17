@@ -1,25 +1,27 @@
 var IntroScene = di.service('IntroScene', [
-  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement']);
+  'Scene', 'LayoutElement', 'LabelElement']);
 
 IntroScene.prototype.init = function() {
-  _.class.extend(this, this.scene_.create('intro'));
+  _.class.extend(this, this.Scene_.new('intro'));
 };
 
 IntroScene.prototype.addEntities_ = function() {
-  this.entityElement_.create('introSplash');
+  this.layout_ = this.LayoutElement_.new('vertical')
+    .setChildrenAlign('center')
 
-  var newGameBtn = this.btnElement_.create();
-  newGameBtn.setText('new game', {size: 'btn'});
-  newGameBtn.onClick(function() {
-    this.transition_('missionSelect');
-  }.bind(this));
+    .addFlex(8)
 
-  this.layout_ = this.layoutElement_.create({
-    direction: 'vertical', align: 'bottom'});
-  this.layout_.padding.left = 'btn';
-  this.layout_.padding.bottom = 'btn';
-  this.layout_.add(newGameBtn);
-  newGameBtn.layout.align = 'top';
+    .add(this.LabelElement_.new()
+      .setText('COSMAL', Size.TITLE))
+
+    .addFlex(3)
+
+    .add(this.LabelElement_.new()
+      .setText('new game', Size.BUTTON_LG)
+      .setBg('primary', Padding.BUTTON_LG_BG)
+      .onClick(function() { this.transition_('missionSelect'); }, this))
+
+      .addFlex(6);
 };
 
 IntroScene.prototype.update_ = function(dt) {

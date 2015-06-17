@@ -1,4 +1,4 @@
-var SpriteService = di.service('SpriteService', ['ctx']);
+var SpriteService = di.service('SpriteService', ['ctx', 'textCtx', 'Screen']);
 
 var Sprite = {};
 Sprite.DRAKIR = new Image();
@@ -31,62 +31,81 @@ Sprite.ALIENSHIPTEX.src = 'assets/alienshiptex_136.png';
 Sprite.OSPACESHIP = new Image();
 Sprite.OSPACESHIP.src = 'assets/ospaceship-main_40.png';
 
-SpriteService.prototype.sprites_ = {
-  'mech1': {
-    image: Sprite.DRAKIR,
-    size: 32,
-    actualSize: 36
-  },
-  'station': {
-    image: Sprite.SPACESTATION,
-    size: 32,
-    actualSize: 40
-  },
-  'red': {
-    image: Sprite.RD2,
-    size: 32,
-    actualSize: 36,
-    offset: {x: 0, y: -2}
-  },
-  'mech_boss': {
-    image: Sprite.TRI,
-    size: 80,
-    actualSize: 120
-  },
-  'alien1': {
-    image: Sprite.ALIEN1,
-    size: 36,
-    actualSize: 40
-  },
-  'alien4': {
-    image: Sprite.ALIEN2,
-    size: 52,
-    actualSize: 60,
-    offset: {x: 0, y: 6}
-  },
-  'alien3': {
-    image: Sprite.ALIEN3,
-    size: 34,
-    actualSize: 47,
-    offset: {x: 0, y: 5}
-  },
-  'alien2': {
-    image: Sprite.ALIEN4,
-    size: 32,
-    actualSize: 46,
-    offset: {x: 0, y: 5}
-  },
-  'alien_boss': {
-    image: Sprite.ALIENSHIPTEX,
-    size: 100,
-    actualSize: 136,
-    offset: {x: 0, y: -9}
-  },
-  'brown': {
-    image: Sprite.OSPACESHIP,
-    size: 30,
-    actualSize: 40
-  }
+SpriteService.prototype.init = function() {
+  this.sprites_ = {
+    // Ships
+    'mech1': {
+      image: Sprite.DRAKIR,
+      size: 32,
+      actualSize: 36
+    },
+    'station': {
+      image: Sprite.SPACESTATION,
+      size: 32,
+      actualSize: 40
+    },
+    'red': {
+      image: Sprite.RD2,
+      size: 32,
+      actualSize: 36,
+      offset: {x: 0, y: -2}
+    },
+    'mech_boss': {
+      image: Sprite.TRI,
+      size: 80,
+      actualSize: 120
+    },
+    'alien1': {
+      image: Sprite.ALIEN1,
+      size: 36,
+      actualSize: 40
+    },
+    'alien4': {
+      image: Sprite.ALIEN2,
+      size: 52,
+      actualSize: 60,
+      offset: {x: 0, y: 6}
+    },
+    'alien3': {
+      image: Sprite.ALIEN3,
+      size: 34,
+      actualSize: 47,
+      offset: {x: 0, y: 5}
+    },
+    'alien2': {
+      image: Sprite.ALIEN4,
+      size: 32,
+      actualSize: 46,
+      offset: {x: 0, y: 5}
+    },
+    'alien_boss': {
+      image: Sprite.ALIENSHIPTEX,
+      size: 100,
+      actualSize: 136,
+      offset: {x: 0, y: -9}
+    },
+    'brown': {
+      image: Sprite.OSPACESHIP,
+      size: 30,
+      actualSize: 40
+    }
+  };
+
+  // Items
+  _.each({
+    'shotgun' : {image: Sprite.RD2},
+    'basic laser' : {image: Sprite.RD2},
+    'alien laser' : {image: Sprite.RD2},
+    'alien burst' : {image: Sprite.RD2},
+    'pistol' : {image: Sprite.RD2},
+    'knockback' : {image: Sprite.RD2},
+    'dash' : {image: Sprite.RD2},
+    'teleport' : {image: Sprite.RD2}
+  }, function(info, name) {
+    info.size = Size.ITEM;
+    info.actualSize = 36;
+    this.sprites_[name] = info;
+  }, this);
 };
 
 SpriteService.prototype.getSize = function(name) {
@@ -111,13 +130,21 @@ SpriteService.prototype.draw = function(name, x, y, opt_options) {
     y += sprite.offset.y * Math.sin(options.rotation + Math.PI / 2);
   }
 
-  this.ctx_.translate(x, y);
-  if (options.rotation) this.ctx_.rotate(options.rotation);
-  if (options.scale) this.ctx_.scale(options.scale, options.scale);
-  if (options.alpha) this.ctx_.globalAlpha = options.alpha;
-  this.ctx_.drawImage(sprite.image, -size / 2, -size / 2);
-  if (options.alpha) this.ctx_.globalAlpha = 1;
-  if (options.scale) this.ctx_.scale(1/options.scale, 1/options.scale);
-  if (options.rotation) this.ctx_.rotate(-options.rotation);
-  this.ctx_.translate(-x, -y);
+  var ctx = this.ctx_;
+  if (options.ctx == 'text') {
+    ctx = this.textCtx_;
+    x = Math.round(x * this.screen_.upscale);
+    y = Math.round(y * this.screen_.upscale);
+    options.scale = (options.scale || 1) * this.screen_.upscale;
+  }
+
+  ctx.translate(x, y);
+  if (options.rotation) ctx.rotate(options.rotation);
+  if (options.scale) ctx.scale(options.scale, options.scale);
+  if (options.alpha) ctx.globalAlpha = options.alpha;
+  ctx.drawImage(sprite.image, -size / 2, -size / 2);
+  if (options.alpha) ctx.globalAlpha = 1;
+  if (options.scale) ctx.scale(1/options.scale, 1/options.scale);
+  if (options.rotation) ctx.rotate(-options.rotation);
+  ctx.translate(-x, -y);
 };

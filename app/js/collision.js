@@ -1,4 +1,4 @@
-var Collision = di.service('Collision', ['Font']);
+var Collision = di.service('Collision', ['TextService']);
 
 Collision.Shapes = {
   circle: 0,

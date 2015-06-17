@@ -24,18 +24,7 @@ canvas#bg3 {
   z-index: 0;
 }
 
-/* Not Used */
 @font-face {
-  font-family: Penna;
-  src: url(../font/penna.otf);
-}
-
-@font-face {
-  font-family: DroidSans;
-  src: url(../font/DroidSans.ttf);
-}
-
-@font-face {
-  font-family: ElegantLux;
-  src: url(../font/ElegantLux.otf);
+  font-family: OratorStd;
+  src: url(../font/OratorStd.otf);
 }

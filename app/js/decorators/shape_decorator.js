@@ -1,10 +1,11 @@
 var ShapeDecorator = di.service('ShapeDecorator', [
-  'EntityDecorator', 'Font', 'Collision']);
+  'EntityDecorator', 'TextService', 'Collision']);
 
 ShapeDecorator.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'shape');
 };
 
+// x, y in center
 ShapeDecorator.prototype.decorateCircle_ = function(obj, spec) {
   spec = _.options(spec, {
     radius: 0
@@ -81,6 +82,7 @@ ShapeDecorator.prototype.decorateText_ = function(obj, spec) {
   }.bind(this);
 };
 
+// x, y in top left corner
 ShapeDecorator.prototype.decorateRect_ = function(obj, spec) {
   spec = _.options(spec, {
     width: 0,

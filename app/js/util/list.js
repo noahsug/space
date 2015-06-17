@@ -25,4 +25,11 @@ List.prototype.remove = function(i) {
   this.length--;
 };
 
+// Swap the positions of the last two added elements.
+List.prototype.swapLatest = function() {
+  var temp = this.arr[this.length - 1];
+  this.arr[this.length - 1] = this.arr[this.length - 2];
+  this.arr[this.length - 2] = temp;
+};
+
 window.List = List;

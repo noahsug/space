@@ -91,11 +91,25 @@ _.repeat = function(fn, times) {
   }
 };
 
-_.swap = function(arr, i1, i2) {
-  if (i1 == i2) return arr;
-  var temp = arr[i1];
-  arr[i1] = arr[i2];
-  arr[i2] = temp;
+_.remove = function(arr, value) {
+  var index = arr.indexOf(value);
+  if (index != -1) {
+    return arr.splice(value, 1, 0)[0];
+  }
+  return null;
+};
+
+_.move = function(arr, from, to) {
+  var r = arr.splice(from, 1);
+  if (from < to) to--;
+  arr.splice(to, 0, r[0]);
+};
+
+_.swap = function(obj, a, b) {
+  if (a == b) return;
+  var temp = obj[a];
+  obj[a] = obj[b];
+  obj[b] = temp;
 };
 
 // Returns a normalized, random array of values.
@@ -279,12 +293,6 @@ _.value = function(obj) {
 
 _.sampleKey = function(obj) {
   return _.sample(_.keys(obj));
-};
-
-_.swap = function(obj, a, b) {
-  var temp = obj[a];
-  obj[a] = obj[b];
-  obj[b] = temp;
 };
 
 _.modObj = function(obj, mod) {
@@ -535,5 +543,4 @@ _.class.extend = function(destination, source) {
   for (var key in source) {
     destination[key] = destination[key] || source[key];
   }
-  destination.base_ = source;
 };

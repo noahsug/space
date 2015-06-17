@@ -1,6 +1,6 @@
 var Background = di.service('Background', [
-  'GameModel as gm', 'Screen', 'canvas', 'ctx', 'textCanvas', 'bgCtxList',
-  'RepeatedBackground']);
+  'GameModel as gm', 'Screen', 'canvas', 'ctx', 'textCanvas',
+  'bgCtxList', 'RepeatedBackground']);
 
 // Screen should never have a width or height larger than 2x this value.
 var BG_TILE_SIZE = 600;
@@ -12,7 +12,7 @@ Background.prototype.init = function() {
 
 Background.prototype.createBgLayers_ = function() {
   return _.generate(function(i) {
-    var bg = this.repeatedBackground_.create(this.bgCtxList_[i]);
+    var bg = this.RepeatedBackground_.new(this.bgCtxList_[i]);
     var bgColor = i == this.bgCtxList_.length -1 ? '#000000' : '';
     var starTile = this.createStarTile_(bgColor);
     bg.setRepeatedTile(starTile);

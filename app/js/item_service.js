@@ -24,3 +24,33 @@ ItemService.prototype.getByTypeAndLevel = function(type, level) {
 ItemService.prototype.getEnemyEquipped = function(type) {
   return _.findWhere(this.gm_.stage.enemy, {category: type});
 };
+
+ItemService.CD_ONLY = ['charge', 'tracker', 'pull', 'turret', 'alien spawn'];
+ItemService.DESC_ONLY = ['divide'];
+ItemService.prototype.getDesc = function(item) {
+  var descParts = [];
+  var descOnly = item.category in ItemService.DESC_ONLY;
+  var cdOnly = item.category == 'ability' || item.category == 'utility' ||
+      item.category in ItemService.CD_ONLY;
+
+  if (!descOnly) {
+    var cooldown = item.spec.cooldown.toFixed(1);
+    descParts.push('Cooldown: ' + cooldown);
+  }
+  if (!cdOnly) {
+    var dmg = item.spec.dmg.toFixed();
+    if (item.spec.projectiles > 1) dmg += 'x' + item.spec.projectiles;
+    descParts.push('DMG: ' + dmg);
+
+    var range = (item.spec.range / 10).toFixed();
+    descParts.push('Range: ' + range);
+
+    if (item.spec.seek) {
+      var seek = (item.spec.seek * 10).toFixed();
+      descParts.push('Seek: ' + seek);
+    }
+  }
+
+  descParts.push(item.desc);
+  return descParts.join('  ');
+};

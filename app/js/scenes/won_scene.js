@@ -1,20 +1,20 @@
 var WonScene = di.service('WonScene', [
-  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement', 'MissionService']);
+  'Scene', 'LayoutElement', 'LabelElement', 'EntityElement', 'MissionService']);
 
 WonScene.prototype.init = function() {
-  _.class.extend(this, this.scene_.create('won'));
+  _.class.extend(this, this.Scene_.new('won'));
 };
 
 WonScene.prototype.addEntities_ = function() {
-  this.entityElement_.create('wonSplash');
+  this.EntityElement_.new('wonSplash');
 
-  var continueBtn = this.btnElement_.create();
-  continueBtn.setText('exit', {size: 'btn-sm'});
+  var continueBtn = this.LabelElement_.new();
+  continueBtn.setText('exit', Size.BUTTON);
   continueBtn.onClick(function() {
     this.transition_('missionSelect');
   }.bind(this));
 
-  this.layout_ = this.layoutElement_.create({
+  this.layout_ = this.LayoutElement_.new({
     direction: 'vertical', align: 'bottom'});
   this.layout_.padding.left = 'btn-sm';
   this.layout_.padding.bottom = 'btn';

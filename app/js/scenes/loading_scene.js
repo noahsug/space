@@ -1,12 +1,12 @@
 var LoadingScene = di.service('LoadingScene', [
-  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement']);
+  'Scene', 'LayoutElement', 'LabelElement', 'EntityElement']);
 
 LoadingScene.prototype.init = function() {
-  _.class.extend(this, this.scene_.create('loading'));
+  _.class.extend(this, this.Scene_.new('loading'));
 };
 
 LoadingScene.prototype.addEntities_ = function() {
-  this.element_ = this.entityElement_.create('loadingSplash');
+  this.element_ = this.EntityElement_.new('loadingSplash');
   this.element_.setProp('loading', 0);
 };
 

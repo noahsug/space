@@ -1,39 +1,39 @@
 var EquipOptionsScene = di.service('EquipOptionsScene', [
-  'GameModel as gm', 'Scene', 'LayoutElement', 'BtnElement', 'EntityElement',
+  'GameModel as gm', 'Scene', 'LayoutElement', 'EntityElement',
   'LabelElement', 'RoundBtnElement', 'Inventory', 'ItemService']);
 
 EquipOptionsScene.prototype.init = function() {
-  _.class.extend(this, this.scene_.create('equipOptions'));
+  _.class.extend(this, this.Scene_.new('equipOptions'));
 };
 
 EquipOptionsScene.prototype.addEntities_ = function() {
   var COLS = 4;  // Number of columns in the item grid.
 
-  this.layout_ = this.layoutElement_.create({direction: 'vertical'});
+  this.layout_ = this.LayoutElement_.new({direction: 'vertical'});
 
   this.layout_.addFlex();
 
   // Enemy item label.
-  var enemyLabelRow = this.layout_.addNew(this.layoutElement_);
+  var enemyLabelRow = this.layout_.addNew(this.LayoutElement_);
   enemyLabelRow.layout.align = 'top';
-  enemyLabelRow.childHeight = Size.TEXT_LG;
-  var enemyLabel = enemyLabelRow.addNew(this.labelElement_);
-  enemyLabel.setText(this.gm_.stage.desc,
-                     {size: Size.TEXT_LG, align: 'left', baseline: 'top'});
+  enemyLabelRow.innerHeight = Size.TEXT_LG;
+  var enemyLabel = enemyLabelRow.addNew(this.LabelElement_);
+  enemyLabel.setText(this.gm_.stage.desc, Size.TEXT_LG,
+                     {align: 'left', baseline: 'top'});
   enemyLabelRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
 
   this.layout_.addGap(Padding.MD);
 
   // Item Description.
-  var itemDescRow = this.layout_.addNew(this.layoutElement_);
-  var itemDesc = itemDescRow.addNew(this.entityElement_, 'itemDesc');
-  itemDesc.childHeight = Size.ITEM_DESC;
+  var itemDescRow = this.layout_.addNew(this.LayoutElement_);
+  var itemDesc = itemDescRow.addNew(this.EntityElement_, 'itemDesc');
+  itemDesc.innerHeight = Size.ITEM_DESC;
   itemDesc.getEntity().update(function() {
     var item = this.selectedBtn_ && this.selectedBtn_.getProp('item');
     itemDesc.setProp('item', item);
   }.bind(this));
   itemDescRow.addGap(Padding.ITEM * (COLS - 1) + Size.ITEM * COLS);
-  itemDescRow.childHeight = itemDesc.childHeight;
+  itemDescRow.innerHeight = itemDesc.innerHeight;
 
   this.layout_.addGap(Padding.ITEM);
 
@@ -46,8 +46,8 @@ EquipOptionsScene.prototype.addEntities_ = function() {
     if (pos == 0 && i) this.layout_.addGap(Padding.ITEM);
     // New row.
     if (pos == 0) {
-      row = this.layout_.addNew(this.layoutElement_);
-      row.childHeight = Size.ITEM;
+      row = this.layout_.addNew(this.LayoutElement_);
+      row.innerHeight = Size.ITEM;
     }
     // Gap between btns.
     if (pos) row.addGap(Padding.ITEM);
@@ -56,14 +56,14 @@ EquipOptionsScene.prototype.addEntities_ = function() {
   }, this);
 
   // Enemy splash.
-  var enemySplash = this.layout_.addNew(this.entityElement_, 'enemySplash');
-  enemySplash.childHeight = Size.SHIP;
+  var enemySplash = this.layout_.addNew(this.EntityElement_, 'enemySplash');
+  enemySplash.innerHeight = Size.SHIP;
 
   this.layout_.addGap(Padding.MD);
 
   // Player splash.
-  var playerSplash = this.layout_.addNew(this.entityElement_, 'playerSplash');
-  playerSplash.childHeight = Size.SHIP;
+  var playerSplash = this.layout_.addNew(this.EntityElement_, 'playerSplash');
+  playerSplash.innerHeight = Size.SHIP;
 
   // Player items.
   _.each(Game.ITEM_TYPES, function(type, i) {
@@ -72,8 +72,8 @@ EquipOptionsScene.prototype.addEntities_ = function() {
     if (pos == 0 && i) this.layout_.addGap(Padding.ITEM);
     // New row.
     if (pos == 0) {
-      row = this.layout_.addNew(this.layoutElement_);
-      row.childHeight = Size.ITEM;
+      row = this.layout_.addNew(this.LayoutElement_);
+      row.innerHeight = Size.ITEM;
     }
     // Gap between btns.
     if (pos) row.addGap(Padding.ITEM);
@@ -84,33 +84,32 @@ EquipOptionsScene.prototype.addEntities_ = function() {
   this.layout_.addFlex();
 
   // Back button.
-  var btnRow = this.layout_.addNew(this.layoutElement_);
+  var btnRow = this.layout_.addNew(this.LayoutElement_);
   btnRow.setAlign('left');
   btnRow.layout.align = 'top';
-  btnRow.childHeight = Size.TEXT + Padding.BOT;
-  var backBtn = btnRow.addNew(this.btnElement_);
+  btnRow.innerHeight = Size.TEXT + Padding.BOT;
+  var backBtn = btnRow.addNew(this.LabelElement_);
   backBtn.layout.align = 'left';
   backBtn.padding.left = Padding.MD;
-  backBtn.setText('back', {size: Size.TEXT});
-  backBtn.setLineDirection('left');
+  backBtn.setText('back', Size.TEXT);
   backBtn.onClick(function() {
-    this.transitionFast_('main');
+    this.transitionFast_(stageSelect);
   }.bind(this));
 
   btnRow.addFlex();
 
   // Fight button.
-  var fightBtn = btnRow.addNew(this.btnElement_);
+  var fightBtn = btnRow.addNew(this.LabelElement_);
   fightBtn.layout.align = 'left';
   fightBtn.padding.right = Padding.MD;
-  fightBtn.setText('fight', {size: Size.TEXT});
+  fightBtn.setText('fight', Size.TEXT);
   fightBtn.onClick(function() {
     this.transition_('battle');
   }.bind(this));
 };
 
 EquipOptionsScene.prototype.createPlayerItemButton_ = function(type) {
-  var btn = this.roundBtnElement_.create();
+  var btn = this.RoundBtnElement_.new();
   btn.setSize(Size.ITEM);
   btn.setProp('item', this.inventory_.getEquipped(type) || {category: type});
   if (this.inventory_.has(type)) {
@@ -123,7 +122,7 @@ EquipOptionsScene.prototype.createPlayerItemButton_ = function(type) {
 };
 
 EquipOptionsScene.prototype.createEnemyItemButton_ = function(type) {
-  var btn = this.roundBtnElement_.create();
+  var btn = this.RoundBtnElement_.new();
   btn.setSize(Size.ITEM);
   btn.setProp('enemy', true);
   var item = this.itemService_.getEnemyEquipped(type) || {category: type};

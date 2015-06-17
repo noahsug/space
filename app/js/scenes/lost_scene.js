@@ -1,21 +1,21 @@
 var LostScene = di.service('LostScene', [
-  'Scene', 'LayoutElement', 'BtnElement', 'EntityElement', 'MissionService',
+  'Scene', 'LayoutElement', 'LabelElement', 'EntityElement', 'MissionService',
   'Inventory']);
 
 LostScene.prototype.init = function() {
-  _.class.extend(this, this.scene_.create('lost'));
+  _.class.extend(this, this.Scene_.new('lost'));
 };
 
 LostScene.prototype.addEntities_ = function() {
-  this.entityElement_.create('lostSplash');
+  this.EntityElement_.new('lostSplash');
 
-  var continueBtn = this.btnElement_.create();
-  continueBtn.setText('exit', {size: 'btn-sm'});
+  var continueBtn = this.LabelElement_.new();
+  continueBtn.setText('exit', Size.BUTTON);
   continueBtn.onClick(function() {
     this.transition_('missionSelect');
   }.bind(this));
 
-  this.layout_ = this.layoutElement_.create({
+  this.layout_ = this.LayoutElement_.new({
     direction: 'vertical', align: 'bottom'});
   this.layout_.padding.left = 'btn-sm';
   this.layout_.padding.bottom = 'btn';

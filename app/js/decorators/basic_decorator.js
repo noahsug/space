@@ -6,6 +6,7 @@ BasicDecorator.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'base');
 };
 
+// Remove this.
 BasicDecorator.prototype.decorateClickable_ = function(obj) {
   obj.update(function() {
     obj.mouseOver = obj.collides(this.mouse_);

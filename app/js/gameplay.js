@@ -46,18 +46,24 @@ di.constant('gameplayFile', {
     {  // 0
       missions: [
         {  // 0
+          title: 'kill all the dudes',
+          desc: 'hey there guys',
           stages: [
-            ['a1', 'a2', 'a3', 'a4'],
+            //['a1', 'a2', 'a3', 'a4'],
             ['a5']
           ]
         },
         {  // 1
+          title: 'I said all of them',
+          desc: 'okay then',
           stages: [
             ['a1', 'a2', 'a1'],
             ['a2', '-', 'a3', '-', 'a2']
           ]
         },
         {  // 2
+          title: 'people are attacking!',
+          desc: 'oooo this is just the coolest thing I ever',
           stages: [
             ['a2'],
             ['a2', '-', 'a2'],
@@ -65,6 +71,8 @@ di.constant('gameplayFile', {
           ]
         },
         {  // 3
+          title: 'do the thing',
+          desc: 'awwwesome',
           stages: [
             ['a2', 'a3', 'a2'],
             ['a3', 'a4', 'a4', 'a3'],
@@ -124,7 +132,7 @@ di.constant('gameplayFile', {
     'shotgun',
     //'gatling',
 
-    'stun',
+    //'stun',
     //'emp',
     //'pistol',
     //'pull',
@@ -134,20 +142,16 @@ di.constant('gameplayFile', {
 
     //'knockback',
     //'shield',
-    'reflect',
+    //'reflect',
     //'tank',
     //'haze',
 
     //'teleport',
-    'refresh',
+    //'refresh',
     //'divide',
     //'huge',
     //'stealth',
     //'sticky',
-
-    //'freeze',
-    //'warp',
-    //'archery',
 
     'red',
     //'brown'
@@ -155,8 +159,13 @@ di.constant('gameplayFile', {
 
   inventory: [
     'shotgun',
-    'pistol',
     'basic laser',
+
+    'pistol',
+
+//    'knockback',
+
+    'teleport',
   ],
 
   items: {
@@ -364,8 +373,8 @@ di.constant('gameplayFile', {
       id: 'utility.ninja', spec: {power: 1},
       level: 0},
     'teleport': {
-      desc: 'Ability to teleport behind the enemy.',
-      id: 'utility.ninja', spec: {power: 2},
+      desc: 'Ability to teleport behind the enemy',
+      id: 'utility.ninja', spec: {cooldown: 6},
       level: 1},
     'stealth': {
       desc: 'Turn invisible, then deal 2x damage.',

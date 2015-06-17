@@ -53,6 +53,9 @@ Inventory.prototype.unequip = function(item) {
   if (equipIndex >= 0) this.gm_.player.splice(equipIndex, 1);
 };
 
+Inventory.prototype.getRandomUnowned = function() {
+  return this.getUnownedByLevelAndType(_.r.nextInt(Game.MAX_LEVEL))[0];
+};
 
 Inventory.prototype.getUnownedByLevel = function(level, opt_returnAugment) {
   return this.getUnownedByLevelAndType(level, null, opt_returnAugment);
