@@ -3,7 +3,7 @@ var ShipDetailsScene = di.service('ShipDetailsScene', [
   'LabelElement', 'ItemElement', 'UiElement', 'ItemService']);
 
 ShipDetailsScene.prototype.init = function() {
-  _.class.extend(this, this.Scene_.new('shipDetails'));
+  di.extend(this, this.Scene_, 'shipDetails');
 };
 
 ShipDetailsScene.prototype.onStart_ = function() {

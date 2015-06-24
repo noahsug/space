@@ -3,7 +3,7 @@ var EquipScene = di.service('EquipScene', [
   'LabelElement', 'ItemElement', 'Inventory', 'ItemService']);
 
 EquipScene.prototype.init = function() {
-  _.class.extend(this, this.Scene_.new('equip'));
+  di.extend(this, this.Scene_, 'equip');
 };
 
 EquipScene.prototype.onStart_ = function() {

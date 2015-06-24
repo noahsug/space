@@ -3,7 +3,7 @@ var StageSelectScene = di.service('StageSelectScene', [
   'LabelElement', 'Inventory', 'Gameplay', 'SpriteService']);
 
 StageSelectScene.prototype.init = function() {
-  _.class.extend(this, this.Scene_.new('stageSelect'));
+  di.extend(this, this.Scene_, 'stageSelect');
 };
 
 StageSelectScene.prototype.addEntities_ = function() {

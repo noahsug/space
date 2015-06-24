@@ -3,7 +3,7 @@ var MissionSelectScene = di.service('MissionSelectScene', [
   'LabelElement', 'MissionService', 'Inventory']);
 
 MissionSelectScene.prototype.init = function() {
-  _.class.extend(this, this.Scene_.new('missionSelect'));
+  di.extend(this, this.Scene_, 'missionSelect');
 };
 
 MissionSelectScene.prototype.addEntities_ = function() {

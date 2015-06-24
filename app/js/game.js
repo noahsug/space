@@ -39,7 +39,7 @@ Game.prototype.start = function() {
   //this.gm_.equipping = 'primary';
   this.gm_.mission.state = 'won';
 
-  this.scenes_[6].start();
+  this.scenes_[5].start();
 };
 
 Game.prototype.initGameModel_ = function() {

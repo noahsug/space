@@ -1,6 +1,6 @@
 var Scene = di.factory('Scene', ['GameModel as gm', 'Mouse', 'textCtx']);
 
-Scene.TRANSITION_TIME = .25;
+Scene.TRANSITION_TIME = .3;
 
 Scene.prototype.init = function(name) {
   this.name_ = name;

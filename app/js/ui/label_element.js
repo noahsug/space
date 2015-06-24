@@ -2,7 +2,7 @@ var LabelElement = di.factory('LabelElement', [
   'EntityElement', 'TextService']);
 
 LabelElement.prototype.init = function() {
-  _.class.extend(this, this.EntityElement_.new('label'));
+  di.extend(this, this.EntityElement_, 'label');
   this.hitboxMargin_ = 13;
 };
 
@@ -49,7 +49,7 @@ LabelElement.prototype.calcInnerWidthHeight_ = function() {
   this.entity_.height = numLines * this.entity_.lineHeight - linePadding;
   this.innerHeight = this.entity_.height;
 
-  this.entity_.bgMargin = this.calc_.padding;
+  this.entity_.bgMargin = this.padding;
 };
 
 LabelElement.prototype.calcWrappedInnerWidth_ = function() {

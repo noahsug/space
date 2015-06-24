@@ -38,7 +38,14 @@ _.valueOrFn = function(valueOrFn, var_args) {
   }
 };
 
-// Warning: Very slow.
+/**
+ * Input: fn(1, 2, 3, 4)
+ *
+ * _.args(arguments, 0, 2) -> [1, 3, 4]
+ * _.args(arguments, 1)    -> [2, 3, 4]
+ * _.args(arguments, 1, 4) -> [2, 4]
+ * _.args(arguments)       -> [1, 2, 3, 4]
+ */
 _.args = function(args, opt_indexes) {
   if (arguments.length == 1) {
     return _.toArray(args);

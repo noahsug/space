@@ -1,5 +1,5 @@
 var UiElement = di.factory('UiElement', [
-  'Screen', 'Collision', 'Mouse', 'GameModel as gm']);
+  'Screen', 'Collision', 'Mouse', 'GameModel as gm', 'AnimationsFactory']);
 
 UiElement.prototype.init = function() {
   this.x = 0;
@@ -18,8 +18,12 @@ UiElement.prototype.init = function() {
   this.setPadding(0);
   this.hitboxMargin_ = 0;
 
-  this.calc_ = {};  // Store calculated values.
-  this.calc_.padding = {};
+  this.animations_ = this.AnimationsFactory_.new(this);
+};
+
+UiElement.prototype.animate = function(prop, value, opt_options) {
+  this.animations_.animate(prop, value, opt_options);
+  return this;
 };
 
 UiElement.prototype.setLayoutAlign = function(layoutAlign) {
@@ -121,13 +125,13 @@ UiElement.prototype.calcHeight = function() {
 };
 
 UiElement.prototype.calcFreeWidth = function() {
-  return this.calcMaxWidth() - this.calc_.padding.left -
-    this.calc_.padding.right;
+  return this.calcMaxWidth() - this.padding.left -
+    this.padding.right;
 };
 
 UiElement.prototype.calcFreeHeight = function() {
-  return this.calcMaxHeight() - this.calc_.padding.top -
-      this.calc_.padding.bottom;
+  return this.calcMaxHeight() - this.padding.top -
+      this.padding.bottom;
 };
 
 UiElement.prototype.update = function(dt) {
@@ -136,19 +140,12 @@ UiElement.prototype.update = function(dt) {
   this.updateChildPosition_();
   _.each(this.elements_, function(e) { e.update(dt); });
   this.update_(dt);
+  this.animations_.update(dt);
 };
 
 UiElement.prototype.calcSize_ = function() {
-  this.calcPadding_();
   this.calcInnerWidthHeight_();
   this.calcWidthHeight_();
-};
-
-UiElement.prototype.calcPadding_ = function() {
-  this.calc_.padding.left = this.measure_('pad-left', this.padding.left);
-  this.calc_.padding.right = this.measure_('pad-right', this.padding.right);
-  this.calc_.padding.top = this.measure_('pad-top', this.padding.top);
-  this.calc_.padding.bottom = this.measure_('pad-bot', this.padding.bottom);
 };
 
 UiElement.prototype.measure_ = function(type, value) {
@@ -165,16 +162,13 @@ UiElement.prototype.measure_ = function(type, value) {
 UiElement.prototype.calcInnerWidthHeight_ = _.emptyFn;
 
 UiElement.prototype.calcWidthHeight_ = function() {
-  this.width =
-      this.calc_.padding.left + this.innerWidth + this.calc_.padding.right;
-  this.height =
-      this.calc_.padding.top + this.innerHeight + this.calc_.padding.bottom;
+  this.width = this.padding.left + this.innerWidth + this.padding.right;
+  this.height = this.padding.top + this.innerHeight + this.padding.bottom;
 };
 
 UiElement.prototype.updateChildPosition_ = function() {
-  var xy = this.positionXY_(this.calc_.padding.left + this.x,
-                            this.calc_.padding.top + this.y,
-                            {inner: true});
+  var xy = this.positionXY_(
+      this.padding.left + this.x, this.padding.top + this.y, {inner: true});
   this.positionChild_(xy.x, xy.y);
 };
 

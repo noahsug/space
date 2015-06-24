@@ -6,12 +6,12 @@ var BattleScene = di.service('BattleScene', [
 var SLOWDOWN_TIME = 2;
 
 BattleScene.prototype.init = function() {
-  _.class.extend(this, this.Scene_.new('battle'));
+  di.extend(this, this.Scene_, 'battle');
   this.d_ = this.entityDecorator_.getDecorators();
 };
 
 BattleScene.prototype.onStart_ = function() {
-  this.Scene_.onStart_.call(this);
+  this.base_.onStart_.call(this);
   this.state_ = 'active';
 };
 

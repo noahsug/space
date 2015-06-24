@@ -3,7 +3,7 @@ var StageResultScene = di.service('StageResultScene', [
   'LabelElement', 'MissionService']);
 
 StageResultScene.prototype.init = function() {
-  _.class.extend(this, this.Scene_.new('stageResult'));
+  di.extend(this, this.Scene_, 'stageResult');
 };
 
 StageResultScene.prototype.addEntities_ = function() {

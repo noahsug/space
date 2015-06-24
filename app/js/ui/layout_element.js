@@ -2,7 +2,7 @@ var LayoutElement = di.factory('LayoutElement', [
   'Screen', 'EntityElement']);
 
 LayoutElement.prototype.init = function(direction) {
-  _.class.extend(this, this.EntityElement_.new('container'));
+  di.extend(this, this.EntityElement_, 'container');
 
   this.elements_ = [];
   this.oriented_ = {};
@@ -222,7 +222,7 @@ LayoutElement.prototype.positionEntity_ = function() {
   } else if (this.childrenAlign_ == 'bottom') {
     dy += this.calcMaxHeight() - this.calcHeight();
   }
-  this.EntityElement_.positionChild_.call(this, this.x + dx, this.y + dy);
+  this.base_.positionChild_.call(this, this.x + dx, this.y + dy);
 };
 
 LayoutElement.prototype.collides_ = function(point) {
@@ -243,5 +243,5 @@ LayoutElement.prototype.update_ = function(dt) {
     this.entity_.width = this.calcWidth();
     this.entity_.height = this.calcHeight();
   }
-  this.EntityElement_.update_.call(this, dt);
+  this.base_.update_.call(this, dt);
 };

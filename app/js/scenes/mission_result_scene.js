@@ -4,7 +4,7 @@ var MissionResultScene = di.service('MissionResultScene', [
   'LabelElement', 'ItemElement']);
 
 MissionResultScene.prototype.init = function() {
-  _.class.extend(this, this.Scene_.new('missionResult'));
+  di.extend(this, this.Scene_, 'missionResult');
 };
 
 MissionResultScene.prototype.onStart_ = function() {

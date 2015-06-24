@@ -97,6 +97,7 @@ Di.prototype.createImpl_ = function(name) {
 
 Di.prototype.createService_ = function(name) {
   var service = new this.implsToInit_[name].class();
+  service.__name = name;
   this.addDeps_(service, name);
   service.init && service.init();
   return service;
@@ -104,13 +105,29 @@ Di.prototype.createService_ = function(name) {
 
 Di.prototype.createFactory_ = function(name) {
   var factory = this.implsToInit_[name].class.prototype;
+  factory.name = name;
   factory.new = function(var_args) {
     var impl = new this.implsToInit_[name].class();
+    impl.__name = name;
     this.addDeps_(impl, name);
     impl.init && impl.init.apply(impl, arguments);
     return impl;
   }.bind(this);
   return factory;
+};
+
+/**
+ * Only works if source is a factory.
+ *
+ * Use: di.extend(this, this.UiElement_)
+ */
+Di.prototype.extend = function(dest, source, var_args) {
+  var impl = new this.implsToInit_[source.name].class();
+  _.class.extend(dest, impl);
+  this.addDeps_(dest, source.name);
+  impl.init && impl.init.apply(dest, _.args(arguments, 2));
+  dest.base_ = dest.base_ || {};
+  _.class.extend(dest.base_, impl);
 };
 
 Di.prototype.addDeps_ = function(impl, name) {

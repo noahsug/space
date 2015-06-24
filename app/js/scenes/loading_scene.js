@@ -2,7 +2,7 @@ var LoadingScene = di.service('LoadingScene', [
   'Scene', 'LayoutElement', 'LabelElement', 'EntityElement']);
 
 LoadingScene.prototype.init = function() {
-  _.class.extend(this, this.Scene_.new('loading'));
+  di.extend(this, this.Scene_, 'loading');
 };
 
 LoadingScene.prototype.addEntities_ = function() {

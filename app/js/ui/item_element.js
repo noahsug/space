@@ -1,7 +1,7 @@
 var ItemElement = di.factory('ItemElement', ['EntityElement']);
 
 ItemElement.prototype.init = function(direction) {
-  _.class.extend(this, this.EntityElement_.new('item'));
+  di.extend(this, this.EntityElement_, 'item');
 };
 
 ItemElement.prototype.setSize = function(size) {

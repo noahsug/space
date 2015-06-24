@@ -1,12 +1,13 @@
 var AnimationsFactory = di.factory('AnimationsFactory', []);
 
 // TODO: Make work with ALL ui elements - not just entities.
-AnimationsFactory.prototype.init = function(entity) {
-  this.entity_ = entity;
+AnimationsFactory.prototype.init = function(element) {
+  this.element_ = element;
   this.animations_ = {};
 };
 
 AnimationsFactory.prototype.animate = function(prop, value, opt_options) {
+  prop = this.parseProp_(prop);
   var o = _.options(opt_options, {
     duration: 1,
     delay: 0
@@ -14,9 +15,25 @@ AnimationsFactory.prototype.animate = function(prop, value, opt_options) {
   this.animations_[prop] = {
     prop: prop,
     value: value,
-    rate: Math.abs(value - this.entity_[prop]) / o.duration,
+    rate: Math.abs(value - this.getValue_(prop)) / o.duration,
     delay: o.delay
   };
+};
+
+AnimationsFactory.prototype.parseProp_ = function(prop) {
+  switch(prop) {
+  case 'alpha': return 'entity_.alpha';
+  }
+  return prop;
+};
+
+AnimationsFactory.prototype.getValue_ = function(prop) {
+  return _.parse(this.element_, prop);
+};
+
+AnimationsFactory.prototype.addValue_ = function(prop, change) {
+  var value = this.getValue_(prop);
+  _.set(this.element_, prop, value + change);
 };
 
 AnimationsFactory.prototype.update = function(dt) {
@@ -24,7 +41,7 @@ AnimationsFactory.prototype.update = function(dt) {
   for (var i = 0; i < keys.length; i++) {
     var a = this.animations_[keys[i]];
     var change = this.tick_(a, dt);
-    this.entity_[a.prop] += change;
+    this.addValue_(a.prop, change);
   }
 };
 
@@ -35,7 +52,7 @@ AnimationsFactory.prototype.tick_ = function(a, dt) {
     dt = -a.delay;
     a.delay = 0;
   }
-  var dv = a.value - this.entity_[a.prop];
+  var dv = a.value - this.getValue_(a.prop);
   if (Math.abs(dv) < a.rate * dt) {
     delete this.animations_[a.prop];
     return dv;
