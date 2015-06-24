@@ -94,13 +94,33 @@ SpriteService.prototype.init = function() {
   // Items
   _.each({
     'shotgun' : {image: Sprite.RD2},
-    'basic laser' : {image: Sprite.RD2},
-    'alien laser' : {image: Sprite.RD2},
-    'alien burst' : {image: Sprite.RD2},
-    'pistol' : {image: Sprite.RD2},
-    'knockback' : {image: Sprite.RD2},
-    'dash' : {image: Sprite.RD2},
-    'teleport' : {image: Sprite.RD2}
+    'basic laser': {image: Sprite.RD2},
+    'alien laser': {image: Sprite.RD2},
+    'alien gatling': {image: Sprite.RD2},
+    'alien burst': {image: Sprite.RD2},
+    'alien sniper': {image: Sprite.RD2},
+    'alien doubleshot': {image: Sprite.RD2},
+    'alien grenade': {image: Sprite.RD2},
+    'alien stinger': {image: Sprite.RD2},
+    'alien blades': {image: Sprite.RD2},
+
+    'pistol': {image: Sprite.RD2},
+    'alien spawn': {image: Sprite.RD2},
+    'charge': {image: Sprite.RD2},
+    'alien emp': {image: Sprite.RD2},
+    'emp': {image: Sprite.RD2},
+    'pull': {image: Sprite.RD2},
+    'alien stun': {image: Sprite.RD2},
+
+    'knockback': {image: Sprite.RD2},
+    'alien knockback': {image: Sprite.RD2},
+    'shield': {image: Sprite.RD2},
+    'haze': {image: Sprite.RD2},
+
+    'dash': {image: Sprite.RD2},
+    'teleport': {image: Sprite.RD2},
+    'sticky': {image: Sprite.RD2}
+
   }, function(info, name) {
     info.size = Size.ITEM;
     info.actualSize = 36;
@@ -141,9 +161,9 @@ SpriteService.prototype.draw = function(name, x, y, opt_options) {
   ctx.translate(x, y);
   if (options.rotation) ctx.rotate(options.rotation);
   if (options.scale) ctx.scale(options.scale, options.scale);
-  if (options.alpha) ctx.globalAlpha = options.alpha;
+  ctx.globalAlpha = options.alpha;
   ctx.drawImage(sprite.image, -size / 2, -size / 2);
-  if (options.alpha) ctx.globalAlpha = 1;
+  ctx.globalAlpha = 1;
   if (options.scale) ctx.scale(1/options.scale, 1/options.scale);
   if (options.rotation) ctx.rotate(-options.rotation);
   ctx.translate(-x, -y);

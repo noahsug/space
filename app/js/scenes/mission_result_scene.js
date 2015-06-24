@@ -23,14 +23,12 @@ MissionResultScene.prototype.addEntities_ = function() {
       .setBorderStyle('primary')
 
       .add(this.LabelElement_.new()
-        .setText(this.missionService_.won() ?
+        .setText(this.gm_.mission.state == 'won' ?
                  'mission complete' : 'mission failed', 22)
         .setStyle('muted')
         .setPadding('bottom', Padding.MARGIN))
 
       .modify(this.maybeAddReward_, this)
-
-      .addGap(Padding.MARGIN)
 
       .add(this.LabelElement_.new()
         .setText('continue', Size.BUTTON)
@@ -45,7 +43,7 @@ MissionResultScene.prototype.maybeAddReward_ = function(layout) {
 
     // New item.
     .add(this.LayoutElement_.new('horizontal')
-      .setPadding('bottom', Padding.MARGIN)
+      .setPadding('bottom', Padding.MARGIN_SM)
       .add(this.LabelElement_.new()
         .setPadding('top', Size.ITEM / 2)
         .setPadding('right', 5)
@@ -68,5 +66,7 @@ MissionResultScene.prototype.maybeAddReward_ = function(layout) {
          .setNumLines(2)
          .setLineWrap(true)
          .setStyle('muted')
-         .setBg('none', Padding.DESC_SM_BG)));
+         .setBg('none', Padding.DESC_SM_BG))
+
+    .addGap(Padding.MARGIN_SM));
 };

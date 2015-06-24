@@ -127,13 +127,15 @@ UiElement.prototype.calcFreeWidth = function() {
 
 UiElement.prototype.calcFreeHeight = function() {
   return this.calcMaxHeight() - this.calc_.padding.top -
-    this.calc_.padding.bottom;
+      this.calc_.padding.bottom;
 };
 
-UiElement.prototype.update = function() {
+UiElement.prototype.update = function(dt) {
+  if (!PROD) _.assert(_.isFinite(dt));
   this.calcSize_();
   this.updateChildPosition_();
-  this.update_();
+  _.each(this.elements_, function(e) { e.update(dt); });
+  this.update_(dt);
 };
 
 UiElement.prototype.calcSize_ = function() {
@@ -164,9 +166,9 @@ UiElement.prototype.calcInnerWidthHeight_ = _.emptyFn;
 
 UiElement.prototype.calcWidthHeight_ = function() {
   this.width =
-    this.calc_.padding.left + this.innerWidth + this.calc_.padding.right;
+      this.calc_.padding.left + this.innerWidth + this.calc_.padding.right;
   this.height =
-    this.calc_.padding.top + this.innerHeight + this.calc_.padding.bottom;
+      this.calc_.padding.top + this.innerHeight + this.calc_.padding.bottom;
 };
 
 UiElement.prototype.updateChildPosition_ = function() {
@@ -217,7 +219,6 @@ UiElement.prototype.update_ = function() {
 };
 
 UiElement.prototype.handleClickEvents_ = function() {
-  if (!this.onClickFn_ && !this.onNotClickFn_) return;
   var collides = this.collides_({x: this.mouse_.staticX,
                                  y: this.mouse_.staticY});
   if (this.mouse_.clicked) {

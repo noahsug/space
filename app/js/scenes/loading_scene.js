@@ -12,9 +12,9 @@ LoadingScene.prototype.addEntities_ = function() {
 
 LoadingScene.prototype.update_ = function(dt) {
   var progress = this.element_.getProp('loading');
-  progress += dt * 1.15;
+  progress += dt * 1.5;
   this.element_.setProp('loading', progress);
-  if (progress >= 1) {
+  if (progress >= 1.5) {
     this.transitionInstantly_('intro');
   }
 };

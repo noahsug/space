@@ -15,8 +15,10 @@ EquipScene.prototype.onStart_ = function() {
 EquipScene.prototype.addEntities_ = function() {
   this.layout_ = this.LayoutElement_.new('vertical')
     .consumeOnClick()
-    .setChildrenBaselineAlign('bottom', 'center')
-    .setPadding('bottom', Padding.MARGIN * 2 + Size.BUTTON * 2)
+    .setChildrenBaselineAlign('bottom', 'right')
+    .setPadding('bottom', Padding.MARGIN + Size.BUTTON +
+                          Padding.BUTTON_BG * 2 + Padding.MARGIN_SM)
+    .setPadding('right', Padding.MARGIN)
     .add(this.LayoutElement_.new('vertical')
        .modify(this.addItemDescContainer_, this)
 

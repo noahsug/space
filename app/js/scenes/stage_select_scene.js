@@ -1,7 +1,6 @@
 var StageSelectScene = di.service('StageSelectScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'ItemElement',
-  'LabelElement', 'MissionService',
-  'Inventory', 'Gameplay', 'SpriteService']);
+  'LabelElement', 'Inventory', 'Gameplay', 'SpriteService']);
 
 StageSelectScene.prototype.init = function() {
   _.class.extend(this, this.Scene_.new('stageSelect'));
@@ -19,7 +18,7 @@ StageSelectScene.prototype.addEntities_ = function() {
         .setBg('muted', Padding.HEADING_SM_BG))
       .addFlex()
       .add(this.LabelElement_.new()
-        .setText('Lives: ' + this.gm_.mission.lives, Size.DESC)
+        .setText('rewinds: ' + this.gm_.mission.lives, Size.DESC)
         .setBg('muted', Padding.DESC_BG)))
 
     .addFlex()
@@ -32,7 +31,7 @@ StageSelectScene.prototype.addEntities_ = function() {
       .setChildrenAlign('center')
       .add(this.createPlayerBtn_()))
 
-    .addGap(Padding.MARGIN_LG)
+    .addFlex()
 
     .add(this.LayoutElement_.new('horizontal')
       .add(this.LabelElement_.new()
@@ -45,7 +44,7 @@ StageSelectScene.prototype.addEntities_ = function() {
         .setBg('primary', Padding.BUTTON_BG)
         .onClick(this.openModal_.bind(this, 'equip'))));
 
-  if (this.missionService_.won() || this.missionService_.lost()) {
+  if (_.is(this.gm_.mission.state, 'won', 'lost')) {
     this.openModal_('missionResult');
   }
 };
@@ -78,12 +77,19 @@ StageSelectScene.prototype.createStageBtn_ = function(row, col) {
     btn.setSize(Size.STAGE_LG);
   }
 
-  if (stage.state == 'won' || stage.state == 'lost') btn.setStyle('hidden');
-  else if (stage.state == 'locked') btn.setStyle('locked');
-  else if (stage.state == 'unlocked') {
+  switch(stage.state) {
+  case 'won':
+    if (this.gm_.stage == stage) {
+      btn.animate('alpha', 0);
+    } else {
+      btn.setStyle('hidden');
+    }
+    break;
+  case 'locked': btn.setStyle('locked'); break;
+  case 'unlocked':
     btn.onClick(function() {
       this.gm_.stage = stage;
-      this.transition_('battle');
+      this.openModal_('shipDetails');
     }, this);
   }
   return btn;

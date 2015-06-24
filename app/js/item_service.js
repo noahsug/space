@@ -25,13 +25,14 @@ ItemService.prototype.getEnemyEquipped = function(type) {
   return _.findWhere(this.gm_.stage.enemy, {category: type});
 };
 
-ItemService.CD_ONLY = ['charge', 'tracker', 'pull', 'turret', 'alien spawn'];
-ItemService.DESC_ONLY = ['divide'];
+ItemService.CD_ONLY = ['charge', 'tracker', 'pull', 'turret', 'alien spawn',
+                       'alien emp', 'pull', 'alien stun'];
+ItemService.DESC_ONLY = ['divide', 'sticky'];
 ItemService.prototype.getDesc = function(item) {
   var descParts = [];
-  var descOnly = item.category in ItemService.DESC_ONLY;
+  var descOnly = _.contains(ItemService.DESC_ONLY, item.name);
   var cdOnly = item.category == 'ability' || item.category == 'utility' ||
-      item.category in ItemService.CD_ONLY;
+      _.contains(ItemService.CD_ONLY, item.name);
 
   if (!descOnly) {
     var cooldown = item.spec.cooldown.toFixed(1);

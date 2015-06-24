@@ -2,7 +2,7 @@ var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene',
   'EquipScene', 'StageResultScene', 'MissionResultScene',
   'Gameplay', 'MissionService', 'BattleRewards', 'MissionSelectScene',
-  'StageSelectScene']);
+  'StageSelectScene', 'ShipDetailsScene']);
 
 Game.UPDATE_RATE = .06;
 
@@ -21,20 +21,23 @@ Game.prototype.start = function() {
     /* 0 */ this.stageResultScene_,
     /* 1 */ this.missionResultScene_,
     /* 2 */ this.equipScene_,
+    /* 3 */ this.shipDetailsScene_,
 
-    /* 3 */ this.loadingScene_,
-    /* 4 */ this.introScene_,
-    /* 5 */ this.missionSelectScene_,
-    /* 6 */ this.stageSelectScene_,
-    /* 7 */ this.battleScene_,
+    /* 4 */ this.loadingScene_,
+    /* 5 */ this.introScene_,
+    /* 6 */ this.missionSelectScene_,
+    /* 7 */ this.stageSelectScene_,
+    /* 8 */ this.battleScene_,
   ];
 
   // DEBUG
   this.gm_.mission = this.gm_.world.missions[0];
   this.gm_.stage = this.gm_.mission.stages[0][0];
+  //this.gm_.mission.lives = 0;
   //this.gm_.stage.state = 'won';
-  //this.battleRewards_.calculateRewards();
+  //this.gm_.stage.state = 'lost';
   //this.gm_.equipping = 'primary';
+  this.gm_.mission.state = 'won';
 
   this.scenes_[6].start();
 };

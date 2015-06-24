@@ -1,6 +1,6 @@
 var StageResultScene = di.service('StageResultScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'BackdropElement',
-  'LabelElement']);
+  'LabelElement', 'MissionService']);
 
 StageResultScene.prototype.init = function() {
   _.class.extend(this, this.Scene_.new('stageResult'));
@@ -15,11 +15,19 @@ StageResultScene.prototype.addEntities_ = function() {
     .setBgStyle('muted')
     .setBorderStyle('primary')
     .add(this.LabelElement_.new()
-         .setText(this.gm_.stage.state == 'won' ? 'victory' : 'defeat', 30)
-         .setStyle('muted')
-         .setPadding('bottom', Padding.MARGIN_LG))
+      .setText(this.gm_.stage.state == 'won' ? 'victory' : 'defeat', 30)
+      .setStyle('muted')
+      .setPadding('bottom', Padding.MARGIN))
     .add(this.LabelElement_.new()
-         .setText('continue', Size.BUTTON)
-         .setBg('primary', Padding.BUTTON_BG)
-         .onClick(this.goBackTo_.bind(this, 'stageSelect')));
+      .setText(this.getResultText_(), Size.BUTTON)
+      .setBg('primary', Padding.BUTTON_BG)
+      .onClick(this.goBackTo_.bind(this, 'stageSelect')));
+};
+
+StageResultScene.prototype.getResultText_ = function() {
+  if (this.gm_.stage.state == 'lost' && this.gm_.mission.state != 'lost') {
+    // Lost the stage, but still have rewind(s) left.
+    return 'rewind';
+  }
+  return 'continue';
 };

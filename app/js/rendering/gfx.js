@@ -10,11 +10,11 @@ Gfx.Color = {
   // UI Colors
   FG: '#F3F9FD',
   FG_MUTED: '#C3C9CD',
-  ACTIVE: '#FDBE31',
+  FG_ACTIVE: '#FDBE31',
   // TODO: Make these all have opacity.
   BG: 'rgba(72, 81, 84, .75)',
   BG_MUTED: 'rgba(31, 33, 34, .75)',
-  BG_MUTED_DARK: 'black',
+  BG_MUTED_DARK: 'rgba(0, 0, 0, .85)',
   COOLDOWN: 'rgba(0, 0, 0, .35)',
 
   // Battle Colors
@@ -38,7 +38,6 @@ Gfx.Color = {
   PURPLE: '#b091be',
 
   UNSELECTED: '#CCC',
-  ACTIVE: '#FFFFAA',
   ACTIVE_LOCKED: '#888844',
   LOCKED: '#666',
   BEATEN: '#AAA'

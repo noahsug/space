@@ -133,20 +133,20 @@ di.constant('gameplayFile', {
     //'gatling',
 
     //'stun',
-    //'emp',
+    'emp',
     //'pistol',
     //'pull',
     //'charge',
     //'tracker',
     //'turret',
 
-    //'knockback',
+    'knockback',
     //'shield',
     //'reflect',
     //'tank',
     //'haze',
 
-    //'teleport',
+    'teleport',
     //'refresh',
     //'divide',
     //'huge',
@@ -345,7 +345,7 @@ di.constant('gameplayFile', {
     //  level: 4},
     'charge': {
       desc: 'Charge the enemy, taking no damage from collisions.',
-      id:'secondary.charge', spec: {},
+      id:'secondary.charge', spec: {cooldown: 4},
       level: 0},
     //'charge II': {
     //  desc: 'Charge the enemy while tasking less damage',
@@ -357,7 +357,7 @@ di.constant('gameplayFile', {
       level: 1},
     'pull': {
       desc: 'Pulls enemy close and stuns. Range: 10. Stun duration: 1.5s',
-      id:'secondary.pull', spec: {duration: 1.5, range: 100},
+      id:'secondary.pull', spec: {duration: 1.5, range: 100, cooldown: 4},
       level: 2},
     //'melee': {
     //  desc: 'Primary 2x for 75% damage while close.',
@@ -370,7 +370,7 @@ di.constant('gameplayFile', {
       level: 0},
     'dash': {
       desc: 'Ability to dash a short distance.',
-      id: 'utility.ninja', spec: {power: 1},
+      id: 'utility.ninja', spec: {cooldown: 1.75},
       level: 0},
     'teleport': {
       desc: 'Ability to teleport behind the enemy',
@@ -412,7 +412,7 @@ di.constant('gameplayFile', {
 
     'knockback': {
       desc: 'Knocks the enemy away.',
-      id:'ability.knockback', spec: {},
+      id:'ability.knockback', spec: {cooldown: 4},
       level: 1},
     'alien knockback': {
       desc: 'Knocks the enemy away.',
@@ -420,11 +420,11 @@ di.constant('gameplayFile', {
       level: 9},
     'haze': {
       desc: 'Lowers enemy accuracy for a short time.',
-      id: 'ability.haze', spec: {},
+      id: 'ability.haze', spec: {cooldown: 6},
       level: 0},
     'shield': {
       desc: 'Blocks the next shot.',
-      id: 'ability.shield', spec: {},
+      id: 'ability.shield', spec: {cooldown: 8},
       level: 3},
     //'shield II': {
     //  desc: 'Blocks the next two shots.',

@@ -176,7 +176,6 @@ LayoutElement.prototype.positionChild_ = function(origX, origY) {
         this[o.calcFreeHeight]() : this[o.innerHeight];
     this.positionElement_(e, x + dx, y);
     dx += e[o.maxWidth];
-    e.update();
   }
 
   this.positionEntity_();
@@ -236,7 +235,7 @@ LayoutElement.prototype.collides_ = function(point) {
   return this.collision_.rectPoint(bounds, point);
 };
 
-LayoutElement.prototype.update_ = function() {
+LayoutElement.prototype.update_ = function(dt) {
   if (this.bgFill_) {
     this.entity_.width = this.calcMaxWidth();
     this.entity_.height = this.calcMaxHeight();
@@ -244,5 +243,5 @@ LayoutElement.prototype.update_ = function() {
     this.entity_.width = this.calcWidth();
     this.entity_.height = this.calcHeight();
   }
-  this.UiElement_.update_.call(this);
+  this.EntityElement_.update_.call(this, dt);
 };

@@ -1,4 +1,4 @@
-var Scene = di.factory('Scene', ['GameModel as gm', 'Mouse']);
+var Scene = di.factory('Scene', ['GameModel as gm', 'Mouse', 'textCtx']);
 
 Scene.TRANSITION_TIME = .25;
 
@@ -51,8 +51,8 @@ Scene.prototype.resolve = function(dt) {
   }
 };
 
-Scene.prototype.update_ = function() {
-  this.layout_.update();
+Scene.prototype.update_ = function(dt) {
+  this.layout_.update(dt);
 };
 
 Scene.prototype.goBackTo_ = function(scene, opt_speed) {

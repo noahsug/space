@@ -49,8 +49,7 @@ Renderer.prototype.drawFps_ = function(dt) {
 
 var STAR_SCROLL_SPEED = 7;
 Renderer.prototype.handleCamera_ = function(dt) {
-  if (this.gm_.scenes['battle'] != 'inactive' ||
-      this.gm_.scenes['loading'] != 'inactive') {
+  if (this.gm_.scenes['battle'] != 'inactive') {
     return;
   }
   this.screen_.x -= STAR_SCROLL_SPEED * dt;
@@ -76,8 +75,7 @@ Renderer.prototype.transitionOut_ = function(dt) {
 
 Renderer.prototype.transitionIn_ = function(dt) {
   if (this.transitionAnimation_ > 1) this.transitionAnimation_ = 1;
-  var fade = this.gm_.scenes.intro == 'active' ? 4 :
-      this.gm_.transition.time * 2;
+  var fade = this.gm_.transition.time * 2;
   var ease = (1.1 - this.transitionAnimation_) * 8;
   this.transitionAnimation_ -= ease * dt / fade;
 
@@ -98,7 +96,10 @@ Renderer.prototype.drawEntity_ = function(e, dt) {
   var pos = this.getPos_(e);
   e.r.x = pos.x;
   e.r.y = pos.y;
+
+  if (_.isDef(e.alpha)) this.textCtx_.globalAlpha = e.alpha;
   this.drawFns_[e.type](e, this.style_[e.type], dt);
+  this.textCtx_.globalAlpha = 1;
 };
 
 Renderer.prototype.getPos_ = function(e) {
@@ -115,19 +116,10 @@ Renderer.prototype.drawLoadingSplash_ = function(e) {
   this.ctx_.font = 10 + 'px ' + Gfx.Font.TEXT;
   this.ctx_.fillText('.', 0, 0);
 
+  this.ctx_.globalAlpha = Math.max(1 - e.loading, 0);
   this.ctx_.fillStyle = '#000000';
   this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
-
-  var x = this.screen_.width / 2;
-  var y = this.screen_.height / 2;
-  this.ctx_.shadowBlur = 25;
-  this.ctx_.lineWidth = 5;
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
-  this.ctx_.beginPath();
-  this.ctx_.arc(x, y, x / 2, -Math.PI / 2,
-                -Math.PI / 2 + 2 * Math.PI * e.loading);
-  this.ctx_.stroke();
-  this.ctx_.shadowBlur = 0;
+  this.ctx_.globalAlpha = 1;
 };
 
 Renderer.prototype.drawResultSplash_ = function(e) {
@@ -365,7 +357,7 @@ Renderer.prototype.drawItemBorder_ = function(e) {
 Renderer.prototype.drawStageItem_ = function(e) {
   var hull = e.stage.hull.spec.sprite;
   var rotation = e.stage.enemy ? Math.PI / 2 : -Math.PI / 2;
-  var alpha = e.stage.state == 'locked' ? .3 : 0;
+  var alpha = (e.stage.state == 'locked' ? .3 : 1) * e.alpha;
   this.spriteService_.draw(
       hull, e.r.x + e.size / 2, e.r.y + e.size / 2,
       {rotation: rotation, alpha: alpha});

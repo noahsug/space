@@ -25,10 +25,12 @@ BattleScene.prototype.addEntities_ = function() {
     .setPadding(Padding.MARGIN)
     .setChildrenBaseline('bottom')
     .add(this.LayoutElement_.new('horizontal')
+      .setLayoutFill(true)
       .modify(this.addItems_, this));
 
   //DEBUG: End the battle immediately.
   //this.enemy_.dead = true;
+  this.player_.dead = true;
 };
 
 BattleScene.prototype.addItems_ = function(layout) {
@@ -67,7 +69,7 @@ BattleScene.prototype.addInputHandler_ = function(btn, index) {
 
 BattleScene.prototype.update_ = function(dt) {
   if (this.state_ != 'background') {
-    this.layout_.update();
+    this.layout_.update(dt);
   }
   if (this.state_ == 'active') {
     this.handleActiveState_();
@@ -80,28 +82,13 @@ BattleScene.prototype.update_ = function(dt) {
 BattleScene.prototype.handleActiveState_ = function() {
   this.player_ = this.player_.getLivingClone();
   this.enemy_ = this.enemy_.getLivingClone();
-
   if (this.player_.dead || this.enemy_.dead) this.startEndingState_();
 };
 
 BattleScene.prototype.startEndingState_ = function() {
   this.state_ = 'ending';
   this.transition_ = SLOWDOWN_TIME;
-
-  if (!this.player_.dead) {
-    this.gm_.stage.state = 'won';
-    this.handleWin_();
-  } else {
-    this.handleLoss_();
-  }
-};
-
-BattleScene.prototype.handleWin_ = function() {
-  this.missionService_.unlockAdjacent(this.gm_.stage);
-};
-
-BattleScene.prototype.handleLoss_ = function() {
-  this.gm_.mission.lives--;
+  this.missionService_.handleStageResult(this.player_.dead ? 'lost' : 'won');
 };
 
 BattleScene.prototype.handleEndingState_ = function(dt) {
@@ -112,7 +99,6 @@ BattleScene.prototype.handleEndingState_ = function(dt) {
 
 BattleScene.prototype.startBackgroundState_ = function() {
   this.state_ = 'background';
-
   this.freezeEntities_();
   this.gm_.gameSpeed = 1;
   this.openModal_('stageResult');

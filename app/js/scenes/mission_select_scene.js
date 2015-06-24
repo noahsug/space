@@ -24,9 +24,12 @@ MissionSelectScene.prototype.addEntities_ = function() {
 
 MissionSelectScene.prototype.addMissions_ = function(layout) {
   _.each(this.gm_.world.missions, function(mission, i) {
+    if (mission.state == 'locked') return;
+    if (mission.state == 'lost') this.missionService_.resetProgress(mission);
+
     if (i) layout.addGap(Padding.DESC_GAP);
 
-    layout.add(this.LayoutElement_.new('vertical')
+    var missionContainer = this.LayoutElement_.new('vertical')
       .setBgFill(true)
       .setLayoutFill(true)
       .onClick(this.selectMission_.bind(this, mission))
@@ -47,7 +50,9 @@ MissionSelectScene.prototype.addMissions_ = function(layout) {
           .setLineWrap(true)
           .setText(mission.desc, Size.DESC)
           .setBaselineAlign('top', 'left')
-          .setLayoutAlign('left'))));
+          .setLayoutAlign('left')));
+
+    layout.add(missionContainer);
   }, this);
 };
 

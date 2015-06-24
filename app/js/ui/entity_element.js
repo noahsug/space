@@ -1,11 +1,13 @@
 var EntityElement = di.factory('EntityElement', [
   'Entity', 'EntityDecorator', 'GameModel as gm', 'Screen', 'Mouse',
-  'UiElement']);
+  'UiElement', 'AnimationsFactory']);
 
 EntityElement.prototype.init = function(type) {
   _.class.extend(this, this.UiElement_.new());
   this.d_ = this.entityDecorator_.getDecorators();
   this.entity_ = this.createEntity_(type);
+  this.animations_ = this.AnimationsFactory_.new(this.entity_);
+  this.entity_.alpha = 1;
 };
 
 EntityElement.prototype.createEntity_ = function(type) {
@@ -13,6 +15,16 @@ EntityElement.prototype.createEntity_ = function(type) {
   _.decorate(entity, this.d_.staticPosition);
   this.gm_.entities.add(entity);
   return entity;
+};
+
+EntityElement.prototype.animate = function(prop, value, opt_options) {
+  this.animations_.animate(prop, value, opt_options);
+  return this;
+};
+
+EntityElement.prototype.setAlpha = function(alpha) {
+  this.entity_.alpha = alpha;
+  return this;
 };
 
 EntityElement.prototype.setStyle = function(style) {
@@ -49,6 +61,11 @@ EntityElement.prototype.getEntity = function() {
 
 EntityElement.prototype.positionChild_ = function(x, y) {
   this.entity_.setPos(x, y);
+};
+
+EntityElement.prototype.update_ = function(dt) {
+  this.UiElement_.update_.call(this, dt);
+  this.animations_.update(dt);
 };
 
 EntityElement.prototype.collides_ = function(point) {

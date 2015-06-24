@@ -1,7 +1,13 @@
 _.emptyFn = function() {};
 
-_.pos = {
-  BOTTOM: 'bottom'
+_.is = function(value, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+  return value == arg1 ||
+    value == arg2 ||
+    value == arg3 ||
+    value == arg4 ||
+    value == arg5 ||
+    value == arg6 ||
+    value == arg7;
 };
 
 _.roundTo = function(value, nearest) {

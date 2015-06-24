@@ -30,6 +30,7 @@ MissionService.prototype.resetProgress_ = function(mission) {
     _.each(row, this.resetStage_.bind(this));
   }, this);
   mission.lives = mission.maxLives;
+  mission.state = 'unlocked';
 };
 
 MissionService.prototype.resetStage_ = function(stage) {
@@ -37,21 +38,28 @@ MissionService.prototype.resetStage_ = function(stage) {
   stage.state = stage.row == 0 ? 'unlocked' : 'locked';
 };
 
-MissionService.prototype.unlockAdjacent = function(stage) {
+MissionService.prototype.handleStageResult = function(result) {
+  if (result == 'lost') {
+    this.gm_.mission.lives--;
+    if (this.gm_.mission.lives <= 0) this.gm_.mission.state = 'lost';
+  } else {
+    this.gm_.stage.state = 'won';
+    if (this.won_()) this.gm_.mission.state = 'won';
+    else this.unlockAdjacent_(this.gm_.stage);
+  }
+};
+
+MissionService.prototype.unlockAdjacent_ = function(stage) {
   this.neighbors_(stage).forEach(function(neighbor) {
-    if (neighbor.state == 'locked') neighbor.state = 'unlocked';
+    neighbor.state = 'unlocked';
   }, this);
 };
 
-MissionService.prototype.won = function() {
+MissionService.prototype.won_ = function() {
   if (this.gm_.stage.row < this.gm_.mission.stages.length - 1) return false;
   return _.last(this.gm_.mission.stages).every(function(stage) {
     return stage.state == 'won';
   });
-};
-
-MissionService.prototype.lost = function() {
-  return this.gm_.mission.lives <= 0;
 };
 
 MissionService.prototype.isValid_ = function(row, col) {
@@ -59,6 +67,7 @@ MissionService.prototype.isValid_ = function(row, col) {
       _.between(col, 0, this.gm_.mission.cols - 1);
 };
 
+// Returns next row of ships of current row is defeated.
 MissionService.prototype.neighbors_ = function(stage) {
   if (stage.row == this.gm_.mission.stages.length - 1) return [];
   var row = this.gm_.mission.stages[stage.row];
