@@ -15,6 +15,6 @@ LoadingScene.prototype.update_ = function(dt) {
   progress += dt * 1.5;
   this.element_.setProp('loading', progress);
   if (progress >= 1.5) {
-    this.transitionInstantly_('intro');
+    this.transition_('intro', 0);
   }
 };

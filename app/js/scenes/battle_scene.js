@@ -18,6 +18,8 @@ BattleScene.prototype.addEntities_ = function() {
   this.enemy_ = this.shipFactory_.createEnemy();
   this.player_ = this.shipFactory_.createPlayer();
   this.shipFactory_.setTargets(this.player_, this.enemy_);
+  this.player_.awake();
+  this.enemy_.awake();
 
   // Items
   this.layout_ = this.LayoutElement_.new('vertical')
@@ -25,11 +27,13 @@ BattleScene.prototype.addEntities_ = function() {
     .setChildrenBaseline('bottom')
     .add(this.LayoutElement_.new('horizontal')
       .setLayoutFill(true)
-      .modify(this.addItems_, this));
+      .modify(this.addItems_, this))
+    .setAlpha(0)
+    .animate('alpha', 1);
 
   //DEBUG: End the battle immediately.
   //this.enemy_.dead = true;
-  this.player_.dead = true;
+  //this.player_.dead = true;
 };
 
 BattleScene.prototype.addItems_ = function(layout) {

@@ -2,7 +2,7 @@ var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene',
   'EquipScene', 'StageResultScene', 'MissionResultScene',
   'Gameplay', 'MissionService', 'BattleRewards', 'MissionSelectScene',
-  'StageSelectScene', 'ShipDetailsScene']);
+  'StageSelectScene', 'ShipDetailsScene', 'PrebattleScene']);
 
 Game.UPDATE_RATE = .06;
 
@@ -27,19 +27,24 @@ Game.prototype.start = function() {
     /* 5 */ this.introScene_,
     /* 6 */ this.missionSelectScene_,
     /* 7 */ this.stageSelectScene_,
-    /* 8 */ this.battleScene_,
+    /* 8 */ this.prebattleScene_,
+    /* 9 */ this.battleScene_,
   ];
 
-  // DEBUG
+  // Select the tutorial mission and stage.
   this.gm_.mission = this.gm_.world.missions[0];
   this.gm_.stage = this.gm_.mission.stages[0][0];
+
+  // DEBUG
+  //this.gm_.mission = this.gm_.world.missions[0];
+  //this.gm_.stage = this.gm_.mission.stages[0][0];
   //this.gm_.mission.lives = 0;
   //this.gm_.stage.state = 'won';
   //this.gm_.stage.state = 'lost';
   //this.gm_.equipping = 'primary';
   //this.gm_.mission.state = 'won';
 
-  this.scenes_[8].start();
+  this.scenes_[4].start();
 };
 
 Game.prototype.initGameModel_ = function() {

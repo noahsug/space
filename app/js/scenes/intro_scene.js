@@ -23,7 +23,7 @@ IntroScene.prototype.addEntities_ = function() {
       .animate('alpha', 1, {duration: 1, delay: 1})
       .setText('new game', Size.BUTTON_LG)
       .setBg('primary', Padding.BUTTON_LG_BG)
-      .onClick(this.transition_.bind(this, 'tutorial', Time.TRANSITION_SLOW)))
+      .onClick(this.transition_.bind(this, 'prebattle', Time.TRANSITION_SLOW)))
 
     .addFlex(6);
 };

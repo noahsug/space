@@ -11,7 +11,6 @@ Renderer.prototype.init = function() {
     this.style_[name] = {};
     fn.call(this, this.style_[name]);
   }, this);
-  //this.transitionAnimation_ = 0;
 };
 
 Renderer.prototype.update = function(dt) {
@@ -22,7 +21,6 @@ Renderer.prototype.update = function(dt) {
   }
   this.gfx_.flush();
   //this.drawFps_(dt);
-  //this.drawTransition_(dt);
 };
 
 Renderer.prototype.drawFps_ = function(dt) {
@@ -56,38 +54,6 @@ Renderer.prototype.handleCamera_ = function(dt) {
   this.screen_.y -= STAR_SCROLL_SPEED * dt;
 };
 
-//Renderer.prototype.drawTransition_ = function(dt) {
-//  if (!this.gm_.transition.done) {
-//    this.transitionOut_(dt);
-//  } else if (this.transitionAnimation_) {
-//    this.transitionIn_(dt);
-//  }
-//};
-//
-//Renderer.prototype.transitionOut_ = function(dt) {
-//  var x = this.gm_.transition.pos.screenX;
-//  var y = this.gm_.transition.pos.screenY;
-//  this.transitionAnimation_ += 450 * (dt / this.gm_.transition.time);
-//  this.textCtx_.fillStyle = '#000000';
-//  this.circle_(x, y, this.transitionAnimation_);
-//  this.textCtx_.fill();
-//};
-//
-//Renderer.prototype.transitionIn_ = function(dt) {
-//  if (this.transitionAnimation_ > 1) this.transitionAnimation_ = 1;
-//  var fade = this.gm_.transition.time * 2;
-//  var ease = (1.1 - this.transitionAnimation_) * 8;
-//  this.transitionAnimation_ -= ease * dt / fade;
-//
-//  if (this.transitionAnimation_ < 0) {
-//    this.transitionAnimation_ = 0;
-//  } else {
-//    this.textCtx_.fillStyle =
-//        "rgba(0, 0, 0, " + this.transitionAnimation_ + ")";
-//    this.fillRect_(0, 0, this.screen_.width, this.screen_.height);
-//  }
-//};
-
 Renderer.prototype.drawEntity_ = function(e, dt) {
   if (!e.r) {
     e.r = {};
@@ -110,6 +76,8 @@ Renderer.prototype.getPos_ = function(e) {
   }
 };
 
+// UiElement draw functions.
+
 Renderer.prototype.drawLoadingSplash_ = function(e) {
   this.ctx_.font = 10 + 'px ' + Gfx.Font.TITLE;
   this.ctx_.fillText('.', 0, 0);
@@ -120,191 +88,6 @@ Renderer.prototype.drawLoadingSplash_ = function(e) {
   this.ctx_.fillStyle = '#000000';
   this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
   this.ctx_.globalAlpha = 1;
-};
-
-Renderer.prototype.drawResultSplash_ = function(e) {
-  this.textCtx_.textAlign = 'left';
-  this.textCtx_.textBaseline = 'top';
-  var result = this.gm_.stage.state == 'won' ? 'victory' : 'defeat';
-  this.drawText_(result, 70, e.r.x, e.r.y);
-};
-
-Renderer.prototype.drawPlayerSplash_ = function(e) {
-  this.spriteService_.draw(
-      this.inventory_.getHull().spec.sprite,
-      this.screen_.width / 2, e.r.y,
-      {rotation: -Math.PI / 2});
-};
-
-Renderer.prototype.drawEnemySplash_ = function(e) {
-  this.spriteService_.draw(
-      this.gm_.stage.hull.spec.sprite,
-      this.screen_.width / 2, e.r.y,
-      {rotation: Math.PI / 2});
-};
-
-Renderer.prototype.drawWonSplash_ = function() {
-  this.textCtx_.textAlign = 'center';
-  this.textCtx_.textBaseline = 'alphabetic';
-  var text = _.last(this.gm_.world.missions) == this.gm_.mission ?
-      'You Win' : 'Mission Clear';
-  this.drawText_(text, Size.TITLE,
-                  this.screen_.width / 2, this.screen_.height / 2);
-};
-
-Renderer.prototype.drawLostSplash_ = function() {
-  this.textCtx_.textAlign = 'center';
-  this.textCtx_.textBaseline = 'alphabetic';
-  this.drawText_('Mission Failed', Size.TITLE,
-                  this.screen_.width / 2, this.screen_.height / 2);
-};
-
-var DESC_ONLY = _.newSet([
-  'charge', 'tracker', 'pull', 'turret', 'alien spawn'
-]);
-Renderer.prototype.drawItemDesc_ = function(e) {
-  var size = Size.TEXT;
-  var padding = Padding.TEXT / 2;
-  if (!e.item) return;
-  this.textCtx_.textAlign = 'left';
-  this.textCtx_.textBaseline = 'middle';
-
-  var tier = Game.MAX_ITEM_LEVEL - e.item.level + 1;
-  var desc = e.item.desc;
-
-  var textLines = [desc];
-  var type = e.item.category;
-  if ((type == 'primary' || type == 'secondary') &&
-      !(e.item.name in DESC_ONLY)) {
-    var spec = e.item.spec;
-    var dps = spec.dmg / spec.cooldown;
-    var stats = 'DPS: ' + dps.toFixed(1);
-    if (spec.projectiles > 1) stats += ' x' + spec.projectiles;
-    stats += '  Range: ' + spec.range / 10;
-    if (spec.seek > 10) stats += '  Seek: ' + spec.seek.toFixed(1);
-    textLines[1] = stats;
-  }
-
-  var width = this.textService_.width(desc, size);
-  if (width > this.screen_.width - e.r.x * 2) {
-    if (textLines[1]) desc += ' ' + textLines[1];
-    textLines = _.splitText(desc);
-  }
-
-  if (textLines.length == 2) {
-    this.drawText_(textLines[0], size, e.r.x,
-                   e.r.y - size / 2 - padding);
-    this.drawText_(textLines[1], size, e.r.x,
-                   e.r.y + size / 2 + padding);
-  } else {
-    this.drawText_(textLines[0], size,
-                   e.r.x, e.r.y);
-  }
-};
-
-Renderer.prototype.drawBreak_ = function(e) {
-  this.textCtx_.strokeStyle = '#CCC';
-  this.textCtx_.shadowBlur = 0;
-  var x = this.screen_.width / 8;
-  var y = e.r.y;
-  this.line_(this.screen_.width - x, y, x, y, 1);
-};
-
-Renderer.prototype.drawRoundBtn_ = function(e) {
-  if (e.style == 'hidden') return;
-
-  // Draw circle.
-  var color = '#FFFFFF';
-  var fillColor = '#000000';
-  var lineWidth = 1;
-  if (e.stage) {
-    if (e.stage.state == 'won' || e.stage.state == 'lost') {
-      return;
-    }
-    fillColor = '';
-    color = e.stage.state == 'locked' ? '' : '#888';
-  } else if (e.mission) {
-    switch (e.mission.state) {
-      case 'won': color = Gfx.Color.BEATEN; break;
-      case 'locked': color = Gfx.Color.LOCKED; break;
-    }
-  } else if (e.item) {
-    if (e.rewardBtn) {
-      if (!e.item.name) color = Gfx.Color.LOCKED;
-      if (e.style == 'active') color = Gfx.Color.ACTIVE;
-    } else if (e.enemy) {
-      if (e.style == 'active') color = Gfx.Color.ACTIVE_LOCKED;
-      else color = Gfx.Color.LOCKED;
-    } else if (!this.inventory_.has(e.item.category)) {
-      color = Gfx.Color.LOCKED;
-    } else if (e.style == 'equipped' || e.style == 'active') {
-      color = Gfx.Color.ACTIVE;
-    }
-  } else if (e.category) {
-    if (!this.inventory_.has(e.category)) {
-      color = Gfx.Color.LOCKED;
-    } else if (e.style != 'selected') {
-      color = Gfx.Color.UNSELECTED;
-    }
-  } else if (e.style == 'locked') {
-    color = Gfx.Color.LOCKED;
-  }
-
-  this.textCtx_.fillStyle = fillColor;
-  this.textCtx_.strokeStyle = color;
-  this.circle_(
-      e.r.x, e.r.y, e.radius, lineWidth);
-  if (fillColor) this.textCtx_.fill();
-  if (color) this.textCtx_.stroke();
-
-  // Draw context.
-  var text = e.text;
-  var textSize = Size.ITEM_TEXT;
-  if (e.stage) {
-    var hull = e.stage.hull.spec.sprite;
-    var rotation = e.stage.enemy ? Math.PI / 2 : -Math.PI / 2;
-    var alpha = e.stage.state == 'locked' ? .3 : 0;
-    this.spriteService_.draw(
-      hull, e.r.x, e.r.y,
-      {rotation: rotation, alpha: alpha});
-    return;
-  } else if (e.mission) {
-    if (e.state == 'won') text = 'W';
-    else text = e.mission.index + 1;
-    textSize = Size.MISSION_TEXT;
-  } else if (e.item) {
-    if (e.enemy && e.item.name) {
-      color = '#FFFFFF';
-    }
-    text = e.item.displayName || 'none';
-    textSize = Size.ITEM_TEXT;
-  } else if (e.category) {
-    text = Strings.ItemType[e.category];
-  }
-
-  this.textCtx_.textAlign = 'center';
-  this.textCtx_.textBaseline = 'middle';
-  if (this.textService_.width(text, textSize) > e.radius * 2 - 6) {
-    var lines = _.splitText(text);
-    this.drawText_(lines[0], textSize, e.r.x,
-                   e.r.y - textSize / 2 - 2, {color: color});
-    this.drawText_(lines[1], textSize, e.r.x,
-                   e.r.y + textSize / 2 + 2, {color: color});
-  } else {
-    this.drawText_(text, textSize, e.r.x, e.r.y, {color: color});
-  }
-
-  if (e.cooldownInfo) {
-    var spec = e.cooldownInfo;
-    var cooldownRatio =
-        (spec.cooldown - spec.cooldownRemaining) / spec.cooldown;
-    if (cooldownRatio < 0) cooldownRatio = 0;
-    else if (cooldownRatio > 1) cooldownRatio = 1;
-    lineWidth = !spec.jammed && cooldownRatio == 1 ? 4 : 2;
-    this.textCtx_.strokeStyle = Gfx.Color.ACTIVE;
-    this.circle_(e.r.x, e.r.y, e.radius, lineWidth, cooldownRatio);
-    this.textCtx_.stroke();
-  }
 };
 
 Renderer.prototype.drawBackdrop_ = function(e) {
@@ -366,7 +149,7 @@ Renderer.prototype.drawStageItem_ = function(e) {
 Renderer.prototype.drawEquipItem_ = function(e) {
   if (!e.item.name) return;
 
-  var options = {rotation: -Math.PI / 2};
+  var options = {rotation: -Math.PI / 2, alpha: e.alpha};
 
   // Draw cooldown.
   if (e.cdInfo) {
@@ -377,14 +160,14 @@ Renderer.prototype.drawEquipItem_ = function(e) {
     this.textCtx_.fillStyle = Gfx.Color.COOLDOWN;
     this.fillRect_(e.r.x, e.r.y + e.size * (1 - cdRatio),
                    e.size, e.size * cdRatio);
-    if (cdRatio > 0 || e.cdInfo.jammed) options.alpha = .75;
+    if (cdRatio > 0 || e.cdInfo.jammed) options.alpha *= .75;
   } else {
     options.ctx = 'text';
   }
 
   // Draw as faded if not equipped.
   if (e.style == 'unequipped') {
-    options.alpha = .5;
+    options.alpha *= .5;
   }
 
   this.spriteService_.draw(
@@ -409,6 +192,99 @@ Renderer.prototype.drawLabel_ = function(e) {
         e.lines[i], e.size, e.r.x, e.r.y + i * e.lineHeight, {color: fgColor});
   };
 };
+
+// UiElement helper functions.
+
+Renderer.prototype.drawText_ = function(text, size, x, y, opt_options) {
+  var offset = this.textService_.offset(size);
+  var options = opt_options || {};
+  var color = options.color || Gfx.Color.FG;
+  this.textCtx_.fillStyle = color;
+  this.textCtx_.shadowBlur = 0;
+  this.setFont_(size, Gfx.Font.TEXT, options.bold);
+  this.fillText_(text, x + offset.x, y + offset.y);
+};
+
+Renderer.prototype.line_ = function(x1, y1, x2, y2, lineWidth) {
+  x1 = x1 * this.screen_.upscale;
+  y1 = y1 * this.screen_.upscale;
+  x2 = x2 * this.screen_.upscale;
+  y2 = y2 * this.screen_.upscale;
+  if (lineWidth) {
+    lineWidth = lineWidth * this.screen_.upscale;
+    this.textCtx_.lineWidth = lineWidth;
+  }
+  this.textCtx_.beginPath();
+  this.textCtx_.moveTo(x1, y1);
+  this.textCtx_.lineTo(x2, y2);
+  this.textCtx_.stroke();
+};
+
+Renderer.prototype.circle_ = function(x, y, radius, lineWidth, opt_ratio) {
+  var ratio = opt_ratio === undefined ? 1 : opt_ratio;
+  x = x * this.screen_.upscale;
+  y = y * this.screen_.upscale;
+  radius = radius * this.screen_.upscale;
+  if (lineWidth) {
+    lineWidth = lineWidth * this.screen_.upscale;
+    this.textCtx_.lineWidth = lineWidth;
+  } else lineWidth = 0;
+  this.textCtx_.beginPath();
+  this.textCtx_.arc(x, y, radius - lineWidth / 2,
+                    0, 2 * Math.PI * ratio);
+};
+
+Renderer.prototype.fillRect_ = function(x, y, width, height) {
+  x = x * this.screen_.upscale;
+  y = y * this.screen_.upscale;
+  width = width * this.screen_.upscale;
+  height = height * this.screen_.upscale;
+  this.textCtx_.fillRect(x, y, width, height);
+};
+
+Renderer.prototype.strokeRect_ = function(x, y, width, height) {
+  x = x * this.screen_.upscale;
+  y = y * this.screen_.upscale;
+  width = width * this.screen_.upscale;
+  height = height * this.screen_.upscale;
+  this.textCtx_.strokeRect(x, y, width, height);
+};
+
+Renderer.prototype.setFont_ = function(size, face, bold) {
+  size = size * this.screen_.upscale;
+  this.textCtx_.font = (bold ? 'bold ' : '') + size + 'px ' + face;
+};
+
+Renderer.prototype.strokeText_ = function(text, x, y) {
+  x = x * this.screen_.upscale;
+  y = y * this.screen_.upscale;
+  this.textCtx_.strokeText(text, x, y);
+};
+
+Renderer.prototype.fillText_ = function(text, x, y) {
+  x = x * this.screen_.upscale;
+  y = y * this.screen_.upscale;
+  this.textCtx_.fillText(text, x, y);
+};
+
+Renderer.prototype.getFgColor_ = function(style) {
+  switch (style) {
+    case 'muted': return Gfx.Color.FG_MUTED;
+    case 'active': return Gfx.Color.FG_ACTIVE;
+  }
+  return Gfx.Color.FG;
+};
+
+Renderer.prototype.getBgColor_ = function(style) {
+  switch (style) {
+    case 'muted': return Gfx.Color.BG_MUTED;
+    case 'muted_dark': return Gfx.Color.BG_MUTED_DARK;
+    case 'primary': return Gfx.Color.BG;
+  }
+  return '';
+};
+
+// Battle entity draw functions.
 
 var DEATH_ANIMATION_DURATION = .3;
 Renderer.prototype.initShip_ = function(e) {
@@ -686,147 +562,4 @@ Renderer.prototype.drawBlade_ = function(e, style, dt) {
                      triangle.x2, triangle.y2,
                      triangle.x3, triangle.y3);
 
-};
-
-Renderer.prototype.drawText_ = function(text, size, x, y, opt_options) {
-  var offset = this.textService_.offset(size);
-  var options = opt_options || {};
-  var color = options.color || Gfx.Color.FG;
-  this.textCtx_.fillStyle = color;
-  this.textCtx_.shadowBlur = 0;
-  this.setFont_(size, Gfx.Font.TEXT, options.bold);
-  this.fillText_(text, x + offset.x, y + offset.y);
-};
-
-// NOT USED.
-Renderer.prototype.underlineLabel_ = function(e, opt_options) {
-  var options = opt_options || {};
-  options.color = '#FFFFFF';
-  if (e.style == 'equipped' || e.style == 'active') {
-    options.color = Gfx.Color.ACTIVE;
-  }
-  options.lineDirection = e.lineDirection;
-  this.underlineText_(e.text, e.size, e.r.x, e.r.y, options);
-};
-
-// NOT USED.
-Renderer.prototype.underlineText_ = function(text, size, x, y, opt_options) {
-  var lineWidth = 1;
-  var options = opt_options || {};
-  options.color = options.color || '#FFFFFF';
-  options.lineDirection = options.lineDirection || 'right';
-  y += size + 5;
-  this.textCtx_.strokeStyle = options.color;
-
-  if (options.lineDirection == 'right') {
-    this.line_(x, y, x + this.screen_.width, y, lineWidth);
-  } else {
-    var width = this.textService_.width(text, size);
-    this.line_(x + width, y, 0, y, lineWidth);
-  }
-};
-
-// NOT USED.
-Renderer.prototype.circleText_ = function(e) {
-  // TODO: This is currently dependant on text length.
-  this.ctx_.shadowBlur = 2;
-  this.ctx_.lineWidth = 2;
-  this.ctx_.strokeStyle = this.ctx_.shadowColor = '#FFFFFF';
-  this.ctx_.fillStyle = '#000000';
-  var width = this.textService_.width(e.text, e.size);
-  var endPadding = e.size * 1.4;
-  var topPadding = e.size * 1;
-  var y = e.r.y + e.size / 10;
-  var x = e.r.x - width / 2 - endPadding;
-  var x2 = x + width + endPadding * 2;
-
-  this.ctx_.beginPath();
-  this.ctx_.arc(x, y, topPadding, Math.PI / 2, -Math.PI / 2);
-  this.ctx_.lineTo(x2, y - topPadding);
-  this.ctx_.arc(x2, y, topPadding, -Math.PI / 2, Math.PI / 2);
-  this.ctx_.lineTo(x, y + topPadding);
-
-  this.ctx_.fill();
-  this.ctx_.stroke();
-};
-
-// TextCtx draw functions.
-
-Renderer.prototype.line_ = function(x1, y1, x2, y2, lineWidth) {
-  x1 = x1 * this.screen_.upscale;
-  y1 = y1 * this.screen_.upscale;
-  x2 = x2 * this.screen_.upscale;
-  y2 = y2 * this.screen_.upscale;
-  if (lineWidth) {
-    lineWidth = lineWidth * this.screen_.upscale;
-    this.textCtx_.lineWidth = lineWidth;
-  }
-  this.textCtx_.beginPath();
-  this.textCtx_.moveTo(x1, y1);
-  this.textCtx_.lineTo(x2, y2);
-  this.textCtx_.stroke();
-};
-
-Renderer.prototype.circle_ = function(x, y, radius, lineWidth, opt_ratio) {
-  var ratio = opt_ratio === undefined ? 1 : opt_ratio;
-  x = x * this.screen_.upscale;
-  y = y * this.screen_.upscale;
-  radius = radius * this.screen_.upscale;
-  if (lineWidth) {
-    lineWidth = lineWidth * this.screen_.upscale;
-    this.textCtx_.lineWidth = lineWidth;
-  } else lineWidth = 0;
-  this.textCtx_.beginPath();
-  this.textCtx_.arc(x, y, radius - lineWidth / 2,
-                    0, 2 * Math.PI * ratio);
-};
-
-Renderer.prototype.fillRect_ = function(x, y, width, height) {
-  x = x * this.screen_.upscale;
-  y = y * this.screen_.upscale;
-  width = width * this.screen_.upscale;
-  height = height * this.screen_.upscale;
-  this.textCtx_.fillRect(x, y, width, height);
-};
-
-Renderer.prototype.strokeRect_ = function(x, y, width, height) {
-  x = x * this.screen_.upscale;
-  y = y * this.screen_.upscale;
-  width = width * this.screen_.upscale;
-  height = height * this.screen_.upscale;
-  this.textCtx_.strokeRect(x, y, width, height);
-};
-
-Renderer.prototype.setFont_ = function(size, face, bold) {
-  size = size * this.screen_.upscale;
-  this.textCtx_.font = (bold ? 'bold ' : '') + size + 'px ' + face;
-};
-
-Renderer.prototype.strokeText_ = function(text, x, y) {
-  x = x * this.screen_.upscale;
-  y = y * this.screen_.upscale;
-  this.textCtx_.strokeText(text, x, y);
-};
-
-Renderer.prototype.fillText_ = function(text, x, y) {
-  x = x * this.screen_.upscale;
-  y = y * this.screen_.upscale;
-  this.textCtx_.fillText(text, x, y);
-};
-
-Renderer.prototype.getFgColor_ = function(style) {
-  switch (style) {
-    case 'muted': return Gfx.Color.FG_MUTED;
-    case 'active': return Gfx.Color.FG_ACTIVE;
-  }
-  return Gfx.Color.FG;
-};
-
-Renderer.prototype.getBgColor_ = function(style) {
-  switch (style) {
-    case 'muted': return Gfx.Color.BG_MUTED;
-    case 'muted_dark': return Gfx.Color.BG_MUTED_DARK;
-    case 'primary': return Gfx.Color.BG;
-  }
-  return '';
 };

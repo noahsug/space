@@ -28,6 +28,8 @@ AnimationsFactory.prototype.animate = function(prop, value, opt_options) {
 AnimationsFactory.prototype.parseProp_ = function(prop) {
   switch(prop) {
   case 'alpha': return 'entity_.alpha';
+  case 'x': return 'offset.x';
+  case 'y': return 'offset.y';
   }
   return prop;
 };

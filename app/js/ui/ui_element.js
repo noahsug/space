@@ -4,6 +4,7 @@ var UiElement = di.factory('UiElement', [
 UiElement.prototype.init = function() {
   this.x = 0;
   this.y = 0;
+  this.offset = {x: 0, y: 0};
   this.width = 0;
   this.height = 0;
   this.maxWidth = null;
@@ -27,6 +28,12 @@ UiElement.prototype.canAnimate = function(prop) {
 
 UiElement.prototype.animate = function(prop, value, opt_options) {
   this.animations_.animate(prop, value, opt_options);
+  return this;
+};
+
+UiElement.prototype.setOffset = function(x, y) {
+  this.offset.x = x;
+  this.offset.y = y;
   return this;
 };
 
@@ -190,7 +197,7 @@ UiElement.prototype.positionXY_ = function(x, y, opt_options) {
     case 'middle': y -= height / 2; break;
     case 'bottom': y -= height; break;
   }
-  return {x: x, y: y};
+  return {x: x + this.offset.x, y: y + this.offset.y};
 };
 
 // Don't pass on clicks.
