@@ -35,7 +35,7 @@ StageSelectScene.prototype.addEntities_ = function() {
 
     .add(this.LayoutElement_.new('horizontal')
       .add(this.LabelElement_.new()
-        .setText('back', Size.BUTTON)
+        .setText('retreat', Size.BUTTON)
         .setBg('primary', Padding.BUTTON_BG)
         .onClick(this.goBack_, this))
       .addFlex()

@@ -11,7 +11,7 @@ Renderer.prototype.init = function() {
     this.style_[name] = {};
     fn.call(this, this.style_[name]);
   }, this);
-  this.transitionAnimation_ = 0;
+  //this.transitionAnimation_ = 0;
 };
 
 Renderer.prototype.update = function(dt) {
@@ -22,7 +22,7 @@ Renderer.prototype.update = function(dt) {
   }
   this.gfx_.flush();
   //this.drawFps_(dt);
-  this.drawTransition_(dt);
+  //this.drawTransition_(dt);
 };
 
 Renderer.prototype.drawFps_ = function(dt) {
@@ -56,37 +56,37 @@ Renderer.prototype.handleCamera_ = function(dt) {
   this.screen_.y -= STAR_SCROLL_SPEED * dt;
 };
 
-Renderer.prototype.drawTransition_ = function(dt) {
-  if (!this.gm_.transition.done) {
-    this.transitionOut_(dt);
-  } else if (this.transitionAnimation_) {
-    this.transitionIn_(dt);
-  }
-};
-
-Renderer.prototype.transitionOut_ = function(dt) {
-  var x = this.gm_.transition.pos.screenX;
-  var y = this.gm_.transition.pos.screenY;
-  this.transitionAnimation_ += 450 * (dt / this.gm_.transition.time);
-  this.textCtx_.fillStyle = '#000000';
-  this.circle_(x, y, this.transitionAnimation_);
-  this.textCtx_.fill();
-};
-
-Renderer.prototype.transitionIn_ = function(dt) {
-  if (this.transitionAnimation_ > 1) this.transitionAnimation_ = 1;
-  var fade = this.gm_.transition.time * 2;
-  var ease = (1.1 - this.transitionAnimation_) * 8;
-  this.transitionAnimation_ -= ease * dt / fade;
-
-  if (this.transitionAnimation_ < 0) {
-    this.transitionAnimation_ = 0;
-  } else {
-    this.textCtx_.fillStyle =
-        "rgba(0, 0, 0, " + this.transitionAnimation_ + ")";
-    this.fillRect_(0, 0, this.screen_.width, this.screen_.height);
-  }
-};
+//Renderer.prototype.drawTransition_ = function(dt) {
+//  if (!this.gm_.transition.done) {
+//    this.transitionOut_(dt);
+//  } else if (this.transitionAnimation_) {
+//    this.transitionIn_(dt);
+//  }
+//};
+//
+//Renderer.prototype.transitionOut_ = function(dt) {
+//  var x = this.gm_.transition.pos.screenX;
+//  var y = this.gm_.transition.pos.screenY;
+//  this.transitionAnimation_ += 450 * (dt / this.gm_.transition.time);
+//  this.textCtx_.fillStyle = '#000000';
+//  this.circle_(x, y, this.transitionAnimation_);
+//  this.textCtx_.fill();
+//};
+//
+//Renderer.prototype.transitionIn_ = function(dt) {
+//  if (this.transitionAnimation_ > 1) this.transitionAnimation_ = 1;
+//  var fade = this.gm_.transition.time * 2;
+//  var ease = (1.1 - this.transitionAnimation_) * 8;
+//  this.transitionAnimation_ -= ease * dt / fade;
+//
+//  if (this.transitionAnimation_ < 0) {
+//    this.transitionAnimation_ = 0;
+//  } else {
+//    this.textCtx_.fillStyle =
+//        "rgba(0, 0, 0, " + this.transitionAnimation_ + ")";
+//    this.fillRect_(0, 0, this.screen_.width, this.screen_.height);
+//  }
+//};
 
 Renderer.prototype.drawEntity_ = function(e, dt) {
   if (!e.r) {

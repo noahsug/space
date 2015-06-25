@@ -11,8 +11,7 @@ BattleScene.prototype.init = function() {
 };
 
 BattleScene.prototype.onStart_ = function() {
-  this.base_.onStart_.call(this);
-  this.state_ = 'active';
+  this.battleState_ = 'active';
 };
 
 BattleScene.prototype.addEntities_ = function() {
@@ -68,13 +67,13 @@ BattleScene.prototype.addInputHandler_ = function(btn, index) {
 };
 
 BattleScene.prototype.update_ = function(dt) {
-  if (this.state_ != 'background') {
+  if (this.battleState_ != 'background') {
     this.layout_.update(dt);
   }
-  if (this.state_ == 'active') {
+  if (this.battleState_ == 'active') {
     this.handleActiveState_();
   }
-  if (this.state_ == 'ending') {
+  if (this.battleState_ == 'ending') {
     this.handleEndingState_(dt);
   }
 };
@@ -86,7 +85,7 @@ BattleScene.prototype.handleActiveState_ = function() {
 };
 
 BattleScene.prototype.startEndingState_ = function() {
-  this.state_ = 'ending';
+  this.battleState_ = 'ending';
   this.transition_ = SLOWDOWN_TIME;
   this.missionService_.handleStageResult(this.player_.dead ? 'lost' : 'won');
 };
@@ -98,7 +97,7 @@ BattleScene.prototype.handleEndingState_ = function(dt) {
 };
 
 BattleScene.prototype.startBackgroundState_ = function() {
-  this.state_ = 'background';
+  this.battleState_ = 'background';
   this.freezeEntities_();
   this.gm_.gameSpeed = 1;
   this.openModal_('stageResult');

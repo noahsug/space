@@ -6,13 +6,9 @@ ShipDetailsScene.prototype.init = function() {
   di.extend(this, this.Scene_, 'shipDetails');
 };
 
-ShipDetailsScene.prototype.onStart_ = function() {
-  this.addEntities_();
-};
-
 ShipDetailsScene.prototype.addEntities_ = function() {
   this.layout_ = this.LayoutElement_.new('vertical')
-    .consumeOnClick()
+    .consumeClicks()
     .setChildrenBaselineAlign('middle', 'center')
     .add(this.LayoutElement_.new('vertical')
       .onNotClick(this.closeAsModal_, this)

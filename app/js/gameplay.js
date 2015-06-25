@@ -43,14 +43,14 @@ g = {
 
 di.constant('gameplayFile', {
   worlds: [
-    {  // 0
+    {  // World 1
       missions: [
         {  // 0
           title: 'kill all the dudes',
           desc: 'hey there guys',
           stages: [
             //['a1', 'a2', 'a3', 'a4'],
-            ['a5']
+            ['a1']
           ]
         },
         {  // 1

@@ -9,12 +9,11 @@ EquipScene.prototype.init = function() {
 EquipScene.prototype.onStart_ = function() {
   this.btns_ = [];
   this.selectedBtn_ = null;
-  this.addEntities_();
 };
 
 EquipScene.prototype.addEntities_ = function() {
   this.layout_ = this.LayoutElement_.new('vertical')
-    .consumeOnClick()
+    .consumeClicks()
     .setChildrenBaselineAlign('bottom', 'right')
     .setPadding('bottom', Padding.MARGIN + Size.BUTTON +
                           Padding.BUTTON_BG * 2 + Padding.MARGIN_SM)

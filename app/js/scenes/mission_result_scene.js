@@ -9,7 +9,6 @@ MissionResultScene.prototype.init = function() {
 
 MissionResultScene.prototype.onStart_ = function() {
   this.reward_ = this.battleRewards_.rewardPlayer();
-  this.addEntities_();
 };
 
 MissionResultScene.prototype.addEntities_ = function() {

@@ -23,11 +23,11 @@ IntroScene.prototype.addEntities_ = function() {
       .animate('alpha', 1, {duration: 1, delay: 1})
       .setText('new game', Size.BUTTON_LG)
       .setBg('primary', Padding.BUTTON_LG_BG)
-      .onClick(function() { this.transition_('missionSelect'); }, this))
+      .onClick(this.transition_.bind(this, 'tutorial', Time.TRANSITION_SLOW)))
 
     .addFlex(6);
 };
 
-IntroScene.prototype.update_ = function(dt) {
-  this.layout_.update(dt);
+IntroScene.prototype.onTransition_ = function() {
+  this.layout_.animate('alpha', 0, {duration: Time.TRANSITION_SLOW});
 };

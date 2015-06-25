@@ -20,6 +20,4 @@ GameModel.prototype.init = function() {
   this.time = 1;
   this.tick = 1;
   this.actTime = 1;
-
-  this.transition = {done: true};
 };

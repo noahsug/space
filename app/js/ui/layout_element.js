@@ -72,6 +72,20 @@ LayoutElement.prototype.setDirection = function(direction) {
   return this;
 };
 
+LayoutElement.prototype.animate = function(prop, value, opt_options) {
+  _.each(this.elements_, function(e) {
+    if (e.canAnimate(prop)) e.animate(prop, value, opt_options);
+  });
+  return this;
+};
+
+LayoutElement.prototype.setAlpha = function(alpha) {
+  _.each(this.elements_, function(e) {
+    if (e.setAlpha) e.setAlpha(alpha);
+  });
+  return this.base_.setAlpha.call(this, alpha);
+};
+
 // Makes the this.entity_ fill all non-primary space.
 LayoutElement.prototype.setBgFill = function(fill) {
   this.bgFill_ = fill;
@@ -107,6 +121,12 @@ LayoutElement.prototype.addFlex = function(opt_flex) {
 LayoutElement.prototype.addGap = function(size) {
   var e = this.UiElement_.new();
   return this.add(e, {padding: [size, size, 0, 0]});
+};
+
+// Inserts the element at the front, useful for consuming mouse events.
+LayoutElement.prototype.addFront = function(element, opt_options) {
+  this.add(element, opt_options);
+  _.swap(this.elements_, 0, this.elements_.length - 1);
 };
 
 LayoutElement.prototype.add = function(element, opt_options) {

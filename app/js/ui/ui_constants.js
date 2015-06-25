@@ -46,6 +46,12 @@ Padding = {
   TOP: 25
 };
 
+Time = {
+  TRANSITION_FAST: .15,
+  TRANSITION: .3,
+  TRANSITION_SLOW: .5
+};
+
 Size.ITEM_DESC = Size.TEXT * 2 + Padding.TEXT;
 
 Padding.TEXT_BG_RATIO = .5;

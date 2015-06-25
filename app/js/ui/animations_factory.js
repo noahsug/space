@@ -6,6 +6,11 @@ AnimationsFactory.prototype.init = function(element) {
   this.animations_ = {};
 };
 
+AnimationsFactory.prototype.canAnimate = function(prop) {
+  prop = this.parseProp_(prop);
+  return _.isFinite(this.getValue_(prop));
+};
+
 AnimationsFactory.prototype.animate = function(prop, value, opt_options) {
   prop = this.parseProp_(prop);
   var o = _.options(opt_options, {

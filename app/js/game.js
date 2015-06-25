@@ -2,7 +2,7 @@ var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene',
   'EquipScene', 'StageResultScene', 'MissionResultScene',
   'Gameplay', 'MissionService', 'BattleRewards', 'MissionSelectScene',
-  'StageSelectScene', 'ShipDetailsScene']);
+  'StageSelectScene', 'ShipDetailsScene', 'TutorialScene']);
 
 Game.UPDATE_RATE = .06;
 
@@ -17,7 +17,7 @@ Game.prototype.start = function() {
   this.nextAction_ = 0;
   this.initGameModel_();
   this.scenes_ = [
-    // Models
+    // Modal dialogs go first to consume mouse clicks.
     /* 0 */ this.stageResultScene_,
     /* 1 */ this.missionResultScene_,
     /* 2 */ this.equipScene_,
@@ -25,9 +25,10 @@ Game.prototype.start = function() {
 
     /* 4 */ this.loadingScene_,
     /* 5 */ this.introScene_,
-    /* 6 */ this.missionSelectScene_,
-    /* 7 */ this.stageSelectScene_,
-    /* 8 */ this.battleScene_,
+    /* 6 */ this.tutorialScene_,
+    /* 7 */ this.missionSelectScene_,
+    /* 8 */ this.stageSelectScene_,
+    /* 9 */ this.battleScene_,
   ];
 
   // DEBUG
@@ -37,9 +38,9 @@ Game.prototype.start = function() {
   //this.gm_.stage.state = 'won';
   //this.gm_.stage.state = 'lost';
   //this.gm_.equipping = 'primary';
-  this.gm_.mission.state = 'won';
+  //this.gm_.mission.state = 'won';
 
-  this.scenes_[5].start();
+  this.scenes_[9].start();
 };
 
 Game.prototype.initGameModel_ = function() {

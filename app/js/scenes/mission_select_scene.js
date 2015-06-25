@@ -33,7 +33,7 @@ MissionSelectScene.prototype.addMissions_ = function(layout) {
       .setBgFill(true)
       .setLayoutFill(true)
       .onClick(this.selectMission_.bind(this, mission))
-      .setStyle('muted')
+      .setBgStyle('muted')
       .setBorderStyle('muted')
       .setPadding(Padding.HEADING_SM_BG)
       // Mission title

@@ -21,6 +21,10 @@ UiElement.prototype.init = function() {
   this.animations_ = this.AnimationsFactory_.new(this);
 };
 
+UiElement.prototype.canAnimate = function(prop) {
+  return this.animations_.canAnimate(prop);
+};
+
 UiElement.prototype.animate = function(prop, value, opt_options) {
   this.animations_.animate(prop, value, opt_options);
   return this;
@@ -189,8 +193,10 @@ UiElement.prototype.positionXY_ = function(x, y, opt_options) {
   return {x: x, y: y};
 };
 
-UiElement.prototype.consumeOnClick = function() {
+// Don't pass on clicks.
+UiElement.prototype.consumeClicks = function() {
   this.onClickFn_ = _.emptyFn;
+  this.onNotClickFn_ = _.emptyFn;
   return this;
 };
 

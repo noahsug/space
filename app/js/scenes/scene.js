@@ -1,11 +1,8 @@
 var Scene = di.factory('Scene', ['GameModel as gm', 'Mouse', 'textCtx']);
 
-Scene.TRANSITION_TIME = .3;
-
 Scene.prototype.init = function(name) {
   this.name_ = name;
   this.setState_('inactive');
-  this.layout_ = {update: _.emptyFn};
 };
 
 Scene.prototype.setState_ = function(state) {
@@ -19,26 +16,31 @@ Scene.prototype.getState_ = function(state) {
 Scene.prototype.start = function() {
   this.setState_('active');
   this.gm_.sceneStack.push(this.name_);
+  this.transitioning_ = null;
   this.onStart_();
-};
-
-Scene.prototype.onStart_ = function() {
   this.addEntities_();
 };
+
+Scene.prototype.onStart_ = _.emptyFn;
 
 Scene.prototype.addEntities_ = _.emptyFn;
 
 Scene.prototype.update = function(dt) {
-  var state = this.getState_();
-  if (state == 'inactive' || state == 'start') return;
-  else if (state == 'active') this.update_(dt);
-  else if (state == 'transition') {
-    this.transitionTime_ -= dt;
-    if (this.transitionTime_ <= 0) {
-      this.gm_.transition.done = true;
-      this.gm_.scenes[this.transitionTo_] = 'start';
-      this.end_();
-    }
+  if (this.getState_() != 'active') return;
+  this.update_(dt);
+  if (this.transitioning_) this.updateTransition_(dt);
+};
+
+Scene.prototype.update_ = function(dt) {
+  if (!this.layout_) return;
+  this.layout_.update(dt);
+};
+
+Scene.prototype.updateTransition_ = function(dt) {
+  this.transitioning_.time -= dt;
+  if (this.transitioning_.time <= 0) {
+    this.gm_.scenes[this.transitioning_.to] = 'start';
+    this.onTransitionEnd_();
   }
 };
 
@@ -51,19 +53,15 @@ Scene.prototype.resolve = function(dt) {
   }
 };
 
-Scene.prototype.update_ = function(dt) {
-  this.layout_.update(dt);
-};
-
-Scene.prototype.goBackTo_ = function(scene, opt_speed) {
+Scene.prototype.goBackTo_ = function(scene, opt_time) {
   var index = this.gm_.sceneStack.lastIndexOf(scene);
   this.gm_.sceneStack = this.gm_.sceneStack.slice(0, index || 0);
-  this.transition_(scene, opt_speed);
+  this.transition_(scene, opt_time);
 };
 
-Scene.prototype.goBack_ = function(opt_speed) {
+Scene.prototype.goBack_ = function(opt_time) {
   this.gm_.sceneStack.pop();
-  this.transition_(_.last(this.gm_.sceneStack), opt_speed);
+  this.transition_(_.last(this.gm_.sceneStack), opt_time);
 };
 
 Scene.prototype.openModal_ = function(name) {
@@ -76,41 +74,34 @@ Scene.prototype.closeAsModal_ = function(name) {
   this.gm_.scenes[_.last(this.gm_.sceneStack)] = 'start';
 };
 
-Scene.prototype.transitionFast_ = function(to) {
-  this.transition_(to, 'fast');
-};
-
-Scene.prototype.transitionInstantly_ = function(to) {
-  this.transition_(to, 'instant');
-};
-
-Scene.prototype.transition_ = function(to, opt_speed) {
-  this.transitionTime_ = this.getTransitionTime_(opt_speed);
-  this.setState_('transition');
-  var pos = {screenX: this.mouse_.staticX, screenY: this.mouse_.staticY};
-  this.gm_.transition.pos = pos;
-  this.gm_.transition.time = this.transitionTime_;
-  this.gm_.transition.done = false;
-  this.transitionTo_ = to;
-};
-
-Scene.prototype.getTransitionTime_ = function(opt_speed) {
-  switch (opt_speed) {
-    case 'fast': return Scene.TRANSITION_TIME / 2;
-    case 'instant': return 0;
-    default: return Scene.TRANSITION_TIME;
+Scene.prototype.transition_ = function(to, opt_time) {
+  var time = _.isFinite(opt_time) ? opt_time : Time.TRANSITION;
+  this.transitioning_ = {
+    to: to,
+    time: time,
+    x: this.mouse_.staticX,
+    y: this.mouse_.staticY
   };
+  this.onTransition_();
+};
+
+Scene.prototype.onTransition_ = function() {
+  if (!this.layout_) return;
+  this.layout_.addFront(this.UiElement_.new().consumeClicks());
+};
+
+Scene.prototype.onTransitionEnd_ = function() {
+  this.end_();
 };
 
 Scene.prototype.end_ = function() {
   this.setState_('inactive');
+  this.endActiveStates_();
+  this.removeEntities_();
   this.onEnd_();
 };
 
-Scene.prototype.onEnd_ = function() {
-  this.endActiveStates_();
-  this.removeEntities_();
-};
+Scene.prototype.onEnd_ = _.emptyFn;
 
 Scene.prototype.endActiveStates_ = function() {
   _.each(this.gm_.scenes, function(state, scene) {
