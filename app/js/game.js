@@ -1,6 +1,6 @@
 var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene',
-  'EquipScene', 'StageResultScene', 'MissionResultScene',
+  'EquipScene', 'StageResultScene',
   'Gameplay', 'MissionService', 'BattleRewards', 'MissionSelectScene',
   'StageSelectScene', 'ShipDetailsScene', 'PrebattleScene']);
 
@@ -19,32 +19,31 @@ Game.prototype.start = function() {
   this.scenes_ = [
     // Modal dialogs go first to consume mouse clicks.
     /* 0 */ this.stageResultScene_,
-    /* 1 */ this.missionResultScene_,
-    /* 2 */ this.equipScene_,
-    /* 3 */ this.shipDetailsScene_,
+    /* 1 */ this.equipScene_,
+    /* 2 */ this.shipDetailsScene_,
 
-    /* 4 */ this.loadingScene_,
-    /* 5 */ this.introScene_,
-    /* 6 */ this.missionSelectScene_,
-    /* 7 */ this.stageSelectScene_,
-    /* 8 */ this.prebattleScene_,
-    /* 9 */ this.battleScene_,
+    /* 3 */ this.loadingScene_,
+    /* 4 */ this.introScene_,
+    /* 5 */ this.missionSelectScene_,
+    /* 6 */ this.stageSelectScene_,
+    /* 7 */ this.prebattleScene_,
+    /* 8 */ this.battleScene_,
   ];
 
-  // Select the tutorial mission and stage.
+  // Select the tutorial world / mission / stage.
+  this.gm_.world = this.gm_.worlds[0];
   this.gm_.mission = this.gm_.world.missions[0];
   this.gm_.stage = this.gm_.mission.stages[0][0];
 
   // DEBUG
   //this.gm_.mission = this.gm_.world.missions[0];
   //this.gm_.stage = this.gm_.mission.stages[0][0];
-  //this.gm_.mission.lives = 0;
+  //this.gm_.mission.lives = 1;
   //this.gm_.stage.state = 'won';
-  //this.gm_.stage.state = 'lost';
   //this.gm_.equipping = 'primary';
   //this.gm_.mission.state = 'won';
 
-  this.scenes_[4].start();
+  this.scenes_[6].start();
 };
 
 Game.prototype.initGameModel_ = function() {
@@ -52,7 +51,6 @@ Game.prototype.initGameModel_ = function() {
   this.gm_.player = this.gameplay_.player;
   this.gm_.worlds = this.gameplay_.worlds;
   this.missionService_.start();
-  this.gm_.world = this.gm_.worlds[0];
 };
 
 Game.prototype.update = function(dt) {

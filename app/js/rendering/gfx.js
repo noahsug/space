@@ -14,7 +14,7 @@ Gfx.Color = {
   // TODO: Make these all have opacity.
   BG: 'rgba(72, 81, 84, .75)',
   BG_MUTED: 'rgba(31, 33, 34, .75)',
-  BG_MUTED_DARK: 'rgba(0, 0, 0, .85)',
+  BG_MUTED_DARK: 'rgba(22, 23, 25, .75)',
   COOLDOWN: 'rgba(0, 0, 0, .35)',
 
   // Battle Colors

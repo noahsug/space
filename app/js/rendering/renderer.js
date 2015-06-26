@@ -91,7 +91,7 @@ Renderer.prototype.drawLoadingSplash_ = function(e) {
 };
 
 Renderer.prototype.drawBackdrop_ = function(e) {
-  var bgColor = 'rgba(0, 0, 0, .65)';
+  var bgColor = 'rgba(0, 0, 0, ' + e.baseAlpha + ')';
   this.textCtx_.fillStyle = bgColor;
   this.fillRect_(0, 0, this.screen_.width, this.screen_.height);
 };

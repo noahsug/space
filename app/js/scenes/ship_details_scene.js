@@ -1,5 +1,5 @@
 var ShipDetailsScene = di.service('ShipDetailsScene', [
-  'GameModel as gm', 'Scene', 'LayoutElement', 'BackdropElement',
+  'GameModel as gm', 'Scene', 'LayoutElement',
   'LabelElement', 'ItemElement', 'UiElement', 'ItemService']);
 
 ShipDetailsScene.prototype.init = function() {
@@ -11,7 +11,7 @@ ShipDetailsScene.prototype.addEntities_ = function() {
     .consumeClicks()
     .setChildrenBaselineAlign('middle', 'center')
     .add(this.LayoutElement_.new('vertical')
-      .onNotClick(this.closeAsModal_, this)
+      .onNotClick(this.goBack_.bind(this, Time.TRANSITION_SNAP))
       .setBgFill(true)
       .setPadding(Padding.MODAL_MARGIN_SM)
       .setBgStyle('muted_dark')
@@ -41,6 +41,13 @@ ShipDetailsScene.prototype.addEntities_ = function() {
         .onClick(this.goToBattle_, this)));
 
   this.updateItemDesc_();
+
+  this.fadeIn_(Time.TRANSITION_SNAP);
+};
+
+ShipDetailsScene.prototype.onTransition_ = function() {
+  this.Scene_.onTransition_.call(this);
+  this.fadeOut_();
 };
 
 ShipDetailsScene.prototype.addItems_ = function(layout) {

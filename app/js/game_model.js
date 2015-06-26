@@ -12,6 +12,8 @@ GameModel.prototype.init = function() {
 
   // The state of every scene ("active", "inactive", "start" or "transition").
   this.scenes = {};
+  // Info to pass from one scene to another about how it should start.
+  this.config = {};
   // Ordered list of active scenes from back to front.
   this.sceneStack = [];
   this.entities = new List();

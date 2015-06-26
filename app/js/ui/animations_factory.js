@@ -4,6 +4,7 @@ var AnimationsFactory = di.factory('AnimationsFactory', []);
 AnimationsFactory.prototype.init = function(element) {
   this.element_ = element;
   this.animations_ = {};
+  this.delayed_ = [];
 };
 
 AnimationsFactory.prototype.canAnimate = function(prop) {
@@ -17,12 +18,19 @@ AnimationsFactory.prototype.animate = function(prop, value, opt_options) {
     duration: 1,
     delay: 0
   });
-  this.animations_[prop] = {
+
+  var animation = {
     prop: prop,
     value: value,
     rate: Math.abs(value - this.getValue_(prop)) / o.duration,
     delay: o.delay
   };
+
+  if (o.delay > 0) {
+    this.delayed_.push(animation);
+  } else {
+    this.animations_[prop] = animation;
+  }
 };
 
 AnimationsFactory.prototype.parseProp_ = function(prop) {
@@ -44,6 +52,23 @@ AnimationsFactory.prototype.addValue_ = function(prop, change) {
 };
 
 AnimationsFactory.prototype.update = function(dt) {
+  this.updateDelayed_(dt);
+  this.updateAnimations_(dt);
+};
+
+AnimationsFactory.prototype.updateDelayed_ = function(dt) {
+  var stillDelayed = [];
+  _.each(this.delayed_, function(a) {
+    if (this.tick_(a, dt)) {
+      this.animations_[a.prop] = a;
+    } else {
+      stillDelayed.push(a);
+    }
+  }, this);
+  this.delayed_ = stillDelayed;
+};
+
+AnimationsFactory.prototype.updateAnimations_ = function(dt) {
   var keys = Object.keys(this.animations_);
   for (var i = 0; i < keys.length; i++) {
     var a = this.animations_[keys[i]];

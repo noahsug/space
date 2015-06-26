@@ -552,7 +552,7 @@ _.vector.isEmpty = function(v) {
 };
 
 _.class = {};
-_.class.extend = function(destination, source) {
+_.class.extend = function(destination, source, opt_base) {
   for (var key in source) {
     destination[key] = destination[key] || source[key];
   }

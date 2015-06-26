@@ -24,7 +24,7 @@ EquipScene.prototype.addEntities_ = function() {
       .addGap(Padding.MARGIN_SM)
 
       .add(this.LayoutElement_.new('vertical')
-        .onNotClick(this.closeAsModal_, this)
+        .onNotClick(this.goBack_.bind(this, Time.TRANSITION_SNAP))
         .setBgFill(true)
         .setPadding(Padding.MODAL_MARGIN_SM)
         .setPadding('bottom', Padding.MODAL_MARGIN_SM)
@@ -37,6 +37,13 @@ EquipScene.prototype.addEntities_ = function() {
 
   this.updateItemDesc_();
   this.updateBtnStyles_();
+
+  this.fadeIn_(Time.TRANSITION_SNAP);
+};
+
+EquipScene.prototype.onTransition_ = function() {
+  this.Scene_.onTransition_.call(this);
+  this.fadeOut_();
 };
 
 EquipScene.prototype.addItemDescContainer_ = function(layout) {

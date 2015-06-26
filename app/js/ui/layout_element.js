@@ -76,14 +76,14 @@ LayoutElement.prototype.animate = function(prop, value, opt_options) {
   _.each(this.elements_, function(e) {
     if (e.canAnimate(prop)) e.animate(prop, value, opt_options);
   });
-  return this;
+  return this.UiElement_.animate.apply(this, arguments);
 };
 
 LayoutElement.prototype.setAlpha = function(alpha) {
   _.each(this.elements_, function(e) {
     if (e.setAlpha) e.setAlpha(alpha);
   });
-  return this.base_.setAlpha.call(this, alpha);
+  return this.EntityElement_.setAlpha.call(this, alpha);
 };
 
 // Makes the this.entity_ fill all non-primary space.
@@ -126,7 +126,8 @@ LayoutElement.prototype.addGap = function(size) {
 // Inserts the element at the front, useful for consuming mouse events.
 LayoutElement.prototype.addFront = function(element, opt_options) {
   this.add(element, opt_options);
-  _.swap(this.elements_, 0, this.elements_.length - 1);
+  // Move the last element to the front.
+  this.elements_.unshift(this.elements_.pop());
 };
 
 LayoutElement.prototype.add = function(element, opt_options) {
@@ -242,7 +243,7 @@ LayoutElement.prototype.positionEntity_ = function() {
   } else if (this.childrenAlign_ == 'bottom') {
     dy += this.calcMaxHeight() - this.calcHeight();
   }
-  this.base_.positionChild_.call(this, this.x + dx, this.y + dy);
+  this.EntityElement_.positionChild_.call(this, this.x + dx, this.y + dy);
 };
 
 LayoutElement.prototype.collides_ = function(point) {
@@ -263,5 +264,5 @@ LayoutElement.prototype.update_ = function(dt) {
     this.entity_.width = this.calcWidth();
     this.entity_.height = this.calcHeight();
   }
-  this.base_.update_.call(this, dt);
+  this.UiElement_.update_.call(this, dt);
 };

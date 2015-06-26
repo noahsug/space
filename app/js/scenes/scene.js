@@ -1,4 +1,6 @@
-var Scene = di.factory('Scene', ['GameModel as gm', 'Mouse', 'textCtx']);
+var Scene = di.factory('Scene', [
+  'UiElement', 'GameModel as gm', 'Mouse', 'textCtx', 'BackdropElement',
+  'FadeElement']);
 
 Scene.prototype.init = function(name) {
   this.name_ = name;
@@ -14,11 +16,14 @@ Scene.prototype.getState_ = function(state) {
 };
 
 Scene.prototype.start = function() {
+  this.numStartingEntities_ = this.gm_.entities.length;
   this.setState_('active');
   this.gm_.sceneStack.push(this.name_);
   this.transitioning_ = null;
   this.onStart_();
   this.addEntities_();
+  this.gm_.config = {};
+  this.closeActiveStates_ = false;
 };
 
 Scene.prototype.onStart_ = _.emptyFn;
@@ -39,7 +44,9 @@ Scene.prototype.update_ = function(dt) {
 Scene.prototype.updateTransition_ = function(dt) {
   this.transitioning_.time -= dt;
   if (this.transitioning_.time <= 0) {
-    this.gm_.scenes[this.transitioning_.to] = 'start';
+    if (this.gm_.scenes[this.transitioning_.to] != 'active') {
+      this.gm_.scenes[this.transitioning_.to] = 'start';
+    }
     this.onTransitionEnd_();
   }
 };
@@ -54,8 +61,9 @@ Scene.prototype.resolve = function(dt) {
 };
 
 Scene.prototype.goBackTo_ = function(scene, opt_time) {
-  var index = this.gm_.sceneStack.lastIndexOf(scene);
-  this.gm_.sceneStack = this.gm_.sceneStack.slice(0, index || 0);
+  this.closeActiveStates_ = true;
+  var index = this.gm_.sceneStack.lastIndexOf(scene) || 0;
+  this.gm_.sceneStack = this.gm_.sceneStack.slice(0, index);
   this.transition_(scene, opt_time);
 };
 
@@ -66,12 +74,6 @@ Scene.prototype.goBack_ = function(opt_time) {
 
 Scene.prototype.openModal_ = function(name) {
   this.gm_.scenes[name] = 'start';
-};
-
-Scene.prototype.closeAsModal_ = function(name) {
-  this.gm_.sceneStack.pop();
-  this.end_();
-  this.gm_.scenes[_.last(this.gm_.sceneStack)] = 'start';
 };
 
 Scene.prototype.transition_ = function(to, opt_time) {
@@ -90,14 +92,42 @@ Scene.prototype.onTransition_ = function() {
   this.layout_.addFront(this.UiElement_.new().consumeClicks());
 };
 
+Scene.prototype.fadeIn_ = function(opt_time) {
+  var time = _.isFinite(opt_time) ? opt_time : Time.TRANSITION;
+  this.layout_.setAlpha(0).animate('alpha', 1, {duration: time});
+};
+
+Scene.prototype.fadeOut_ = function(opt_time) {
+  var time = _.isFinite(opt_time) ? opt_time : this.transitioning_.time;
+  this.layout_.animate('alpha', 0, {duration: time});
+};
+
+Scene.prototype.fadeToBlack_ = function(opt_time) {
+  var time = _.isFinite(opt_time) ? opt_time : this.transitioning_.time;
+  this.layout_.add(this.FadeElement_.new()
+    .setAlpha(0)
+    .animate('alpha', 1, {duration: time}));
+};
+
+Scene.prototype.fadeFromBlack_ = function(opt_time) {
+  var time = _.isFinite(opt_time) ? opt_time : Time.TRANSITION;
+  this.layout_.add(this.BackdropElement_.new()
+    .setBaseAlpha(1)
+    .animate('alpha', 0, {duration: time}));
+};
+
 Scene.prototype.onTransitionEnd_ = function() {
   this.end_();
 };
 
 Scene.prototype.end_ = function() {
   this.setState_('inactive');
-  this.endActiveStates_();
-  this.removeEntities_();
+  if (this.closeActiveStates_) {
+    this.endActiveStates_();
+    this.removeAllEntities_();
+  } else {
+    this.removeOwnEntities_();
+  }
   this.onEnd_();
 };
 
@@ -109,6 +139,10 @@ Scene.prototype.endActiveStates_ = function() {
   }, this);
 };
 
-Scene.prototype.removeEntities_ = function() {
+Scene.prototype.removeAllEntities_ = function() {
   this.gm_.entities.clear();
+};
+
+Scene.prototype.removeOwnEntities_ = function() {
+  this.gm_.entities.length = this.numStartingEntities_;
 };

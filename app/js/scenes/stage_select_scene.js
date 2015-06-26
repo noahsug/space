@@ -47,6 +47,8 @@ StageSelectScene.prototype.addEntities_ = function() {
   if (_.is(this.gm_.mission.state, 'won', 'lost')) {
     this.openModal_('missionResult');
   }
+
+  this.fadeFromBlack_();
 };
 
 StageSelectScene.prototype.addStages_ = function(layout) {
@@ -80,7 +82,7 @@ StageSelectScene.prototype.createStageBtn_ = function(row, col) {
   switch(stage.state) {
   case 'won':
     if (this.gm_.stage == stage) {
-      btn.animate('alpha', 0);
+      btn.animate('alpha', 0, {duration: 1.5});
     } else {
       btn.setStyle('hidden');
     }

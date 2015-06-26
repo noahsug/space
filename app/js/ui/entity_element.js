@@ -59,5 +59,5 @@ EntityElement.prototype.positionChild_ = function(x, y) {
 
 EntityElement.prototype.collides_ = function(point) {
   if (this.entity_.locked) return false;
-  return this.base_.collides_.call(this, point);
+  return this.UiElement_.collides_.call(this, point);
 };

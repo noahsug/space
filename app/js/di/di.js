@@ -123,11 +123,9 @@ Di.prototype.createFactory_ = function(name) {
  */
 Di.prototype.extend = function(dest, source, var_args) {
   var impl = new this.implsToInit_[source.name].class();
+  this.addDeps_(impl, source.name);
   _.class.extend(dest, impl);
-  this.addDeps_(dest, source.name);
   impl.init && impl.init.apply(dest, _.args(arguments, 2));
-  dest.base_ = dest.base_ || {};
-  _.class.extend(dest.base_, impl);
 };
 
 Di.prototype.addDeps_ = function(impl, name) {

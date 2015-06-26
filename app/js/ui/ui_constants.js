@@ -34,7 +34,7 @@ Padding = {
   MARGIN: 14,
   MARGIN_LG: 28,
   MODAL_MARGIN: 15,
-  MODAL_MARGIN_SM: 6,
+  MODAL_MARGIN_SM: 7,
   ITEM: 10,
 
   // TODO: Remove these
@@ -47,12 +47,14 @@ Padding = {
 };
 
 Time = {
+  TRANSITION_SNAP: .09,
   TRANSITION_FAST: .15,
   TRANSITION: .3,
   TRANSITION_SLOW: .5
 };
 
 Size.ITEM_DESC = Size.TEXT * 2 + Padding.TEXT;
+Size.ITEM_DESC_WIDTH = Size.ITEM * 4 + Padding.ITEM * 3;
 
 Padding.TEXT_BG_RATIO = .5;
 Padding.DESC_SM_BG = Size.DESC_SM * Padding.TEXT_BG_RATIO;

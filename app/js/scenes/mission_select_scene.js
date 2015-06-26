@@ -1,5 +1,5 @@
 var MissionSelectScene = di.service('MissionSelectScene', [
-  'GameModel as gm', 'Scene', 'LayoutElement',
+  'GameModel as gm', 'Scene', 'LayoutElement', 'FadeElement',
   'LabelElement', 'MissionService', 'Inventory']);
 
 MissionSelectScene.prototype.init = function() {
@@ -19,7 +19,11 @@ MissionSelectScene.prototype.addEntities_ = function() {
 
     .addGap(Padding.DESC_GAP)
 
-    .modify(this.addMissions_, this);
+    .modify(this.addMissions_, this)
+
+    .add(this.FadeElement_.new().animate('alpha', 0));
+
+  this.fadeFromBlack_();
 };
 
 MissionSelectScene.prototype.addMissions_ = function(layout) {

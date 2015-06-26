@@ -4,7 +4,7 @@ var MissionService = di.service('MissionService', [
 MissionService.prototype.start = function() {
   _.each(this.gm_.worlds, function(world) {
     _.each(world.missions, function(mission) {
-      mission.state = mission.index ? 'locked' : 'unlocked';
+      mission.state = 'locked';
       mission.maxLives = g.Lives.DEFAULT;
       this.initStages_(mission);
       this.resetProgress_(mission);
