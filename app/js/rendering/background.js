@@ -61,13 +61,19 @@ Background.prototype.drawSky_ = function(ctx, width, height) {
   }
 };
 
-Background.prototype.draw = function() {
+Background.prototype.draw = function(softClear) {
   this.textCtx_.clearRect(
       0, 0, this.screen_.pixelWidth, this.screen_.pixelHeight);
 
-  this.ctx_.globalCompositeOperation = 'destination-out';
-  this.ctx_.fillStyle = 'rgba(0, 0, 0, .35)';
-  this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
-  this.ctx_.globalCompositeOperation = 'source-over';
+  if (softClear) {
+    this.ctx_.globalCompositeOperation = 'destination-out';
+    this.ctx_.fillStyle = 'rgba(0, 0, 0, .35)';
+    this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
+    this.ctx_.globalCompositeOperation = 'source-over';
+  } else {
+    this.ctx_.clearRect(
+        0, 0, this.screen_.width, this.screen_.height);
+  }
+
   _.each(this.bgLayers_, function(bg) { bg.draw(); });
 };

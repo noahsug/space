@@ -10,17 +10,6 @@ StageSelectScene.prototype.addEntities_ = function() {
   this.layout_ = this.LayoutElement_.new('vertical')
     .setChildrenFill(true)
     .setPadding(Padding.MARGIN)
-
-    .add(this.LayoutElement_.new('horizontal')
-      .add(this.LabelElement_.new()
-        .setText(this.gm_.mission.title, Size.HEADING_SM)
-        .setStyle('muted')
-        .setBg('muted', Padding.HEADING_SM_BG))
-      .addFlex()
-      .add(this.LabelElement_.new()
-        .setText('rewinds: ' + this.gm_.mission.lives, Size.DESC)
-        .setBg('muted', Padding.DESC_BG)))
-
     .addFlex()
 
     .modify(this.addStages_, this)
@@ -28,16 +17,10 @@ StageSelectScene.prototype.addEntities_ = function() {
     .addFlex()
 
     .add(this.LayoutElement_.new('horizontal')
-      .setChildrenAlign('center')
-      .add(this.createPlayerBtn_()))
-
-    .addFlex()
-
-    .add(this.LayoutElement_.new('horizontal')
       .add(this.LabelElement_.new()
         .setText('retreat', Size.BUTTON)
         .setBg('primary', Padding.BUTTON_BG)
-        .onClick(this.goBack_, this))
+        .onClick(this.retreat_, this))
       .addFlex()
       .add(this.LabelElement_.new()
         .setText('equip', Size.BUTTON)
@@ -49,6 +32,11 @@ StageSelectScene.prototype.addEntities_ = function() {
   }
 
   this.fadeFromBlack_();
+};
+
+StageSelectScene.prototype.retreat_ = function() {
+  this.gm_.mission.state = 'lost';
+  this.goBackTo_('missionSelect');
 };
 
 StageSelectScene.prototype.addStages_ = function(layout) {
@@ -69,11 +57,13 @@ StageSelectScene.prototype.addStages_ = function(layout) {
 StageSelectScene.prototype.createStageBtn_ = function(row, col) {
   var btn = this.ItemElement_.new();
   var stage = this.gm_.mission.stages[row][col];
-  btn.setProp('stage', stage);
 
   if (stage.empty) {
     btn.setSize(Size.STAGE / 2);
-  } else if (this.spriteService_.getSize(stage.hull.spec.sprite) < 60) {
+    return btn;
+  }
+
+  if (this.spriteService_.getSize(stage.hull.spec.sprite) < 60) {
     btn.setSize(Size.STAGE);
   } else {
     btn.setSize(Size.STAGE_LG);
@@ -94,6 +84,8 @@ StageSelectScene.prototype.createStageBtn_ = function(row, col) {
       this.openModal_('shipDetails');
     }, this);
   }
+
+  btn.setProp('stage', stage);
   return btn;
 };
 
@@ -101,4 +93,9 @@ StageSelectScene.prototype.createPlayerBtn_ = function() {
   return this.ItemElement_.new()
     .setSize(Size.STAGE)
     .setProp('stage', {hull: this.inventory_.getHull()});
+};
+
+StageSelectScene.prototype.onTransition_ = function() {
+  this.Scene_.onTransition_.call(this);
+  this.fadeToBlack_();
 };

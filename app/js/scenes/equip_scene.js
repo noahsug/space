@@ -24,7 +24,7 @@ EquipScene.prototype.addEntities_ = function() {
       .addGap(Padding.MARGIN_SM)
 
       .add(this.LayoutElement_.new('vertical')
-        .onNotClick(this.goBack_.bind(this, Time.TRANSITION_SNAP))
+        .onNotClick(this.goBack_.bind(this, {time: Time.TRANSITION_SNAP}))
         .setBgFill(true)
         .setPadding(Padding.MODAL_MARGIN_SM)
         .setPadding('bottom', Padding.MODAL_MARGIN_SM)

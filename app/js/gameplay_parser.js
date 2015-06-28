@@ -56,6 +56,7 @@ GameplayParser.prototype.parseMissions_ = function(missions, stages) {
   return _.map(missions, function(mission, index) {
     mission = _.clone(mission);
     mission.index = index;
+    mission.unlocks = mission.unlocks || [];
     mission.stages = this.parseMissionStages_(mission.stages, stages);
     return mission;
   }, this);

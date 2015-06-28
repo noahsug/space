@@ -4,10 +4,10 @@ var MissionService = di.service('MissionService', [
 MissionService.prototype.start = function() {
   _.each(this.gm_.worlds, function(world) {
     _.each(world.missions, function(mission) {
-      mission.state = 'locked';
-      mission.maxLives = g.Lives.DEFAULT;
+      mission.maxLives = mission.maxLives || g.Lives.DEFAULT;
       this.initStages_(mission);
       this.resetProgress_(mission);
+      mission.state = 'locked';
     }, this);
   }, this);
 };
@@ -19,10 +19,6 @@ MissionService.prototype.initStages_ = function(mission) {
       else stage.enemy = this.shipFactory_.createEnemyDna(stage);
     }, this);
   }, this);
-};
-
-MissionService.prototype.resetProgress = function() {
-  this.resetProgress_(this.gm_.mission);
 };
 
 MissionService.prototype.resetProgress_ = function(mission) {
@@ -41,7 +37,7 @@ MissionService.prototype.resetStage_ = function(stage) {
 MissionService.prototype.handleStageResult = function(result) {
   if (result == 'lost') {
     this.gm_.mission.lives--;
-    if (this.gm_.mission.lives <= 0) this.gm_.mission.state = 'lost';
+    if (this.gm_.mission.lives < 0) this.gm_.mission.state = 'lost';
   } else {
     this.gm_.stage.state = 'won';
     if (this.won_()) this.gm_.mission.state = 'won';
@@ -49,10 +45,32 @@ MissionService.prototype.handleStageResult = function(result) {
   }
 };
 
+MissionService.prototype.handleMissionResult = function() {
+  if (this.gm_.mission.state == 'lost') {
+    this.resetProgress_(this.gm_.mission);
+  } else {
+    _.forEach(this.gm_.mission.locks, function(i) {
+      if (this.gm_.world.missions[i].state == 'unlocked') {
+        this.gm_.world.missions[i].state = 'locked';
+      }
+    }, this);
+    _.forEach(this.gm_.mission.unlocks, function(i) {
+      if (this.gm_.world.missions[i].state == 'locked') {
+        this.gm_.world.missions[i].state = 'unlocked';
+      }
+    }, this);
+  }
+};
+
 MissionService.prototype.unlockAdjacent_ = function(stage) {
   this.neighbors_(stage).forEach(function(neighbor) {
     neighbor.state = 'unlocked';
   }, this);
+};
+
+MissionService.prototype.beatGame = function() {
+  return this.gm_.mission.index == this.gm_.world.missions.length - 1 &&
+      this.gm_.mission.state == 'won';
 };
 
 MissionService.prototype.won_ = function() {

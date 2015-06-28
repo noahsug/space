@@ -15,7 +15,8 @@ Renderer.prototype.init = function() {
 
 Renderer.prototype.update = function(dt) {
   this.handleCamera_(dt / this.gm_.gameSpeed);
-  this.background_.draw();
+  var softClear = this.gm_.scenes.battle == 'active';
+  this.background_.draw(softClear);
   for (var i = 0; i < this.gm_.entities.length; i++) {
     this.drawEntity_(this.gm_.entities.arr[i], dt);
   }

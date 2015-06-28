@@ -24,8 +24,8 @@ g = {
   },
 
   Health: {
-    DEFAULT: 50,
-    PLAYER: 65
+    DEFAULT: 100,
+    PLAYER: 150
   },
 
   MaxTargetAngle: {
@@ -33,7 +33,7 @@ g = {
   },
 
   Lives: {
-    DEFAULT: 3
+    DEFAULT: 1
   },
 
   Range: {
@@ -46,32 +46,71 @@ di.constant('gameplayFile', {
     {  // World 1
       missions: [
         {  // 0
-          title: 'kill all the dudes',
-          desc: 'hey there guys',
+          title: 'tutorial',
+          desc: 'tutorial',
+          unlocks: [1],
           stages: [
-            //['a1', 'a2', 'a3', 'a4'],
             ['a1']
           ]
         },
         {  // 1
-          title: 'I said all of them',
-          desc: 'okay then',
+          title: '',
+          desc: 'war is upon us. three more hive ships are approaching. dispatch them.',
+          unlocks: [2, 3],
+          stages: [
+            ['a1', 'a2', 'a1'],
+          ]
+        },
+        {  // 2
+          title: '',
+          desc: 'a few hive rams are slowly making',
+          unlocks: [4],
+          locks: [3],
+          stages: [
+            ['a3', 'a2'],
+            ['a3']
+          ]
+        },
+        {  // 3
+          title: '',
+          desc: 'a swarm of hive darts are protecting',
+          unlocks: [5],
+          locks: [2],
+          stages: [
+            ['a3', 'a2'],
+            ['a3']
+          ]
+        },
+        {  // 4
+          title: '',
+          desc: 'war is upon us. three more hive ships are approaching. dispatch them.',
+          unlocks: [6],
           stages: [
             ['a1', 'a2', 'a1'],
             ['a2', '-', 'a3', '-', 'a2']
           ]
         },
-        {  // 2
-          title: 'people are attacking!',
+        {  // 5
+          title: '',
+          desc: 'war is upon us. three more hive ships are approaching. dispatch them.',
+          unlocks: [6],
+          stages: [
+            ['a1', 'a2', 'a1'],
+            ['a2', '-', 'a3', '-', 'a2']
+          ]
+        },
+        {  // 6
+          title: '',
           desc: 'oooo this is just the coolest thing I ever',
+          unlocks: [7],
           stages: [
             ['a2'],
             ['a2', '-', 'a2'],
             ['a2', '-', 'a4', '-', 'a2'],
           ]
         },
-        {  // 3
-          title: 'do the thing',
+        {  // 7
+          title: '',
           desc: 'awwwesome',
           stages: [
             ['a2', 'a3', 'a2'],

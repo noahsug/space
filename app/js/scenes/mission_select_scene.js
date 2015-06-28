@@ -6,6 +6,10 @@ MissionSelectScene.prototype.init = function() {
   di.extend(this, this.Scene_, 'missionSelect');
 };
 
+MissionSelectScene.prototype.onStart_ = function() {
+  this.missionService_.handleMissionResult();
+};
+
 MissionSelectScene.prototype.addEntities_ = function() {
   this.layout_ = this.LayoutElement_.new('vertical')
     .setPadding(Padding.MARGIN)
@@ -19,48 +23,38 @@ MissionSelectScene.prototype.addEntities_ = function() {
 
     .addGap(Padding.DESC_GAP)
 
-    .modify(this.addMissions_, this)
-
-    .add(this.FadeElement_.new().animate('alpha', 0));
+    .modify(this.addMissions_, this);
 
   this.fadeFromBlack_();
 };
 
 MissionSelectScene.prototype.addMissions_ = function(layout) {
+  var unlockedMissions = 0;
   _.each(this.gm_.world.missions, function(mission, i) {
-    if (mission.state == 'locked') return;
-    if (mission.state == 'lost') this.missionService_.resetProgress(mission);
+    if (mission.state == 'locked' || mission.state == 'won') return;
 
-    if (i) layout.addGap(Padding.DESC_GAP);
+    if (unlockedMissions > 0) layout.addGap(Padding.DESC_GAP);
 
     var missionContainer = this.LayoutElement_.new('vertical')
       .setBgFill(true)
       .setLayoutFill(true)
       .onClick(this.selectMission_.bind(this, mission))
       .setBgStyle('muted')
-      .setBorderStyle('muted')
       .setPadding(Padding.HEADING_SM_BG)
-      // Mission title
-      .add(this.LabelElement_.new()
-        .setText(mission.title, Size.DESC_LG)
-        .setBaselineAlign('top', 'left')
-        .setLayoutAlign('left'))
-
-      .addGap(Padding.DESC_LG)
 
       // Mission desc
-      .add(this.LayoutElement_.new('horizontal')
-        .add(this.LabelElement_.new()
-          .setLineWrap(true)
-          .setText(mission.desc, Size.DESC)
-          .setBaselineAlign('top', 'left')
-          .setLayoutAlign('left')));
+      .add(this.LabelElement_.new()
+        .setLayoutFill(true)
+        .setLineWrap(true)
+        .setText(mission.desc, Size.DESC));
 
     layout.add(missionContainer);
+    unlockedMissions++;
   }, this);
 };
 
 MissionSelectScene.prototype.selectMission_ = function(mission) {
   this.gm_.mission = mission;
   this.transition_('stageSelect');
+  this.fadeToBlack_();
 };

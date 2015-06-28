@@ -1,8 +1,11 @@
 var BattleRewards = di.service('BattleRewards', [
-  'GameModel as gm', 'Inventory', 'ItemService', 'GameModel as gm']);
+  'GameModel as gm', 'Inventory', 'ItemService', 'GameModel as gm',
+  'MissionService']);
 
 BattleRewards.prototype.rewardPlayer = function() {
-  if (this.gm_.mission.state != 'won') return null;
+  if (this.gm_.mission.state != 'won' && !this.missionService_.beatGame()) {
+    return null;
+  }
   //var item = this.inventory_.getRandomUnowned();
   var item = this.itemService_.getByName('teleport');
   if (item) this.inventory_.add(item);

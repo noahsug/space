@@ -11,7 +11,7 @@ ShipDetailsScene.prototype.addEntities_ = function() {
     .consumeClicks()
     .setChildrenBaselineAlign('middle', 'center')
     .add(this.LayoutElement_.new('vertical')
-      .onNotClick(this.goBack_.bind(this, Time.TRANSITION_SNAP))
+      .onNotClick(this.close_, this)
       .setBgFill(true)
       .setPadding(Padding.MODAL_MARGIN_SM)
       .setBgStyle('muted_dark')
@@ -45,8 +45,8 @@ ShipDetailsScene.prototype.addEntities_ = function() {
   this.fadeIn_(Time.TRANSITION_SNAP);
 };
 
-ShipDetailsScene.prototype.onTransition_ = function() {
-  this.Scene_.onTransition_.call(this);
+ShipDetailsScene.prototype.close_ = function() {
+  this.goBack_({time: Time.TRANSITION_SNAP});
   this.fadeOut_();
 };
 
@@ -85,7 +85,9 @@ ShipDetailsScene.prototype.updateItemDesc_ = function() {
 };
 
 ShipDetailsScene.prototype.goToBattle_ = function() {
-  this.transition_('battle');
+  this.closeActiveStates_ = true;
+  this.transition_('prebattle', {closeActiveStates: true});
+  this.fadeToBlack_();
 };
 
 ShipDetailsScene.prototype.addItemDesc_ = function(layout) {

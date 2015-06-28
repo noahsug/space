@@ -23,11 +23,13 @@ IntroScene.prototype.addEntities_ = function() {
       .animate('alpha', 1, {duration: 1, delay: 1})
       .setText('new game', Size.BUTTON_LG)
       .setBg('primary', Padding.BUTTON_LG_BG)
-      .onClick(this.transition_.bind(this, 'prebattle', Time.TRANSITION_SLOW)))
+      .onClick(this.transition_.bind(
+          this, 'prebattle', {time: Time.TRANSITION_SLOW})))
 
     .addFlex(6);
 };
 
 IntroScene.prototype.onTransition_ = function() {
-  this.layout_.animate('alpha', 0, {duration: Time.TRANSITION_SLOW});
+  this.Scene_.onTransition_.call(this);
+  this.fadeOut_();
 };

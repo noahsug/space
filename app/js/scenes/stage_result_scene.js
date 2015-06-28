@@ -24,14 +24,7 @@ StageResultScene.prototype.addEntities_ = function() {
     .setStyle('muted')
     .setPadding('bottom', Padding.MARGIN * 1.5));
 
-  if (this.gm_.stage.state != 'won') {
-    // # Rewinds remaining
-    this.layout_.add(this.LabelElement_.new()
-      .setText(this.getRewindText_(), 20)
-      .setStyle('muted')
-      .setPadding('bottom', Padding.MARGIN));
-
-  } else if (this.reward_) {
+  if (this.reward_) {
     // Reward
     this.layout_.add(this.LayoutElement_.new('vertical')
       .add(this.UiElement_.new().setPadding('left', Size.ITEM_DESC_WIDTH))
@@ -79,14 +72,17 @@ StageResultScene.prototype.addEntities_ = function() {
 };
 
 StageResultScene.prototype.getTitleText_ = function() {
+  if (this.missionService_.beatGame()) return 'you win';
   if (this.gm_.mission.state == 'won') return 'mission complete';
-  if (this.gm_.mission.state == 'lost') return 'game over';
+  if (this.gm_.mission.state == 'lost') return 'mission failed';
   if (this.gm_.stage.state == 'won') return 'victory';
   return 'defeat';
 };
 
 StageResultScene.prototype.getTitleSize_ = function() {
-  if (this.gm_.mission.state == 'won') return 24;
+  if (this.gm_.mission.state == 'won' || this.gm_.mission.state == 'lost') {
+    return 24;
+  }
   return 43;
 };
 
@@ -96,15 +92,19 @@ StageResultScene.prototype.getRewindText_ = function() {
 };
 
 StageResultScene.prototype.getBtnText_ = function() {
-  if (this.gm_.mission.state == 'won') return 'return to earth';
-  if (this.gm_.mission.state == 'lost') return 'continue';
+  if (this.missionService_.beatGame()) return 'exit';
+  if (this.gm_.mission.state == 'won' ||  this.gm_.mission.state == 'lost') {
+    return 'return to earth';
+  }
   if (this.gm_.stage.state == 'won') return 'continue';
   return 'rewind';
 };
 
 StageResultScene.prototype.getNextScene_ = function() {
-  if (this.gm_.mission.state == 'won') return 'missionSelect';
-  if (this.gm_.mission.state == 'lost') return 'intro';
+  if (this.missionService_.beatGame()) return 'intro';
+  if (this.gm_.mission.state == 'won' ||  this.gm_.mission.state == 'lost') {
+    return 'missionSelect';
+  }
   return 'stageSelect';
 };
 

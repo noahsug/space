@@ -23,7 +23,6 @@ Scene.prototype.start = function() {
   this.onStart_();
   this.addEntities_();
   this.gm_.config = {};
-  this.closeActiveStates_ = false;
 };
 
 Scene.prototype.onStart_ = _.emptyFn;
@@ -60,29 +59,33 @@ Scene.prototype.resolve = function(dt) {
   }
 };
 
-Scene.prototype.goBackTo_ = function(scene, opt_time) {
-  this.closeActiveStates_ = true;
+Scene.prototype.goBackTo_ = function(scene, opt_options) {
+  var o = _.options(opt_options, {
+    closeActiveStates: true
+  });
   var index = this.gm_.sceneStack.lastIndexOf(scene) || 0;
   this.gm_.sceneStack = this.gm_.sceneStack.slice(0, index);
-  this.transition_(scene, opt_time);
+  this.transition_(scene, o);
 };
 
-Scene.prototype.goBack_ = function(opt_time) {
+Scene.prototype.goBack_ = function(opt_options) {
   this.gm_.sceneStack.pop();
-  this.transition_(_.last(this.gm_.sceneStack), opt_time);
+  this.transition_(_.last(this.gm_.sceneStack), opt_options);
 };
 
 Scene.prototype.openModal_ = function(name) {
   this.gm_.scenes[name] = 'start';
 };
 
-Scene.prototype.transition_ = function(to, opt_time) {
-  var time = _.isFinite(opt_time) ? opt_time : Time.TRANSITION;
+Scene.prototype.transition_ = function(to, opt_options) {
+  var o = _.options(opt_options, {
+    time: Time.TRANSITION,
+    closeActiveStates: false
+  });
   this.transitioning_ = {
     to: to,
-    time: time,
-    x: this.mouse_.staticX,
-    y: this.mouse_.staticY
+    time: o.time,
+    closeActiveStates: o.closeActiveStates
   };
   this.onTransition_();
 };
@@ -93,7 +96,7 @@ Scene.prototype.onTransition_ = function() {
 };
 
 Scene.prototype.fadeIn_ = function(opt_time) {
-  var time = _.isFinite(opt_time) ? opt_time : Time.TRANSITION;
+  var time = _.isFinite(opt_time) ? opt_time : Time.TRANSITION_FAST;
   this.layout_.setAlpha(0).animate('alpha', 1, {duration: time});
 };
 
@@ -110,9 +113,8 @@ Scene.prototype.fadeToBlack_ = function(opt_time) {
 };
 
 Scene.prototype.fadeFromBlack_ = function(opt_time) {
-  var time = _.isFinite(opt_time) ? opt_time : Time.TRANSITION;
-  this.layout_.add(this.BackdropElement_.new()
-    .setBaseAlpha(1)
+  var time = _.isFinite(opt_time) ? opt_time : Time.TRANSITION_FAST;
+  this.layout_.add(this.FadeElement_.new()
     .animate('alpha', 0, {duration: time}));
 };
 
@@ -122,7 +124,7 @@ Scene.prototype.onTransitionEnd_ = function() {
 
 Scene.prototype.end_ = function() {
   this.setState_('inactive');
-  if (this.closeActiveStates_) {
+  if (this.transitioning_.closeActiveStates) {
     this.endActiveStates_();
     this.removeAllEntities_();
   } else {
