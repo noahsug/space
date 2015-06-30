@@ -3,7 +3,7 @@ var BattleRewards = di.service('BattleRewards', [
   'MissionService']);
 
 BattleRewards.prototype.rewardPlayer = function() {
-  if (this.gm_.mission.state != 'won' && !this.missionService_.beatGame()) {
+  if (this.gm_.event.state != 'won' && !this.missionService_.beatGame()) {
     return null;
   }
   //var item = this.inventory_.getRandomUnowned();

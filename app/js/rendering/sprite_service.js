@@ -1,6 +1,7 @@
 var SpriteService = di.service('SpriteService', ['ctx', 'textCtx', 'Screen']);
 
 var Sprite = {};
+// Ships
 Sprite.DRAKIR = new Image();
 Sprite.DRAKIR.src = 'assets/drakir_36.png';
 
@@ -30,6 +31,61 @@ Sprite.ALIENSHIPTEX.src = 'assets/alienshiptex_136.png';
 
 Sprite.OSPACESHIP = new Image();
 Sprite.OSPACESHIP.src = 'assets/ospaceship-main_40.png';
+
+// Items
+Sprite.STRIKING_DIAMONDS = new Image();
+Sprite.STRIKING_DIAMONDS.src = 'assets/striking_diamonds_32.png';
+
+Sprite.STRIKING_DIAMONDS_BASIC = new Image();
+Sprite.STRIKING_DIAMONDS_BASIC.src = 'assets/striking_diamonds_basic_32.png';
+
+Sprite.STRIKING_BALLS = new Image();
+Sprite.STRIKING_BALLS.src = 'assets/striking_balls_32.png';
+
+Sprite.STRIKING_BALL_PISTOL = new Image();
+Sprite.STRIKING_BALL_PISTOL.src = 'assets/striking_ball_pistol_32.png';
+
+Sprite.ON_TARGET = new Image();
+Sprite.ON_TARGET.src = 'assets/on_target_32.png';
+
+Sprite.AFTERBURN = new Image();
+Sprite.AFTERBURN.src = 'assets/afterburn_32.png';
+
+Sprite.SHIELD = new Image();
+Sprite.SHIELD.src = 'assets/forward_field_32.png';
+
+Sprite.REFLECT = new Image();
+Sprite.REFLECT.src = 'assets/shield_reflect_32.png';
+
+Sprite.ENERGISE = new Image();
+Sprite.ENERGISE.src = 'assets/energise_32.png';
+
+Sprite.ELECTRIC = new Image();
+Sprite.ELECTRIC.src = 'assets/electric_32.png';
+
+Sprite.STRAFE = new Image();
+Sprite.STRAFE.src = 'assets/strafe_32.png';
+
+Sprite.REFRESH = new Image();
+Sprite.REFRESH.src = 'assets/cycle_32.png';
+
+Sprite.WIND_SLAP = new Image();
+Sprite.WIND_SLAP.src = 'assets/wind_slap_32.png';
+
+Sprite.TELEPORT = new Image();
+Sprite.TELEPORT.src = 'assets/teleport_32.png';
+
+Sprite.SENTRY_GUN = new Image();
+Sprite.SENTRY_GUN.src = 'assets/sentry_gun_32.png';
+
+Sprite.MISSILE_SWARM = new Image();
+Sprite.MISSILE_SWARM.src = 'assets/missile_swarm_32.png';
+
+Sprite.SNIPER = new Image();
+Sprite.SNIPER.src = 'assets/gunshot_32.png';
+
+Sprite.CLONE = new Image();
+Sprite.CLONE.src = 'assets/telepathy_32.png';
 
 SpriteService.prototype.init = function() {
   this.sprites_ = {
@@ -93,33 +149,42 @@ SpriteService.prototype.init = function() {
 
   // Items
   _.each({
-    'shotgun' : {image: Sprite.RD2},
-    'basic laser': {image: Sprite.RD2},
-    'alien laser': {image: Sprite.RD2},
-    'alien gatling': {image: Sprite.RD2},
-    'alien burst': {image: Sprite.RD2},
-    'alien sniper': {image: Sprite.RD2},
-    'alien doubleshot': {image: Sprite.RD2},
-    'alien grenade': {image: Sprite.RD2},
-    'alien stinger': {image: Sprite.RD2},
-    'alien blades': {image: Sprite.RD2},
+    'shotgun' : {image: Sprite.STRIKING_BALLS},
+    'basic laser': {image: Sprite.STRIKING_DIAMONDS_BASIC},
+    'burst laser': {image: Sprite.STRIKING_DIAMONDS},
+    'missiles': {image: Sprite.MISSILE_SWARM},
+    'sniper': {image: Sprite.SNIPER},
+    'alien laser': {image: Sprite.STRIKING_DIAMONDS_BASIC},
+    'alien gatling': {image: Sprite.STRIKING_DIAMONDS_BASIC},  // No img
+    'alien burst': {image: Sprite.STRIKING_DIAMONDS},
+    'alien sniper': {image: Sprite.SNIPER},
+    'alien doubleshot': {image: Sprite.STRIKING_DIAMONDS_BASIC},  // No img
+    'alien grenade': {image: Sprite.STRIKING_DIAMONDS_BASIC},  // No img
+    'alien stinger': {image: Sprite.STRIKING_DIAMONDS_BASIC},
+    'alien blades': {image: Sprite.STRIKING_DIAMONDS_BASIC},  // No img
 
-    'pistol': {image: Sprite.RD2},
-    'alien spawn': {image: Sprite.RD2},
-    'charge': {image: Sprite.RD2},
-    'alien emp': {image: Sprite.RD2},
-    'emp': {image: Sprite.RD2},
-    'pull': {image: Sprite.RD2},
-    'alien stun': {image: Sprite.RD2},
+    'pistol': {image: Sprite.STRIKING_BALL_PISTOL},
+    'tracker': {image: Sprite.ON_TARGET},
+    'alien spawn': {image: Sprite.STRAFE},
+    'charge': {image: Sprite.AFTERBURN},
+    'alien emp': {image: Sprite.ENERGISE},
+    'emp': {image: Sprite.ENERGISE},
+    'pull': {image: Sprite.STRIKING_BALL_PISTOL},  // No img
+    'turret': {image: Sprite.SENTRY_GUN},
+    'stun': {image: Sprite.ELECTRIC},
+    'alien stun': {image: Sprite.ELECTRIC},
 
-    'knockback': {image: Sprite.RD2},
-    'alien knockback': {image: Sprite.RD2},
-    'shield': {image: Sprite.RD2},
-    'haze': {image: Sprite.RD2},
+    'knockback': {image: Sprite.WIND_SLAP},
+    'alien knockback': {image: Sprite.WIND_SLAP},
+    'shield': {image: Sprite.SHIELD},
+    'haze': {image: Sprite.STRIKING_BALL_PISTOL},  // No img
+    'reflect': {image: Sprite.REFLECT},
 
-    'dash': {image: Sprite.RD2},
-    'teleport': {image: Sprite.RD2},
-    'sticky': {image: Sprite.RD2}
+    'dash': {image: Sprite.TELEPORT},  // No img
+    'refresh': {image: Sprite.REFRESH},
+    'teleport': {image: Sprite.TELEPORT},
+    'divide': {image: Sprite.CLONE},
+    'sticky': {image: Sprite.TELEPORT}  // No img
 
   }, function(info, name) {
     info.size = Size.ITEM;

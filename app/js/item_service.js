@@ -26,7 +26,7 @@ ItemService.prototype.getEnemyEquipped = function(type) {
 };
 
 ItemService.CD_ONLY = ['charge', 'tracker', 'pull', 'turret', 'alien spawn',
-                       'alien emp', 'pull', 'alien stun'];
+                       'alien emp', 'pull', 'alien stun', 'refresh'];
 ItemService.DESC_ONLY = ['divide', 'sticky'];
 ItemService.prototype.getDesc = function(item) {
   var descParts = [];

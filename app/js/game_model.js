@@ -7,6 +7,7 @@ GameModel.prototype.init = function() {
 
   // The current world / mission / stage the player is on.
   this.world = {};
+  this.event = {};
   this.mission = {};
   this.stage = {};
 
