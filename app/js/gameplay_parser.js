@@ -47,15 +47,23 @@ GameplayParser.prototype.parseWorlds_ = function(worlds, stages) {
   return _.map(worlds, function(world, index) {
     world = _.clone(world);
     world.index = index;
-    world.missions = this.parseMissions_(world.missions, stages);
+    world.events = this.parseEvents_(world.events, stages);
     return world;
+  }, this);
+};
+
+GameplayParser.prototype.parseEvents_ = function(events, stages) {
+  return _.map(events, function(event, index) {
+    event = _.clone(event);
+    event.index = index;
+    event.missions = this.parseMissions_(event.missions, stages);
+    return event;
   }, this);
 };
 
 GameplayParser.prototype.parseMissions_ = function(missions, stages) {
   return _.map(missions, function(mission, index) {
     mission = _.clone(mission);
-    mission.index = index;
     mission.unlocks = mission.unlocks || [];
     mission.stages = this.parseMissionStages_(mission.stages, stages);
     return mission;
@@ -63,6 +71,7 @@ GameplayParser.prototype.parseMissions_ = function(missions, stages) {
 };
 
 GameplayParser.prototype.parseMissionStages_ = function(names, stages) {
+  if (!names) return [];
   return names.map(function(row, rowIndex) {
     return row.map(function(stageName, colIndex) {
       if (stageName == '-') return {empty: true};

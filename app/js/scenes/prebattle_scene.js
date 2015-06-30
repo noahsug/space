@@ -7,7 +7,7 @@ PrebattleScene.prototype.init = function() {
 };
 
 PrebattleScene.prototype.onStart_ = function() {
-  if (this.gm_.mission.index == 0) {
+  if (this.gm_.event.index == 0) {
     // Player + Enemy fly in slowly.
     this.FLY_TIME = 3;
     this.timeToTransition_ = this.FLY_TIME * 2;
@@ -38,11 +38,11 @@ PrebattleScene.prototype.addEntities_ = function() {
       .setOffset(0, this.screen_.height / 2 - 75)
       .animate('y', 0, {duration: this.FLY_TIME}));
 
-  if (this.gm_.mission.index > 0) this.fadeFromBlack_();
+  if (this.gm_.event.index > 0) this.fadeFromBlack_();
 };
 
 PrebattleScene.prototype.maybeFlyIn_ = function(enemy) {
-  if (this.gm_.mission.index != 0) return;
+  if (this.gm_.event.index > 0) return;
   enemy
     .setOffset(0, -(this.screen_.height / 2 - 75))
     .animate('y', 0, {delay: this.FLY_TIME, duration: this.FLY_TIME});

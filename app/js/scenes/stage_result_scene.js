@@ -73,14 +73,14 @@ StageResultScene.prototype.addEntities_ = function() {
 
 StageResultScene.prototype.getTitleText_ = function() {
   if (this.missionService_.beatGame()) return 'you win';
-  if (this.gm_.mission.state == 'won') return 'mission complete';
-  if (this.gm_.mission.state == 'lost') return 'mission failed';
+  if (this.gm_.event.state == 'won') return 'mission complete';
+  if (this.gm_.event.state == 'lost') return 'mission failed';
   if (this.gm_.stage.state == 'won') return 'victory';
   return 'defeat';
 };
 
 StageResultScene.prototype.getTitleSize_ = function() {
-  if (this.gm_.mission.state == 'won' || this.gm_.mission.state == 'lost') {
+  if (_.is(this.gm_.event.state, 'won', 'lost')) {
     return 24;
   }
   return 43;
@@ -93,7 +93,7 @@ StageResultScene.prototype.getRewindText_ = function() {
 
 StageResultScene.prototype.getBtnText_ = function() {
   if (this.missionService_.beatGame()) return 'exit';
-  if (this.gm_.mission.state == 'won' ||  this.gm_.mission.state == 'lost') {
+  if (_.is(this.gm_.event.state, 'won', 'lost')) {
     return 'return to earth';
   }
   if (this.gm_.stage.state == 'won') return 'continue';
@@ -102,7 +102,7 @@ StageResultScene.prototype.getBtnText_ = function() {
 
 StageResultScene.prototype.getNextScene_ = function() {
   if (this.missionService_.beatGame()) return 'intro';
-  if (this.gm_.mission.state == 'won' ||  this.gm_.mission.state == 'lost') {
+  if (_.is(this.gm_.event.state, 'won', 'lost')) {
     return 'missionSelect';
   }
   return 'stageSelect';

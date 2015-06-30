@@ -14,47 +14,57 @@ MissionSelectScene.prototype.addEntities_ = function() {
   this.layout_ = this.LayoutElement_.new('vertical')
     .setPadding(Padding.MARGIN)
     .setChildrenBaseline('middle')
-    .add(this.LayoutElement_.new('horizontal')
-      .add(this.LabelElement_.new()
-        .setText('missions', Size.HEADING_SM)
-        .setStyle('muted')
-        .setBg('muted', Padding.HEADING_SM_BG)
-        .setLayoutAlign('left')))
-
-    .addGap(Padding.DESC_GAP)
-
-    .modify(this.addMissions_, this);
+    .modify(this.addEvents_, this);
 
   this.fadeFromBlack_();
 };
 
-MissionSelectScene.prototype.addMissions_ = function(layout) {
-  var unlockedMissions = 0;
-  _.each(this.gm_.world.missions, function(mission, i) {
-    if (mission.state == 'locked' || mission.state == 'won') return;
+MissionSelectScene.prototype.addEvents_ = function(layout) {
+  var firstEvent = false;
+  _.each(this.gm_.world.events, function(event, i) {
+    if (event.state == 'locked' || event.state == 'won') return;
 
-    if (unlockedMissions > 0) layout.addGap(Padding.DESC_GAP);
+    _.each(event.text, function(text) {
+      if (firstEvent) layout.addGap(Padding.MARGIN);
+      firstEvent = true;
 
-    var missionContainer = this.LayoutElement_.new('vertical')
-      .setBgFill(true)
-      .setLayoutFill(true)
-      .onClick(this.selectMission_.bind(this, mission))
-      .setBgStyle('muted')
-      .setPadding(Padding.HEADING_SM_BG)
+      layout
+        .add(this.LayoutElement_.new('vertical')
+          .setBgFill(true)
+          .setLayoutFill(true)
+          .setBgStyle('muted')
+          .setPadding(Padding.HEADING_SM_BG)
 
-      // Mission desc
-      .add(this.LabelElement_.new()
-        .setLayoutFill(true)
-        .setLineWrap(true)
-        .setText(mission.desc, Size.DESC));
+          // Event desc
+          .add(this.LabelElement_.new()
+            .setLayoutFill(true)
+            .setLineWrap(true)
+            .setText(text, Size.DESC_LG)));
+    }, this);
 
-    layout.add(missionContainer);
-    unlockedMissions++;
+    layout.modify(this.addMissions_.bind(this, event));
   }, this);
 };
 
-MissionSelectScene.prototype.selectMission_ = function(mission) {
+MissionSelectScene.prototype.addMissions_ = function(event, layout) {
+  _.each(event.missions, function(mission) {
+    layout.addGap(Padding.MARGIN);
+
+    layout.add(this.LabelElement_.new()
+      .setText(mission.text, Size.BUTTON_SM)
+      .setBg('primary', Padding.BUTTON_SM_BG)
+      .onClick(this.selectMission_.bind(this, mission, event)));
+  }, this);
+};
+
+MissionSelectScene.prototype.selectMission_ = function(mission, event) {
   this.gm_.mission = mission;
-  this.transition_('stageSelect');
+  this.gm_.event = event;
+  if (mission.stages.length) {
+    this.transition_('stageSelect');
+  } else {
+    event.state = 'won';
+    this.transition_('missionSelect');
+  }
   this.fadeToBlack_();
 };

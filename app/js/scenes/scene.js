@@ -43,10 +43,10 @@ Scene.prototype.update_ = function(dt) {
 Scene.prototype.updateTransition_ = function(dt) {
   this.transitioning_.time -= dt;
   if (this.transitioning_.time <= 0) {
+    this.onTransitionEnd_();
     if (this.gm_.scenes[this.transitioning_.to] != 'active') {
       this.gm_.scenes[this.transitioning_.to] = 'start';
     }
-    this.onTransitionEnd_();
   }
 };
 

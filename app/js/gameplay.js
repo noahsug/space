@@ -44,82 +44,130 @@ g = {
 di.constant('gameplayFile', {
   worlds: [
     {  // World 1
-      missions: [
+      events: [
         {  // 0
-          title: 'tutorial',
-          desc: 'tutorial',
-          unlocks: [1],
-          stages: [
-            ['a1']
+          text: 'tutorial',
+          missions: [
+            {
+              unlocks: [1],
+              stages: [
+                ['a1'],
+              ]
+            }
           ]
         },
         {  // 1
-          title: '',
-          desc: 'war is upon us. three more hive ships are approaching. dispatch them.',
-          unlocks: [2, 3],
-          stages: [
-            ['a1', 'a2', 'a1'],
+          text: [
+            'You\'ve done it. You\'ve finally killed him. ' +
+              'The hive won\'t let you escape easily.',
+            'Ships are quicking coming towards from you the East.'
+          ],
+          missions: [
+            {
+              text: 'fight',
+              unlocks: [3],
+              stages: [
+                ['a2', 'a2'],
+              ]
+            },
+            {
+              text: 'flee',
+              unlocks: [2]
+            }
           ]
         },
         {  // 2
-          title: '',
-          desc: 'a few hive rams are slowly making',
-          unlocks: [4],
-          locks: [3],
-          stages: [
-            ['a3', 'a2'],
-            ['a3']
+          text: [
+            'The ships are hive darts, known for their speed. ' +
+              'They catch up to you and open fire.',
+            'You have no choice but to fight.'
+          ],
+          missions: [
+            {
+              text: 'fight',
+              unlocks: [3],
+              stages: [
+                ['a2', 'a2'],
+              ]
+            }
           ]
         },
         {  // 3
-          title: '',
-          desc: 'a swarm of hive darts are protecting',
-          unlocks: [5],
-          locks: [2],
-          stages: [
-            ['a3', 'a2'],
-            ['a3']
+          text: [
+            'Three hive rams have caught up to you and are about to open ' +
+              'fire. Far to your east a swarm of hive darts are moving to ' +
+              'get behind you for a flank.',
+          ],
+          missions: [
+            {
+              text: 'charge the rams',
+              unlocks: [4],
+              stages: [
+                ['a3', 'a3', 'a3'],
+              ]
+            },
+            {
+              text: 'fly east and engage the darts',
+              unlocks: [5],
+              stages: [
+                ['a2'],
+                ['a2', '-', 'a2'],
+                ['a2', '-', 'a2', '-', 'a2'],
+              ]
+            }
           ]
         },
         {  // 4
-          title: '',
-          desc: 'war is upon us. three more hive ships are approaching. dispatch them.',
-          unlocks: [6],
-          stages: [
-            ['a1', 'a2', 'a1'],
-            ['a2', '-', 'a3', '-', 'a2']
+          text: [
+            'With the rams dispatched, the path ahead is clear. You fly at ' +
+              'full speed away from the hive planet.',
+            'A fleet of Hive Infestors comes up on your flank.',
+          ],
+          missions: [
+            {
+              text: 'fight',
+              unlocks: [6],
+              stages: [
+                ['a2', 'a3'],
+                ['a4', '-', 'a4'],
+              ]
+            }
           ]
         },
         {  // 5
-          title: '',
-          desc: 'war is upon us. three more hive ships are approaching. dispatch them.',
-          unlocks: [6],
-          stages: [
-            ['a1', 'a2', 'a1'],
-            ['a2', '-', 'a3', '-', 'a2']
+          text: [
+            'With the darts dispatched, the path east is clear. You fly at ' +
+              'full speed away from the hive planet.',
+            'A fleet of Hive Infestors spots you and comes up on your flank.',
+          ],
+          missions: [
+            {
+              text: 'fight',
+              unlocks: [6],
+              stages: [
+                ['a2', 'a3'],
+                ['a4', '-', 'a4'],
+              ]
+            }
           ]
         },
         {  // 6
-          title: '',
-          desc: 'oooo this is just the coolest thing I ever',
-          unlocks: [7],
-          stages: [
-            ['a2'],
-            ['a2', '-', 'a2'],
-            ['a2', '-', 'a4', '-', 'a2'],
+          text: [
+            '"You die here, scum." The Hive queen has arrived.',
+          ],
+          missions: [
+            {
+              text: 'fight',
+              stages: [
+                ['a2', 'a3', 'a2'],
+                ['a3', 'a4', 'a4', 'a3'],
+                ['a5'],
+              ]
+            }
           ]
-        },
-        {  // 7
-          title: '',
-          desc: 'awwwesome',
-          stages: [
-            ['a2', 'a3', 'a2'],
-            ['a3', 'a4', 'a4', 'a3'],
-            ['a5']
-          ]
-        },
+        }
       ]
-    }
+    }  // World 1
   ],
 
   stages: {
@@ -197,14 +245,36 @@ di.constant('gameplayFile', {
   ],
 
   inventory: [
-    'shotgun',
     'basic laser',
+    'burst laser',
+    //'grenade',
+    //'razors',
+    'sniper',
+    'missiles',
+    //'stinger',
+    'shotgun',
+    //'gatling',
 
+    'stun',
+    'emp',
     'pistol',
+    //'pull',
+    'charge',
+    'tracker',
+    'turret',
 
-//    'knockback',
+    'knockback',
+    'shield',
+    'reflect',
+    //'tank',
+    //'haze',
 
     'teleport',
+    'refresh',
+    'divide',
+    //'huge',
+    //'stealth',
+    //'sticky',
   ],
 
   items: {
@@ -392,7 +462,7 @@ di.constant('gameplayFile', {
     //  level: 1},
     'tracker': {
       desc: 'Tracks enemy, ensuring next attack will hit and deal +50% damage.',
-      id:'secondary.tracker', spec: {dmgRatio: 1.5},
+      id:'secondary.tracker', spec: {cooldown: 3, dmgRatio: 1.5},
       level: 1},
     'pull': {
       desc: 'Pulls enemy close and stuns. Range: 10. Stun duration: 1.5s',
@@ -405,7 +475,7 @@ di.constant('gameplayFile', {
 
     'refresh': {
       desc: 'Reduces all cooldowns by 4s.',
-      id: 'utility.refresh', spec: {power: 0},
+      id: 'utility.refresh', spec: {cooldown: 10},
       level: 0},
     'dash': {
       desc: 'Ability to dash a short distance.',

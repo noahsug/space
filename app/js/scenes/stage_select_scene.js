@@ -27,7 +27,7 @@ StageSelectScene.prototype.addEntities_ = function() {
         .setBg('primary', Padding.BUTTON_BG)
         .onClick(this.openModal_.bind(this, 'equip'))));
 
-  if (_.is(this.gm_.mission.state, 'won', 'lost')) {
+  if (_.is(this.gm_.event.state, 'won', 'lost')) {
     this.openModal_('missionResult');
   }
 
@@ -35,7 +35,7 @@ StageSelectScene.prototype.addEntities_ = function() {
 };
 
 StageSelectScene.prototype.retreat_ = function() {
-  this.gm_.mission.state = 'lost';
+  this.gm_.event.state = 'lost';
   this.goBackTo_('missionSelect');
 };
 
@@ -47,7 +47,7 @@ StageSelectScene.prototype.addStages_ = function(layout) {
     var stageRow = this.LayoutElement_.new('horizontal');
     stageRow.setChildrenBaselineAlign('middle', 'center');
     for (var col = 0; col < this.gm_.mission.stages[row].length; col++) {
-      if (col) stageRow.addFlex();
+      if (col) stageRow.addGap(Padding.STAGE);
       stageRow.add(this.createStageBtn_(row, col));
     }
     layout.add(stageRow);
