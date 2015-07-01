@@ -91,7 +91,7 @@ AbilityDecorator.prototype.decorateHaze_ = function(obj, spec) {
   }
 
   this.util_.addBasicWeapon_(obj, obj.ability,
-                              this.util_.proj.ball, makeHazable.bind(this));
+                             this.util_.proj.ball, makeHazable.bind(this));
 
   function makeHazable(target) {
     if (target.hazable) return;

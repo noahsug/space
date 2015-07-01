@@ -1,6 +1,6 @@
-var Scene = di.factory('Scene', ['GameModel as gm', 'Mouse']);
-
-Scene.TRANSITION_TIME = .25;
+var Scene = di.factory('Scene', [
+  'UiElement', 'GameModel as gm', 'Mouse', 'textCtx', 'BackdropElement',
+  'FadeElement']);
 
 Scene.prototype.init = function(name) {
   this.name_ = name;
@@ -16,26 +16,36 @@ Scene.prototype.getState_ = function(state) {
 };
 
 Scene.prototype.start = function() {
+  this.numStartingEntities_ = this.gm_.entities.length;
   this.setState_('active');
-  this.start_();
+  this.gm_.sceneStack.push(this.name_);
+  this.transitioning_ = null;
+  this.onStart_();
   this.addEntities_();
+  this.gm_.config = {};
 };
+
+Scene.prototype.onStart_ = _.emptyFn;
 
 Scene.prototype.addEntities_ = _.emptyFn;
 
-Scene.prototype.start_ = _.emptyFn;
-
 Scene.prototype.update = function(dt) {
-  var state = this.getState_();
-  if (state == 'inactive' || state == 'start') return;
-  else if (state == 'active') this.update_(dt);
-  else if (state == 'transition') {
-    this.transitionTime_ -= dt;
-    if (this.transitionTime_ <= 0) {
-      this.transitionOver_();
-      this.gm_.transition.done = true;
-      this.setState_('inactive');
-      this.gm_.scenes[this.transitionTo_] = 'start';
+  if (this.getState_() != 'active') return;
+  this.update_(dt);
+  if (this.transitioning_) this.updateTransition_(dt);
+};
+
+Scene.prototype.update_ = function(dt) {
+  if (!this.layout_) return;
+  this.layout_.update(dt);
+};
+
+Scene.prototype.updateTransition_ = function(dt) {
+  this.transitioning_.time -= dt;
+  if (this.transitioning_.time <= 0) {
+    this.onTransitionEnd_();
+    if (this.gm_.scenes[this.transitioning_.to] != 'active') {
+      this.gm_.scenes[this.transitioning_.to] = 'start';
     }
   }
 };
@@ -45,38 +55,96 @@ Scene.prototype.resolve = function(dt) {
   if (state == 'inactive') return;
   if (state == 'start') {
     this.start();
-    this.update_();
+    this.update_(dt);
   }
 };
 
-Scene.prototype.update_ = _.emptyFn;
-
-Scene.prototype.transitionFast_ = function(to) {
-  this.transition_(to, Scene.TRANSITION_TIME / 2);
+Scene.prototype.goBackTo_ = function(scene, opt_options) {
+  var o = _.options(opt_options, {
+    closeActiveStates: true
+  });
+  var index = this.gm_.sceneStack.lastIndexOf(scene) || 0;
+  this.gm_.sceneStack = this.gm_.sceneStack.slice(0, index);
+  this.transition_(scene, o);
 };
 
-Scene.prototype.transitionInstantly_ = function(to) {
-  this.transition_(to, 0);
+Scene.prototype.goBack_ = function(opt_options) {
+  this.gm_.sceneStack.pop();
+  this.transition_(_.last(this.gm_.sceneStack), opt_options);
 };
 
-Scene.prototype.transition_ = function(to, opt_time) {
-  this.transitionTime_ = _.orDef(opt_time, Scene.TRANSITION_TIME);
-  this.setState_('transition');
-  var pos = {screenX: this.mouse_.screenX, screenY: this.mouse_.screenY};
-  this.gm_.transition.pos = pos;
-  this.gm_.transition.time = this.transitionTime_;
-  this.gm_.transition.done = false;
-  this.gm_.transition.prev = this.name_;
-  this.transitionTo_ = to;
+Scene.prototype.openModal_ = function(name) {
+  this.gm_.scenes[name] = 'start';
 };
 
-Scene.prototype.transitionOver_ = function() {
-  this.removeEntities_();
+Scene.prototype.transition_ = function(to, opt_options) {
+  var o = _.options(opt_options, {
+    time: Time.TRANSITION,
+    closeActiveStates: false
+  });
+  this.transitioning_ = {
+    to: to,
+    time: o.time,
+    closeActiveStates: o.closeActiveStates
+  };
+  this.onTransition_();
+};
+
+Scene.prototype.onTransition_ = function() {
+  if (!this.layout_) return;
+  this.layout_.addFront(this.UiElement_.new().consumeClicks());
+};
+
+Scene.prototype.fadeIn_ = function(opt_time) {
+  var time = _.isFinite(opt_time) ? opt_time : Time.TRANSITION_FAST;
+  this.layout_.setAlpha(0).animate('alpha', 1, {duration: time});
+};
+
+Scene.prototype.fadeOut_ = function(opt_time) {
+  var time = _.isFinite(opt_time) ? opt_time : this.transitioning_.time;
+  this.layout_.animate('alpha', 0, {duration: time});
+};
+
+Scene.prototype.fadeToBlack_ = function(opt_time) {
+  var time = _.isFinite(opt_time) ? opt_time : this.transitioning_.time;
+  this.layout_.add(this.FadeElement_.new()
+    .setAlpha(0)
+    .animate('alpha', 1, {duration: time}));
+};
+
+Scene.prototype.fadeFromBlack_ = function(opt_time) {
+  var time = _.isFinite(opt_time) ? opt_time : Time.TRANSITION_FAST;
+  this.layout_.add(this.FadeElement_.new()
+    .animate('alpha', 0, {duration: time}));
+};
+
+Scene.prototype.onTransitionEnd_ = function() {
   this.end_();
 };
 
-Scene.prototype.removeEntities_ = function() {
+Scene.prototype.end_ = function() {
+  this.setState_('inactive');
+  if (this.transitioning_.closeActiveStates) {
+    this.endActiveStates_();
+    this.removeAllEntities_();
+  } else {
+    this.removeOwnEntities_();
+  }
+  this.onEnd_();
+};
+
+Scene.prototype.onEnd_ = _.emptyFn;
+
+Scene.prototype.endActiveStates_ = function() {
+  _.each(this.gm_.scenes, function(state, scene) {
+    if (state == 'active') this.gm_.scenes[scene] = 'inactive';
+  }, this);
+};
+
+Scene.prototype.removeAllEntities_ = function() {
   this.gm_.entities.clear();
 };
 
-Scene.prototype.end_ = _.emptyFn;
+Scene.prototype.removeOwnEntities_ = function() {
+  this.gm_.entities.length = this.numStartingEntities_;
+};

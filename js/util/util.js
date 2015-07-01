@@ -1,7 +1,13 @@
 _.emptyFn = function() {};
 
-_.pos = {
-  BOTTOM: 'bottom'
+_.is = function(value, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+  return value == arg1 ||
+    value == arg2 ||
+    value == arg3 ||
+    value == arg4 ||
+    value == arg5 ||
+    value == arg6 ||
+    value == arg7;
 };
 
 _.roundTo = function(value, nearest) {
@@ -32,7 +38,14 @@ _.valueOrFn = function(valueOrFn, var_args) {
   }
 };
 
-// Warning: Very slow.
+/**
+ * Input: fn(1, 2, 3, 4)
+ *
+ * _.args(arguments, 0, 2) -> [1, 3, 4]
+ * _.args(arguments, 1)    -> [2, 3, 4]
+ * _.args(arguments, 1, 4) -> [2, 4]
+ * _.args(arguments)       -> [1, 2, 3, 4]
+ */
 _.args = function(args, opt_indexes) {
   if (arguments.length == 1) {
     return _.toArray(args);
@@ -91,11 +104,25 @@ _.repeat = function(fn, times) {
   }
 };
 
-_.swap = function(arr, i1, i2) {
-  if (i1 == i2) return arr;
-  var temp = arr[i1];
-  arr[i1] = arr[i2];
-  arr[i2] = temp;
+_.remove = function(arr, value) {
+  var index = arr.indexOf(value);
+  if (index != -1) {
+    return arr.splice(value, 1, 0)[0];
+  }
+  return null;
+};
+
+_.move = function(arr, from, to) {
+  var r = arr.splice(from, 1);
+  if (from < to) to--;
+  arr.splice(to, 0, r[0]);
+};
+
+_.swap = function(obj, a, b) {
+  if (a == b) return;
+  var temp = obj[a];
+  obj[a] = obj[b];
+  obj[b] = temp;
 };
 
 // Returns a normalized, random array of values.
@@ -279,12 +306,6 @@ _.value = function(obj) {
 
 _.sampleKey = function(obj) {
   return _.sample(_.keys(obj));
-};
-
-_.swap = function(obj, a, b) {
-  var temp = obj[a];
-  obj[a] = obj[b];
-  obj[b] = temp;
 };
 
 _.modObj = function(obj, mod) {
@@ -531,9 +552,8 @@ _.vector.isEmpty = function(v) {
 };
 
 _.class = {};
-_.class.extend = function(destination, source) {
+_.class.extend = function(destination, source, opt_base) {
   for (var key in source) {
     destination[key] = destination[key] || source[key];
   }
-  destination.base_ = source;
 };

@@ -101,35 +101,35 @@ DecoratorUtil.prototype.fireSpread_ = function(obj, spec, fire) {
 };
 
 DecoratorUtil.prototype.fireLaser = function(obj, spec) {
-  var laser = this.entity_.create('laser');
+  var laser = this.Entity_.new('laser');
   laser.style = spec.style;
   _.decorate(laser, this.d_.shape.line, spec);
   return this.fireProjectile_(laser, obj, spec);
 };
 
 DecoratorUtil.prototype.fireBomb = function(obj, spec) {
-  var bomb = this.entity_.create('bomb');
+  var bomb = this.Entity_.new('bomb');
   bomb.style = spec.style;
   _.decorate(bomb, this.d_.shape.circle, spec);
   return this.fireProjectile_(bomb, obj, spec);
 };
 
 DecoratorUtil.prototype.fireBall = function(obj, spec) {
-  var bomb = this.entity_.create('ball');
+  var bomb = this.Entity_.new('ball');
   bomb.style = spec.style;
   _.decorate(bomb, this.d_.shape.circle, spec);
   return this.fireProjectile_(bomb, obj, spec);
 };
 
 DecoratorUtil.prototype.fireBlade = function(obj, spec) {
-  var blade = this.entity_.create('blade');
+  var blade = this.Entity_.new('blade');
   blade.style = spec.style;
   _.decorate(blade, this.d_.shape.circle, spec);
   return this.fireProjectile_(blade, obj, spec);
 };
 
 DecoratorUtil.prototype.fireAura = function(obj, spec) {
-  var aura = this.entity_.create('aura');
+  var aura = this.Entity_.new('aura');
   aura.style = spec.style;
   spec.radius = spec.radius || obj.radius;
   spec.minRadius = spec.minRadius || obj.radius;
@@ -174,6 +174,9 @@ DecoratorUtil.prototype.addCooldown = function(obj, action, opt_spec) {
     if (spec.cooldownRemaining > 0) spec.cooldownRemaining -= dt;
     if (spec.cooldownRemaining <= 0) {
       spec.cooldownRemaining += action() || 0;
+      if (spec.cooldownRemaining > 0) {
+        spec.initCooldown = spec.cooldownRemaining;
+      }
     }
   });
 };

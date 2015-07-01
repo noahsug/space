@@ -32,8 +32,8 @@ DiValidator.prototype.checkDepsExist_ = function(name, deps) {
 DiValidator.prototype.validateMapping_ = function() {
   for (var to in this.mapping_) {
     var from = this.mapping_[to];
-    this.assert_(
-        this.implsToInit_[from], 'mapping is invalid:', from, '->', to);
+    this.assert_(to != from && this.implsToInit_[from],
+        'mapping is invalid:', from, '->', to);
   }
 };
 

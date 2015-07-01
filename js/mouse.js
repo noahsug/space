@@ -11,22 +11,32 @@ Mouse.prototype.init = function() {
 };
 
 Mouse.prototype.onMouseMove = function(e) {
-  this.screenX = e.x / this.screen_.upscale;
-  this.screenY = e.y / this.screen_.upscale;
-  var pos = this.screen_.screenToCanvas(e.x, e.y);
-  this.x = pos.x;
-  this.y = pos.y;
+  if (e.touches) this.updateTouchPos_(e);
+  else this.updatePos_(e.x, e.y);
 };
 
-Mouse.prototype.onMouseDown = function() {
+Mouse.prototype.onMouseDown = function(e) {
   this.down = true;
   this.pressed = true;
   this.clicked = true;
+  if (e.touches) this.updateTouchPos_(e);
 };
 
-Mouse.prototype.onMouseUp = function() {
+Mouse.prototype.onMouseUp = function(e) {
   this.down = false;
   this.released = true;
+};
+
+Mouse.prototype.updateTouchPos_ = function(e) {
+  this.updatePos_(e.touches[0].clientX, e.touches[0].clientY);
+};
+
+Mouse.prototype.updatePos_ = function(x, y) {
+  this.staticX = x / this.screen_.upscale;
+  this.staticY = y / this.screen_.upscale;
+  var pos = this.screen_.screenToCanvas(x, y);
+  this.x = pos.x;
+  this.y = pos.y;
 };
 
 Mouse.prototype.onKeyDown = function(number) {

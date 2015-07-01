@@ -16,11 +16,12 @@ EventEmitter.prototype.emit = function(
 };
 
 _.eventFn = function(event) {
-  return function(opt_callbackOrArg, opt_context, arg3, arg4, arg5, arg6) {
+  return function(opt_callbackOrArg, opt_contextOrArg, arg3, arg4, arg5, arg6) {
     if (_.isFunction(opt_callbackOrArg)) {
-      this.on(event, opt_callbackOrArg, opt_context);
+      this.on(event, opt_callbackOrArg, opt_contextOrArg);
     } else {
-      this.emit_(event, opt_callbackOrArg, opt_context, arg3, arg4, arg5, arg6);
+      this.emit_(
+          event, opt_callbackOrArg, opt_contextOrArg, arg3, arg4, arg5, arg6);
     }
   };
 };

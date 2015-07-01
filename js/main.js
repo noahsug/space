@@ -19,12 +19,12 @@ Main.prototype.start = function() {
     this.mouse_.onMouseMove(e);
   }, {running:true});
 
-  this.on_('mousedown', 'touchdown', function() {
-    this.mouse_.onMouseDown();
+  this.on_('mousedown', 'touchstart', function(e) {
+    this.mouse_.onMouseDown(e);
   }, {running:true});
 
-  this.on_('mouseup', 'touchend', function() {
-    this.mouse_.onMouseUp();
+  this.on_('mouseup', 'touchend', function(e) {
+    this.mouse_.onMouseUp(e);
   }, {running:true});
 
   this.on_('keydown', function(e) {
@@ -54,6 +54,8 @@ Main.prototype.on_ = function(var_events, fn, opt_req) {
 
   _.each(events, function(event) {
     this.window_.addEventListener(event, function(e) {
+      // Stop the double mouse / touch event on click.
+      if (e.type.startsWith('touch')) e.preventDefault();
       if (_.isDef(req.running) && req.running != this.gameRunner_.isRunning())
         return;
       fn.call(this, e);

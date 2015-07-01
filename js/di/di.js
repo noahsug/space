@@ -29,7 +29,6 @@ Di.prototype.addImplToInit_ = function(name, deps, type) {
   if (!PROD) validator.validateAddImplToInit_(name, deps);
   var parsedDeps = this.parseDeps_(deps || []);
   var ImplClass = function() {};
-  //ImplClass.$name
   this.implsToInit_[name] = {
     type: type,
     class: ImplClass,
@@ -93,37 +92,55 @@ Di.prototype.createImpl_ = function(name) {
     case 'factory': return this.createFactory_(name);
     case 'constant': return this.implsToInit_[name].impl;
   }
+  throw 'Invalid type: ' + name;
 };
 
 Di.prototype.createService_ = function(name) {
   var service = new this.implsToInit_[name].class();
+  service.__name = name;
   this.addDeps_(service, name);
   service.init && service.init();
   return service;
 };
 
 Di.prototype.createFactory_ = function(name) {
-  var factory = {
-    create: function(var_args) {
-      var impl = new this.implsToInit_[name].class();
-      this.addDeps_(impl, name);
-      impl.init && impl.init.apply(impl, arguments);
-      return impl;
-    }.bind(this)
-  };
+  var factory = this.implsToInit_[name].class.prototype;
+  factory.name = name;
+  factory.new = function(var_args) {
+    var impl = new this.implsToInit_[name].class();
+    impl.__name = name;
+    this.addDeps_(impl, name);
+    impl.init && impl.init.apply(impl, arguments);
+    return impl;
+  }.bind(this);
   return factory;
+};
+
+/**
+ * Only works if source is a factory.
+ *
+ * Use: di.extend(this, this.UiElement_)
+ */
+Di.prototype.extend = function(dest, source, var_args) {
+  var impl = new this.implsToInit_[source.name].class();
+  this.addDeps_(impl, source.name);
+  _.class.extend(dest, impl);
+  impl.init && impl.init.apply(dest, _.args(arguments, 2));
 };
 
 Di.prototype.addDeps_ = function(impl, name) {
   var renames = this.implsToInit_[name].depRenames;
   this.implsToInit_[name].deps.forEach(function(dep) {
-    var privateMemberName = this.getPrivateMemberName_(renames[dep] || dep);
+    var privateMemberName = this.getPrivateMemberName_(
+        renames[dep] || dep, this.implsToInit_[dep].type);
     impl[privateMemberName] = this.impls_[dep];
   }.bind(this));
 };
 
-Di.prototype.getPrivateMemberName_ = function(className) {
-  return className[0].toLowerCase() + className.slice(1) + '_';
+Di.prototype.getPrivateMemberName_ = function(className, type) {
+  return type == 'factory' ?
+      className + '_' :
+      className[0].toLowerCase() + className.slice(1) + '_';
 };
 
 Di.prototype.get = function(name) {

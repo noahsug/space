@@ -24,8 +24,8 @@ g = {
   },
 
   Health: {
-    DEFAULT: 50,
-    PLAYER: 65
+    DEFAULT: 100,
+    PLAYER: 150
   },
 
   MaxTargetAngle: {
@@ -33,7 +33,7 @@ g = {
   },
 
   Lives: {
-    DEFAULT: 3
+    DEFAULT: 1
   },
 
   Range: {
@@ -43,59 +43,156 @@ g = {
 
 di.constant('gameplayFile', {
   worlds: [
-    {  // 0
-      stages: [
-        ['a1', 'a2', 'a3', 'a4'],
-        ['a5']
+    {  // World 1
+      events: [
+        {  // 0
+          text: 'tutorial',
+          missions: [
+            {
+              unlocks: [1],
+              stages: [
+                ['a1'],
+              ]
+            }
+          ]
+        },
+        {  // 1
+          text: [
+            'You\'ve done it. You\'ve finally killed him. ' +
+              'The hive won\'t let you escape easily.',
+            'Ships are quicking coming towards from you the East.'
+          ],
+          missions: [
+            {
+              text: 'fight',
+              unlocks: [3],
+              stages: [
+                ['a2', 'a2'],
+              ]
+            },
+            {
+              text: 'flee',
+              unlocks: [2]
+            }
+          ]
+        },
+        {  // 2
+          text: [
+            'The ships are hive darts, known for their speed. ' +
+              'They catch up to you and open fire.',
+            'You have no choice but to fight.'
+          ],
+          missions: [
+            {
+              text: 'fight',
+              unlocks: [3],
+              stages: [
+                ['a2', 'a2'],
+              ]
+            }
+          ]
+        },
+        {  // 3
+          text: [
+            'Three hive rams have caught up to you and are about to open ' +
+              'fire. Far to your east a swarm of hive darts are moving to ' +
+              'get behind you for a flank.',
+          ],
+          missions: [
+            {
+              text: 'charge the rams',
+              unlocks: [4],
+              stages: [
+                ['a3', 'a3', 'a3'],
+              ]
+            },
+            {
+              text: 'fly east and engage the darts',
+              unlocks: [5],
+              stages: [
+                ['a2'],
+                ['a2', '-', 'a2'],
+                ['a2', '-', 'a2', '-', 'a2'],
+              ]
+            }
+          ]
+        },
+        {  // 4
+          text: [
+            'With the rams dispatched, the path ahead is clear. You fly at ' +
+              'full speed away from the hive planet.',
+            'A fleet of Hive Infestors comes up on your flank.',
+          ],
+          missions: [
+            {
+              text: 'fight',
+              unlocks: [6],
+              stages: [
+                ['a2', 'a3'],
+                ['a4', '-', 'a4'],
+              ]
+            }
+          ]
+        },
+        {  // 5
+          text: [
+            'With the darts dispatched, the path east is clear. You fly at ' +
+              'full speed away from the hive planet.',
+            'A fleet of Hive Infestors spots you and comes up on your flank.',
+          ],
+          missions: [
+            {
+              text: 'fight',
+              unlocks: [6],
+              stages: [
+                ['a2', 'a3'],
+                ['a4', '-', 'a4'],
+              ]
+            }
+          ]
+        },
+        {  // 6
+          text: [
+            '"You die here, scum." The Hive queen has arrived.',
+          ],
+          missions: [
+            {
+              text: 'fight',
+              stages: [
+                ['a2', 'a3', 'a2'],
+                ['a3', 'a4', 'a4', 'a3'],
+                ['a5'],
+              ]
+            }
+          ]
+        }
       ]
-    },
-    {  // 1
-      stages: [
-        ['a1', 'a2', 'a1'],
-        ['a2', '-', 'a3', '-', 'a2']
-      ]
-    },
-    {  // 2
-      stages: [
-        ['a2'],
-        ['a2', '-', 'a2'],
-        ['a2', '-', 'a4', '-', 'a2'],
-      ]
-    },
-    {  // 3
-      stages: [
-        ['a2', 'a3', 'a2'],
-        ['a3', 'a4', 'a4', 'a3'],
-        ['a5']
-      ]
-    },
+    }  // World 1
   ],
 
   stages: {
     'a1': {
       desc: 'Hive Scout',
-      level: 0, reward: {item: .5, augment: .5},
+      level: 0,
       hull: 'alien1',
       primary: ['alien laser', 'alien burst'],
       utility: ['dash', 'teleport', '']},
     'a2': {
       desc: 'Hive Dart',
-      level: 1, reward: {item: .5, augment: .5},
+      level: 1,
       hull: 'alien2',
       primary: ['alien sniper', 'alien doubleshot'],
-      secondary: ['alien knockback'],
-      augment: ['fast']},
+      secondary: ['alien knockback']},
     'a3': {
       desc: 'Hive Ram',
-      level: 2, reward: {item: .5, augment: .5},
+      level: 2,
       hull: 'alien3',
       primary: ['alien grenade', 'alien stinger'],
       secondary: ['charge'],
-      ability: ['shield'],
-      augment: ['beefy']},
+      ability: ['shield']},
     'a4': {
       desc: 'Hive Infestor',
-      level: 3, reward: {item: .5, augment: .5},
+      level: 3,
       hull: 'alien4',
       primary: ['alien blades'],
       secondary: ['alien emp', 'pull', 'alien stun'],
@@ -104,12 +201,11 @@ di.constant('gameplayFile', {
     },
     'a5': {
       desc: 'Hive Queen',
-      level: 4, reward: {item: .5, augment: .5},
+      level: 4,
       hull: 'alien_boss',
       primary: ['alien gatling'],
       secondary: ['alien spawn'],
-      ability: ['knockback'],
-      augment: ['beefy']}
+      ability: ['knockback']}
   },
 
   player: [
@@ -123,39 +219,62 @@ di.constant('gameplayFile', {
     'shotgun',
     //'gatling',
 
-    'stun',
-    //'emp',
+    //'stun',
+    'emp',
     //'pistol',
     //'pull',
     //'charge',
     //'tracker',
     //'turret',
 
-    //'knockback',
+    'knockback',
     //'shield',
-    'reflect',
+    //'reflect',
     //'tank',
     //'haze',
 
-    //'teleport',
-    'refresh',
+    'teleport',
+    //'refresh',
     //'divide',
     //'huge',
     //'stealth',
     //'sticky',
-
-    //'freeze',
-    //'warp',
-    //'archery',
 
     'red',
     //'brown'
   ],
 
   inventory: [
-    'shotgun',
-    'pistol',
     'basic laser',
+    'burst laser',
+    //'grenade',
+    //'razors',
+    'sniper',
+    'missiles',
+    //'stinger',
+    'shotgun',
+    //'gatling',
+
+    'stun',
+    'emp',
+    'pistol',
+    //'pull',
+    'charge',
+    'tracker',
+    'turret',
+
+    'knockback',
+    'shield',
+    'reflect',
+    //'tank',
+    //'haze',
+
+    'teleport',
+    'refresh',
+    'divide',
+    //'huge',
+    //'stealth',
+    //'sticky',
   ],
 
   items: {
@@ -335,7 +454,7 @@ di.constant('gameplayFile', {
     //  level: 4},
     'charge': {
       desc: 'Charge the enemy, taking no damage from collisions.',
-      id:'secondary.charge', spec: {},
+      id:'secondary.charge', spec: {cooldown: 4},
       level: 0},
     //'charge II': {
     //  desc: 'Charge the enemy while tasking less damage',
@@ -343,11 +462,11 @@ di.constant('gameplayFile', {
     //  level: 1},
     'tracker': {
       desc: 'Tracks enemy, ensuring next attack will hit and deal +50% damage.',
-      id:'secondary.tracker', spec: {dmgRatio: 1.5},
+      id:'secondary.tracker', spec: {cooldown: 3, dmgRatio: 1.5},
       level: 1},
     'pull': {
       desc: 'Pulls enemy close and stuns. Range: 10. Stun duration: 1.5s',
-      id:'secondary.pull', spec: {duration: 1.5, range: 100},
+      id:'secondary.pull', spec: {duration: 1.5, range: 100, cooldown: 4},
       level: 2},
     //'melee': {
     //  desc: 'Primary 2x for 75% damage while close.',
@@ -356,15 +475,15 @@ di.constant('gameplayFile', {
 
     'refresh': {
       desc: 'Reduces all cooldowns by 4s.',
-      id: 'utility.refresh', spec: {power: 0},
+      id: 'utility.refresh', spec: {cooldown: 10},
       level: 0},
     'dash': {
       desc: 'Ability to dash a short distance.',
-      id: 'utility.ninja', spec: {power: 1},
+      id: 'utility.ninja', spec: {cooldown: 1.75},
       level: 0},
     'teleport': {
-      desc: 'Ability to teleport behind the enemy.',
-      id: 'utility.ninja', spec: {power: 2},
+      desc: 'Ability to teleport behind the enemy',
+      id: 'utility.ninja', spec: {cooldown: 6},
       level: 1},
     'stealth': {
       desc: 'Turn invisible, then deal 2x damage.',
@@ -402,7 +521,7 @@ di.constant('gameplayFile', {
 
     'knockback': {
       desc: 'Knocks the enemy away.',
-      id:'ability.knockback', spec: {},
+      id:'ability.knockback', spec: {cooldown: 4},
       level: 1},
     'alien knockback': {
       desc: 'Knocks the enemy away.',
@@ -410,11 +529,11 @@ di.constant('gameplayFile', {
       level: 9},
     'haze': {
       desc: 'Lowers enemy accuracy for a short time.',
-      id: 'ability.haze', spec: {},
+      id: 'ability.haze', spec: {cooldown: 6},
       level: 0},
     'shield': {
       desc: 'Blocks the next shot.',
-      id: 'ability.shield', spec: {},
+      id: 'ability.shield', spec: {cooldown: 8},
       level: 3},
     //'shield II': {
     //  desc: 'Blocks the next two shots.',

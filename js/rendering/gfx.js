@@ -2,11 +2,22 @@ var Gfx = di.service('Gfx', [
   'Screen', 'ctx', 'GameModel as gm', 'SpriteService']);
 
 Gfx.Font = {
-  TITLE: 'ElegantLux',
-  TEXT: 'Arial'
+  TITLE: 'OratorStd',
+  TEXT: 'OratorStd'
 };
 
 Gfx.Color = {
+  // UI Colors
+  FG: '#F3F9FD',
+  FG_MUTED: '#C3C9CD',
+  FG_ACTIVE: '#FDBE31',
+  // TODO: Make these all have opacity.
+  BG: 'rgba(72, 81, 84, .75)',
+  BG_MUTED: 'rgba(31, 33, 34, .75)',
+  BG_MUTED_DARK: 'rgba(22, 23, 25, .75)',
+  COOLDOWN: 'rgba(0, 0, 0, .35)',
+
+  // Battle Colors
   BLACK: '#000000',
   WHITE: '#FFFFFF',
   OPAC_WHITE: 'rgba(255, 255, 255, .12)',
@@ -27,7 +38,6 @@ Gfx.Color = {
   PURPLE: '#b091be',
 
   UNSELECTED: '#CCC',
-  ACTIVE: '#FFFFAA',
   ACTIVE_LOCKED: '#888844',
   LOCKED: '#666',
   BEATEN: '#AAA'

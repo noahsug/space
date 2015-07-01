@@ -1,6 +1,6 @@
 var Background = di.service('Background', [
-  'GameModel as gm', 'Screen', 'canvas', 'ctx', 'textCanvas', 'bgCtxList',
-  'RepeatedBackground']);
+  'GameModel as gm', 'Screen', 'canvas', 'ctx', 'textCtx',
+  'bgCtxList', 'RepeatedBackground']);
 
 // Screen should never have a width or height larger than 2x this value.
 var BG_TILE_SIZE = 600;
@@ -12,7 +12,7 @@ Background.prototype.init = function() {
 
 Background.prototype.createBgLayers_ = function() {
   return _.generate(function(i) {
-    var bg = this.repeatedBackground_.create(this.bgCtxList_[i]);
+    var bg = this.RepeatedBackground_.new(this.bgCtxList_[i]);
     var bgColor = i == this.bgCtxList_.length -1 ? '#000000' : '';
     var starTile = this.createStarTile_(bgColor);
     bg.setRepeatedTile(starTile);
@@ -61,12 +61,19 @@ Background.prototype.drawSky_ = function(ctx, width, height) {
   }
 };
 
-Background.prototype.draw = function() {
-  this.textCanvas_.width = this.textCanvas_.width;
+Background.prototype.draw = function(softClear) {
+  this.textCtx_.clearRect(
+      0, 0, this.screen_.pixelWidth, this.screen_.pixelHeight);
 
-  this.ctx_.globalCompositeOperation = 'destination-out';
-  this.ctx_.fillStyle = 'rgba(0, 0, 0, .35)';
-  this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
-  this.ctx_.globalCompositeOperation = 'source-over';
+  if (softClear) {
+    this.ctx_.globalCompositeOperation = 'destination-out';
+    this.ctx_.fillStyle = 'rgba(0, 0, 0, .35)';
+    this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
+    this.ctx_.globalCompositeOperation = 'source-over';
+  } else {
+    this.ctx_.clearRect(
+        0, 0, this.screen_.width, this.screen_.height);
+  }
+
   _.each(this.bgLayers_, function(bg) { bg.draw(); });
 };
