@@ -37,15 +37,15 @@ Game.prototype.start = function() {
   this.gm_.stage = this.gm_.mission.stages[0][0];
 
   // DEBUG
-  this.gm_.event = this.gm_.world.events[6];
-  this.gm_.mission = this.gm_.event.missions[0];
-  this.gm_.stage = this.gm_.mission.stages[0][0];
+  //this.gm_.event = this.gm_.world.events[6];
+  //this.gm_.mission = this.gm_.event.missions[0];
+  //this.gm_.stage = this.gm_.mission.stages[0][0];
   //this.gm_.mission.lives = 1;
   //this.gm_.stage.state = '';
   //this.gm_.equipping = 'primary';
-  this.gm_.event.state = 'unlocked';
+  //this.gm_.event.state = 'unlocked';
 
-  this.scenes_[6].start();
+  this.scenes_[0].start();
 };
 
 Game.prototype.initGameModel_ = function() {
