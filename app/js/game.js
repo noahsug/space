@@ -45,7 +45,7 @@ Game.prototype.start = function() {
   //this.gm_.equipping = 'primary';
   //this.gm_.event.state = 'unlocked';
 
-  this.scenes_[0].start();
+  this.scenes_[3].start();
 };
 
 Game.prototype.initGameModel_ = function() {

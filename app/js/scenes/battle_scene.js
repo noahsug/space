@@ -32,7 +32,7 @@ BattleScene.prototype.addEntities_ = function() {
     .animate('alpha', 1);
 
   //DEBUG: End the battle immediately.
-  this.enemy_.dead = true;
+  //this.enemy_.dead = true;
   //this.player_.dead = true;
 };
 
