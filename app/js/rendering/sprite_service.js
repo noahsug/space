@@ -2,90 +2,42 @@ var SpriteService = di.service('SpriteService', ['ctx', 'textCtx', 'Screen']);
 
 var Sprite = {};
 // Ships
-Sprite.DRAKIR = new Image();
-Sprite.DRAKIR.src = 'assets/drakir_36.png';
-
-Sprite.SPACESTATION = new Image();
-Sprite.SPACESTATION.src = 'assets/spacestation_40.png';
-
-Sprite.RD2 = new Image();
-Sprite.RD2.src = 'assets/RD2_36.png';
-
-Sprite.TRI = new Image();
-Sprite.TRI.src = 'assets/tri_120.png';
-
-Sprite.ALIEN1 = new Image();
-Sprite.ALIEN1.src = 'assets/alien1_40.png';
-
-Sprite.ALIEN2 = new Image();
-Sprite.ALIEN2.src = 'assets/alien2_60.png';
-
-Sprite.ALIEN3 = new Image();
-Sprite.ALIEN3.src = 'assets/alien3_47.png';
-
-Sprite.ALIEN4 = new Image();
-Sprite.ALIEN4.src = 'assets/alien4_46.png';
-
-Sprite.ALIENSHIPTEX = new Image();
-Sprite.ALIENSHIPTEX.src = 'assets/alienshiptex_136.png';
-
-Sprite.OSPACESHIP = new Image();
-Sprite.OSPACESHIP.src = 'assets/ospaceship-main_40.png';
+loadImage('DRAKIR', 'drakir_36');
+loadImage('SPACESTATION', 'spacestation_40');
+loadImage('RD2', 'RD2_36');
+loadImage('TRI', 'tri_120');
+loadImage('ALIEN1', 'alien1_40');
+loadImage('ALIEN2', 'alien2_60');
+loadImage('ALIEN3', 'alien3_47');
+loadImage('ALIEN4', 'alien4_46');
+loadImage('ALIENSHIPTEX', 'alienshiptex_136');
+loadImage('OSPACESHIP', 'ospaceship-main_40');
 
 // Items
-Sprite.STRIKING_DIAMONDS = new Image();
-Sprite.STRIKING_DIAMONDS.src = 'assets/striking_diamonds_32.png';
+loadImage('STRIKING_DIAMONDS', 'striking_diamonds_32');
+loadImage('STRIKING_DIAMONDS_BASIC', 'striking_diamonds_basic_32');
+loadImage('STRIKING_BALLS', 'striking_balls_32');
+loadImage('STRIKING_BALL_PISTOL', 'striking_ball_pistol_32');
+loadImage('ON_TARGET', 'on_target_32');
+loadImage('AFTERBURN', 'afterburn_32');
+loadImage('SHIELD', 'forward_field_32');
+loadImage('REFLECT', 'shield_reflect_32');
+loadImage('ENERGISE', 'energise_32');
+loadImage('ELECTRIC', 'electric_32');
+loadImage('STRAFE', 'strafe_32');
+loadImage('REFRESH', 'cycle_32');
+loadImage('WIND_SLAP', 'wind_slap_32');
+loadImage('TELEPORT', 'teleport_32');
+loadImage('SENTRY_GUN', 'sentry_gun_32');
+loadImage('MISSILE_SWARM', 'missile_swarm_32');
+loadImage('SNIPER', 'gunshot_32');
+loadImage('CLONE', 'telepathy_32');
+loadImage('TEMPORAL_HOLE', 'abstract_024');
 
-Sprite.STRIKING_DIAMONDS_BASIC = new Image();
-Sprite.STRIKING_DIAMONDS_BASIC.src = 'assets/striking_diamonds_basic_32.png';
-
-Sprite.STRIKING_BALLS = new Image();
-Sprite.STRIKING_BALLS.src = 'assets/striking_balls_32.png';
-
-Sprite.STRIKING_BALL_PISTOL = new Image();
-Sprite.STRIKING_BALL_PISTOL.src = 'assets/striking_ball_pistol_32.png';
-
-Sprite.ON_TARGET = new Image();
-Sprite.ON_TARGET.src = 'assets/on_target_32.png';
-
-Sprite.AFTERBURN = new Image();
-Sprite.AFTERBURN.src = 'assets/afterburn_32.png';
-
-Sprite.SHIELD = new Image();
-Sprite.SHIELD.src = 'assets/forward_field_32.png';
-
-Sprite.REFLECT = new Image();
-Sprite.REFLECT.src = 'assets/shield_reflect_32.png';
-
-Sprite.ENERGISE = new Image();
-Sprite.ENERGISE.src = 'assets/energise_32.png';
-
-Sprite.ELECTRIC = new Image();
-Sprite.ELECTRIC.src = 'assets/electric_32.png';
-
-Sprite.STRAFE = new Image();
-Sprite.STRAFE.src = 'assets/strafe_32.png';
-
-Sprite.REFRESH = new Image();
-Sprite.REFRESH.src = 'assets/cycle_32.png';
-
-Sprite.WIND_SLAP = new Image();
-Sprite.WIND_SLAP.src = 'assets/wind_slap_32.png';
-
-Sprite.TELEPORT = new Image();
-Sprite.TELEPORT.src = 'assets/teleport_32.png';
-
-Sprite.SENTRY_GUN = new Image();
-Sprite.SENTRY_GUN.src = 'assets/sentry_gun_32.png';
-
-Sprite.MISSILE_SWARM = new Image();
-Sprite.MISSILE_SWARM.src = 'assets/missile_swarm_32.png';
-
-Sprite.SNIPER = new Image();
-Sprite.SNIPER.src = 'assets/gunshot_32.png';
-
-Sprite.CLONE = new Image();
-Sprite.CLONE.src = 'assets/telepathy_32.png';
+function loadImage(name, src) {
+  Sprite[name] = new Image();
+  Sprite[name].src = 'assets/' + src + '.png';
+};
 
 SpriteService.prototype.init = function() {
   this.sprites_ = {
@@ -149,53 +101,66 @@ SpriteService.prototype.init = function() {
 
   // Items
   _.each({
-    'shotgun' : {image: Sprite.STRIKING_BALLS},
-    'basic laser': {image: Sprite.STRIKING_DIAMONDS_BASIC},
-    'burst laser': {image: Sprite.STRIKING_DIAMONDS},
-    'missiles': {image: Sprite.MISSILE_SWARM},
-    'sniper': {image: Sprite.SNIPER},
-    'alien laser': {image: Sprite.STRIKING_DIAMONDS_BASIC},
-    'alien gatling': {image: Sprite.STRIKING_DIAMONDS_BASIC},  // No img
-    'alien burst': {image: Sprite.STRIKING_DIAMONDS},
-    'alien sniper': {image: Sprite.SNIPER},
-    'alien doubleshot': {image: Sprite.STRIKING_DIAMONDS_BASIC},  // No img
-    'alien grenade': {image: Sprite.STRIKING_DIAMONDS_BASIC},  // No img
-    'alien stinger': {image: Sprite.STRIKING_DIAMONDS_BASIC},
-    'alien blades': {image: Sprite.STRIKING_DIAMONDS_BASIC},  // No img
+    'shotgun': 'STRIKING_BALLS',
+    'charge laser': 'STRIKING_DIAMONDS',
+    'alien sniper': 'SNIPER',
+    'alien shotgun' : 'STRIKING_BALLS',
 
-    'pistol': {image: Sprite.STRIKING_BALL_PISTOL},
-    'tracker': {image: Sprite.ON_TARGET},
-    'alien spawn': {image: Sprite.STRAFE},
-    'charge': {image: Sprite.AFTERBURN},
-    'alien emp': {image: Sprite.ENERGISE},
-    'emp': {image: Sprite.ENERGISE},
-    'pull': {image: Sprite.STRIKING_BALL_PISTOL},  // No img
-    'turret': {image: Sprite.SENTRY_GUN},
-    'stun': {image: Sprite.ELECTRIC},
-    'alien stun': {image: Sprite.ELECTRIC},
+    'charge': 'AFTERBURN',
+    'knockback': 'WIND_SLAP',
 
-    'knockback': {image: Sprite.WIND_SLAP},
-    'alien knockback': {image: Sprite.WIND_SLAP},
-    'shield': {image: Sprite.SHIELD},
-    'haze': {image: Sprite.STRIKING_BALL_PISTOL},  // No img
-    'reflect': {image: Sprite.REFLECT},
+    'temporal hole': 'TEMPORAL_HOLE',
 
-    'dash': {image: Sprite.TELEPORT},  // No img
-    'refresh': {image: Sprite.REFRESH},
-    'teleport': {image: Sprite.TELEPORT},
-    'divide': {image: Sprite.CLONE},
-    'sticky': {image: Sprite.TELEPORT}  // No img
+    'basic laser': 'STRIKING_DIAMONDS_BASIC',
+    'burst laser': 'STRIKING_DIAMONDS',
+    'missiles': 'MISSILE_SWARM',
+    'sniper': 'SNIPER',
+    'alien laser': 'STRIKING_DIAMONDS_BASIC',
+    'alien gatling': 'STRIKING_DIAMONDS_BASIC',  // No image
+    'alien burst': 'STRIKING_DIAMONDS',
+    'alien doubleshot': 'STRIKING_DIAMONDS_BASIC',  // No image
+    'alien grenade': 'STRIKING_DIAMONDS_BASIC',  // No image
+    'alien stinger': 'STRIKING_DIAMONDS_BASIC',
+    'alien blades': 'STRIKING_DIAMONDS_BASIC',  // No image
 
-  }, function(info, name) {
-    info.size = Size.ITEM;
-    info.actualSize = 36;
-    this.sprites_[name] = info;
+    'pistol': 'STRIKING_BALL_PISTOL',
+    'tracker': 'ON_TARGET',
+    'alien spawn': 'STRAFE',
+    'alien emp': 'ENERGISE',
+    'emp': 'ENERGISE',
+    'pull': 'STRIKING_BALL_PISTOL',  // No image
+    'turret': 'SENTRY_GUN',
+    'stun': 'ELECTRIC',
+    'alien stun': 'ELECTRIC',
+
+    'alien knockback': 'WIND_SLAP',
+    'shield': 'SHIELD',
+    'haze': 'STRIKING_BALL_PISTOL',  // No image
+    'reflect': 'REFLECT',
+
+    'dash': 'TELEPORT',  // No image
+    'refresh': 'REFRESH',
+    'teleport': 'TELEPORT',
+    'divide': 'CLONE',
+    'sticky': 'TELEPORT'  // No image
+
+  }, function(sprite, name) {
+    this.sprites_[name] = {
+      image: Sprite[sprite],
+      size: Size.ITEM,
+      actualSize: 32
+    };
   }, this);
 };
 
 SpriteService.prototype.getSize = function(name) {
   if (!PROD) _.assert(this.sprites_[name]);
   return this.sprites_[name].size;
+};
+
+SpriteService.prototype.getActualSize = function(name) {
+  if (!PROD) _.assert(this.sprites_[name]);
+  return this.sprites_[name].actualSize;
 };
 
 SpriteService.prototype.draw = function(name, x, y, opt_options) {

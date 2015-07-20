@@ -91,6 +91,25 @@ Renderer.prototype.drawLoadingSplash_ = function(e) {
   this.ctx_.globalAlpha = 1;
 };
 
+Renderer.prototype.drawHealthBars_ = function(e) {
+  this.ctx_.globalAlpha = e.alpha || 0;
+  this.drawHealthBar_(e.player, Gfx.Color.PLAYER_HEALTH, -1);
+  this.drawHealthBar_(e.enemy, Gfx.Color.ENEMY_HEALTH, 1);
+  this.ctx_.globalAlpha = 1;
+};
+
+Renderer.prototype.drawHealthBar_ = function(ship, color, dir) {
+  var width = this.screen_.width / 2;
+  var height = 4;
+  var r1 = Math.max((ship.health + ship.r.damageTaken) / ship.maxHealth, 0);
+  var r2 = Math.max(ship.health / ship.maxHealth, 0);
+  this.ctx_.fillStyle = color;
+  this.ctx_.fillRect(width, 0, width * r1 * dir, height);
+
+  this.ctx_.fillStyle = 'rgba(0, 0, 0, .25)';
+  this.ctx_.fillRect(width, 0, width * r2 * dir, height);
+};
+
 Renderer.prototype.drawBackdrop_ = function(e) {
   var bgColor = 'rgba(0, 0, 0, ' + e.baseAlpha + ')';
   this.textCtx_.fillStyle = bgColor;
@@ -152,17 +171,16 @@ Renderer.prototype.drawEquipItem_ = function(e) {
 
   var options = {rotation: -Math.PI / 2, alpha: e.alpha};
 
-  // Draw cooldown.
+  // Fade if on cooldown or jammed.
+  var cdRatio;
   if (e.cdInfo) {
-    var cdRatio =
+    cdRatio =
         (e.cdInfo.cooldownRemaining - (this.gm_.time - this.gm_.actTime)) /
         e.cdInfo.initCooldown;
     if (cdRatio < 0) cdRatio = 0;
-    this.textCtx_.fillStyle = Gfx.Color.COOLDOWN;
-    this.fillRect_(e.r.x, e.r.y + e.size * (1 - cdRatio),
-                   e.size, e.size * cdRatio);
-    if (cdRatio > 0 || e.cdInfo.jammed) options.alpha *= .75;
+    if (cdRatio > 0 || e.cdInfo.jammed) options.alpha *= .25;
   } else {
+    // Drawing non-battle item.
     options.ctx = 'text';
   }
 
@@ -173,6 +191,16 @@ Renderer.prototype.drawEquipItem_ = function(e) {
 
   this.spriteService_.draw(
       e.item.name, e.r.x + e.size / 2, e.r.y + e.size / 2, options);
+
+  // Draw cooldown.
+  if (e.cdInfo) {
+    this.ctx_.fillStyle = Gfx.Color.COOLDOWN;
+    var offset = this.spriteService_.getSize(e.item.name) -
+          this.spriteService_.getActualSize(e.item.name);
+    this.ctx_.fillRect(e.r.x + offset / 2,
+                       e.r.y + offset / 2 + (e.size - offset) * (1 - cdRatio),
+                       e.size - offset, (e.size - offset) * cdRatio);
+  }
 };
 
 Renderer.prototype.drawLabel_ = function(e) {
@@ -307,6 +335,10 @@ Renderer.prototype.addShipStyle_ = function(style) {
     shadow: Gfx.Color.BLUE,
     shadowBlur: 5
   });
+  style.ability = this.gfx_.addStyle({
+    shadow: Gfx.Color.OPAC_ORANGE,
+    shadowBlur: 7
+  });
   style.tagged = this.gfx_.addStyle({
     stroke: Gfx.Color.OPAC_RED,
     lineWidth: 2,
@@ -336,9 +368,9 @@ Renderer.prototype.drawShip_ = function(e, style, dt) {
       e.r.shaking += Math.sqrt(damage) / 20;
     }
   }
-  if (e.r.shaking > 0) {
+  if (e.r.shaking > 0 && !e.frozen) {
     var shake = 2 + e.r.damageTaken / 2;
-    e.r.damageTaken -= 20 * dt;
+    e.r.damageTaken -= 20 * dt / this.gm_.gameSpeed;
     e.r.x += (.3 + .7 * Math.random()) * shake;
     e.r.y += (.3 + .7 * Math.random()) * shake;
     e.r.shaking -= dt / this.gm_.gameSpeed;
@@ -392,6 +424,21 @@ Renderer.prototype.drawShip_ = function(e, style, dt) {
       shipStyle = style.disabled;
     }
 
+    // Draw disabled indicator.
+    if (e.secondary.charging) {
+      shipStyle = style.ability;
+    }
+
+    // Draw charge laser charging animation.
+    if (e.primary.charge) {
+      var r = .2 + .8 * e.primary.charge / e.primary.chargeTime;
+      customStyle = {
+        shadow: 'rgba(255, 255, 50, ' + r + ')',
+        shadowBlur: r * 20
+      };
+      shipStyle = style.ability;
+    }
+
     // Draw health indicator.
     if (e.health <= 10 && damage) {
       e.r.healthIndicator = 30;
@@ -401,10 +448,12 @@ Renderer.prototype.drawShip_ = function(e, style, dt) {
       e.r.healthIndicator--;
     }
 
-    if (e.effect.invisible) {
-      customStyle = {};
-      customStyle.globalAlpha = .4;
+    if (e.effect.exiled) {
+      customStyle = {globalAlpha: 0};
+    } else if (e.effect.invisible) {
+      customStyle = {globalAlpha: .4};
     }
+
   } else {
     // Death animation.
     if (e.dead) {

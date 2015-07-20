@@ -52,5 +52,9 @@ SeededRandom.prototype.nextSign = function() {
   return this.next() < .5 ? 1: -1;
 };
 
+SeededRandom.prototype.percent = function(percent) {
+  return this.next() < percent / 100;
+};
+
 _.r = new SeededRandom();
 _.r.useTrueRandom(true);

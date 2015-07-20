@@ -1,6 +1,6 @@
 var BattleScene = di.service('BattleScene', [
   'Scene', 'GameModel as gm', 'ShipFactory', 'EntityDecorator',
-  'MissionService', 'LayoutElement', 'ItemElement',
+  'MissionService', 'LayoutElement', 'ItemElement', 'EntityElement',
   'Inventory', 'Mouse']);
 
 var SLOWDOWN_TIME = 2;
@@ -23,6 +23,9 @@ BattleScene.prototype.addEntities_ = function() {
 
   // Items
   this.layout_ = this.LayoutElement_.new('vertical')
+    .add(this.EntityElement_.new('healthBars')
+      .setProp('player', this.player_)
+      .setProp('enemy', this.enemy_))
     .setPadding(Padding.MARGIN)
     .setChildrenBaseline('bottom')
     .add(this.LayoutElement_.new('horizontal')

@@ -27,10 +27,12 @@ StageResultScene.prototype.addEntities_ = function() {
   if (this.reward_) {
     // Reward
     this.layout_.add(this.LayoutElement_.new('vertical')
+                .add(this.LayoutElement_.new('vertical')
       .add(this.UiElement_.new().setPadding('left', Size.ITEM_DESC_WIDTH))
       .setBgStyle('muted_dark')
       .setBorderStyle('primary')
       .setPadding(Padding.MODAL_MARGIN_SM)
+
       // Unlock text
       .add(this.LabelElement_.new()
         .setLayoutAlign('center')
@@ -51,12 +53,11 @@ StageResultScene.prototype.addEntities_ = function() {
          .setStyle('muted')
          .setBg('primary', Padding.DESC_SM_BG))
       .add(this.LabelElement_.new()
-         .setLayoutFill(true)
          .setText(this.itemService_.getDesc(this.reward_), Size.DESC_SM)
          .setNumLines(2)
          .setLineWrap(true)
          .setStyle('muted')
-         .setBg('none', Padding.DESC_SM_BG)));
+         .setBg('none', Padding.DESC_SM_BG))));
   }
 
   this.layout_

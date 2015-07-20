@@ -11,6 +11,7 @@ ShipDetailsScene.prototype.addEntities_ = function() {
     .consumeClicks()
     .setChildrenBaselineAlign('middle', 'center')
     .add(this.LayoutElement_.new('vertical')
+      .add(this.UiElement_.new().setPadding('left', Size.ITEM_DESC_WIDTH))
       .onNotClick(this.close_, this)
       .setBgFill(true)
       .setPadding(Padding.MODAL_MARGIN_SM)
@@ -53,15 +54,13 @@ ShipDetailsScene.prototype.close_ = function() {
 ShipDetailsScene.prototype.addItems_ = function(layout) {
   _.each(Game.ITEM_TYPES, function(type, i) {
     var item = this.itemService_.getEnemyEquipped(type);
+    if (!item) return;
     if (i) layout.addGap(Padding.ITEM);
     layout.add(this.createItemBtn_(item));
   }, this);
 };
 
 ShipDetailsScene.prototype.createItemBtn_ = function(item) {
-  if (!item) {
-    return this.UiElement_.new().setPadding(Size.ITEM, Size.ITEM, 0, 0);
-  }
   var btn = this.ItemElement_.new()
     .setSize(Size.ITEM)
     .setProp('item', item)

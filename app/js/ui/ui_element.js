@@ -105,6 +105,11 @@ UiElement.prototype.setPadding = function(top, right, bottom, left) {
   return this;
 };
 
+UiElement.prototype.debug = function() {
+  this.debugging = true;
+  return this;
+};
+
 UiElement.prototype.modify = function(fn, opt_context) {
   fn.call(opt_context, this);
   return this;

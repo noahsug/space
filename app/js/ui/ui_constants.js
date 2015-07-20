@@ -10,7 +10,7 @@ Size = {
   BUTTON_SM: 11,
   BUTTON_LG: 18,
 
-  ITEM: 45,
+  ITEM: 32,
   STAGE: 56,
   STAGE_LG: 120
 };
@@ -26,7 +26,7 @@ Padding = {
   MARGIN_LG: 28,
   MODAL_MARGIN: 15,
   MODAL_MARGIN_SM: 7,
-  ITEM: 10,
+  ITEM: 20,
   STAGE: 8
 };
 

@@ -6,15 +6,6 @@ BasicDecorator.prototype.init = function() {
   this.entityDecorator_.addDecoratorObj(this, 'base');
 };
 
-// Remove this.
-BasicDecorator.prototype.decorateClickable_ = function(obj) {
-  obj.update(function() {
-    obj.mouseOver = obj.collides(this.mouse_);
-    obj.mouseDown = obj.mouseOver && this.mouse_.pressed;
-    obj.clicked = obj.mouseOver && this.mouse_.clicked;
-  }.bind(this));
-};
-
 BasicDecorator.prototype.decorateHealth_ = function(obj, spec) {
   spec = this.util_.spec(spec, {
     health: g.Health.DEFAULT
@@ -133,7 +124,7 @@ BasicDecorator.prototype.decorateSelectsTarget_ = function(obj, spec) {
 
 BasicDecorator.prototype.decorateShipCollision_ = function(obj, spec) {
   this.util_.spec(obj, 'collision', spec, {
-    dmg: 10,
+    dmg: 15,
     targetDmgRatio: 1,
     stunDuration: .75
   });
@@ -151,6 +142,7 @@ BasicDecorator.prototype.decorateShipCollision_ = function(obj, spec) {
         {angle: obj.c.targetAngle, length: -.5});
     obj.addEffect('silenced rooted', obj.collision.stunDuration);
     obj.addEffect('collided', obj.collision.collisionDuration);
+    obj.stopEffect('displaced');
   });
 };
 
@@ -208,8 +200,8 @@ BasicDecorator.prototype.decorateCollidable_ = function(obj) {
       obj.precollide(target);
       if (obj.shouldCollide) target.receivedPrecollide(obj);
       if (obj.shouldCollide) {
-        obj.collide(target);
         target.receivedCollide(obj);
+        obj.collide(target);
         obj.shouldCollide = false;
       }
       //if (target.maybeReflect && target.maybeReflect(obj)) return;
@@ -219,7 +211,7 @@ BasicDecorator.prototype.decorateCollidable_ = function(obj) {
 
 BasicDecorator.prototype.decorateRemoveOffScreen_ = function(obj, spec) {
   obj.act(function() {
-    if (this.c_.hitWall(obj, 50)) obj.dead = true;
+    if (this.c_.hitWall(obj, -50)) obj.dead = true;
   }.bind(this));
 };
 
@@ -288,7 +280,7 @@ BasicDecorator.prototype.decorateEffectable_ = function(obj) {
     obj.effect.canDash = !obj.effect.targetlessMovement &&
                          !obj.effect.silenced &&
                          !obj.effect.rooted;
-    if (!obj.effect.silenced && !obj.effect.stunned) {
+    if (!obj.effect.silenced) {
       obj.effect.disabled = 0;
     }
   }
@@ -332,6 +324,7 @@ BasicDecorator.prototype.decorateFreeze_ = function(obj) {
   _.each(['act', 'affect', 'resolve', 'update'], function(fn) {
     obj[fn] = _.emptyFn;
   });
+  obj.frozen = true;
 };
 
 BasicDecorator.prototype.decorateSlow_ = function(obj) {

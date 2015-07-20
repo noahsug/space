@@ -6,13 +6,13 @@ Gameplay.prototype.init = function() {
 
 g = {
   Speed: {
-    SLOW: 150,
-    DEFAULT: 200,
+    SLOW: 170,
+    DEFAULT: 240,
     FAST: 300,
     VERY_FAST: 400,
 
-    SHIP_SPEED: 90,
-    SHIP_ACCEL: 2.25,
+    SHIP_SPEED: 75,
+    SHIP_ACCEL: 2,
     TURN_SPEED: Math.PI / 2,
     TURN_ACCEL: Math.PI / 2
   },
@@ -20,12 +20,12 @@ g = {
   Accuracy: {
     DEFAULT: _.radians(10),
     ACCURATE: _.radians(5),
-    INACCURATE: _.radians(15)
+    INACCURATE: _.radians(13)
   },
 
   Health: {
     DEFAULT: 100,
-    PLAYER: 150
+    PLAYER: 100
   },
 
   MaxTargetAngle: {
@@ -51,7 +51,7 @@ di.constant('gameplayFile', {
             {
               unlocks: [1],
               stages: [
-                ['a1'],
+                ['a5'],
               ]
             }
           ]
@@ -175,31 +175,33 @@ di.constant('gameplayFile', {
       desc: 'Hive Scout',
       level: 0,
       hull: 'alien1',
-      primary: ['alien laser', 'alien burst'],
-      utility: ['dash', 'teleport', '']},
+      primary: ['alien laser']},
     'a2': {
       desc: 'Hive Dart',
       level: 1,
       hull: 'alien2',
-      primary: ['alien sniper', 'alien doubleshot'],
-      secondary: ['alien knockback']},
+      primary: ['alien laser'],
+      secondary: ['knockback']},
     'a3': {
       desc: 'Hive Ram',
       level: 2,
       hull: 'alien3',
-      primary: ['alien grenade', 'alien stinger'],
-      secondary: ['charge'],
-      ability: ['shield']},
+      primary: ['alien shotgun'],
+      secondary: ['charge']},
     'a4': {
+      desc: 'Hive Dart',
+      level: 1,
+      hull: 'alien2',
+      primary: ['alien laser'],
+      utility: ['dash']},
+    'a5': {
       desc: 'Hive Infestor',
       level: 3,
       hull: 'alien4',
-      primary: ['alien blades'],
-      secondary: ['alien emp', 'pull', 'alien stun'],
-      ability: ['haze', ''],
-      utility: ['sticky']
+      primary: ['charge laser'],
+      secondary: ['knockback']
     },
-    'a5': {
+    'a6': {
       desc: 'Hive Queen',
       level: 4,
       hull: 'alien_boss',
@@ -209,6 +211,14 @@ di.constant('gameplayFile', {
   },
 
   player: [
+    //'shotgun',
+    'charge laser',
+
+    //'charge',
+    'knockback',
+
+    'temporal hole',
+
     //'basic laser',
     //'burst laser',
     //'grenade',
@@ -216,24 +226,22 @@ di.constant('gameplayFile', {
     //'sniper',
     //'missiles',
     //'stinger',
-    'shotgun',
     //'gatling',
 
     //'stun',
-    'emp',
+    //'emp',
     //'pistol',
     //'pull',
-    //'charge',
     //'tracker',
     //'turret',
 
-    'knockback',
+    //'knockback',
     //'shield',
     //'reflect',
     //'tank',
     //'haze',
 
-    'teleport',
+    //'teleport',
     //'refresh',
     //'divide',
     //'huge',
@@ -245,49 +253,96 @@ di.constant('gameplayFile', {
   ],
 
   inventory: [
-    'basic laser',
-    'burst laser',
-    //'grenade',
-    //'razors',
-    'sniper',
-    'missiles',
-    //'stinger',
-    'shotgun',
-    //'gatling',
-
-    'stun',
-    'emp',
-    'pistol',
-    //'pull',
-    'charge',
-    'tracker',
-    'turret',
-
-    'knockback',
-    'shield',
-    'reflect',
-    //'tank',
-    //'haze',
-
-    'teleport',
-    'refresh',
-    'divide',
-    //'huge',
-    //'stealth',
-    //'sticky',
+    //'basic laser',
+    //'burst laser',
+    ////'grenade',
+    ////'razors',
+    //'sniper',
+    //'missiles',
+    ////'stinger',
+    //'shotgun',
+    ////'gatling',
+    //
+    //'stun',
+    //'emp',
+    //'pistol',
+    ////'pull',
+    //'charge',
+    //'tracker',
+    //'turret',
+    //
+    //'knockback',
+    //'shield',
+    //'reflect',
+    ////'tank',
+    ////'haze',
+    //
+    //'teleport',
+    //'refresh',
+    //'divide',
+    ////'huge',
+    ////'stealth',
+    ////'sticky',
   ],
 
   items: {
+    // Primary
+    'shotgun': {
+      desc: 'Tons of damage at close range, lowers movement.',
+      id:'primary.shotgun',
+      spec: {dmg: 4.5, cooldown: 4, range: 100, projectiles: 9},
+      level: 0},
+    'charge laser': {
+      displayName: 'charge laser',
+      desc: 'Gathers power, then fires 6 times.',
+      id:'primary.chargeLaser',
+      spec: {dmg: 7, cooldown: 4, projectiles: 6},
+      level: 0},
+
+    'alien laser': {
+      desc: 'Standard laser.',
+      id:'primary.sniper',
+      spec: {dmg: 9, cooldown: 2, range: 400, style: 'alien'},
+      level: 9},
+    'alien shotgun': {
+      displayName: 'shotgun',
+      desc: 'Tons of damage at close range, passively lowers movement.',
+      id:'primary.shotgun',
+      spec: {dmg: 4.5, cooldown: 4, range: 100, projectiles: 9, style: 'alien'},
+      level: 0},
+
+    // Secondary
+    'charge': {
+      desc: 'Charge at the enemy, does damage if you collide.',
+      id:'secondary.charge', spec: {dmg: 15, cooldown: 6},
+      level: 0},
+    'knockback': {
+      desc: 'Knocks the enemy away.',
+      id:'secondary.knockback', spec: {cooldown: 4},
+      level: 0},
+
+    // Ability
+    'temporal hole': {
+      desc: 'Temporarily vanish from existence, avoiding all harm.',
+      id:'ability.poof', spec: {duration: 1, cooldown: 8},
+      level: 0},
+
+    // Utility
+    'dash': {
+      desc: 'Dash a short distance, passively increases movement.',
+      id: 'utility.dash', spec: {cooldown: 1.75},
+      level: 0},
+
+    // --
+    // Unused
+    // --
+
+    // Primary
     'basic laser': {
       desc: 'Stand laser weapon.',
       id: 'primary.basicLaser',
       spec: {dmg: 5, cooldown: .8, range: 200},
       level: 0},
-    'alien laser': {
-      desc: 'Stand alien laser weapon.',
-      id: 'primary.basicLaser',
-      spec: {dmg: 3, cooldown: .8, range: 200, style: 'alien'},
-      level: 9},
     //'basic laser II': {
     //  desc: 'Powerful Basic laser.',
     //  id: 'primary.basicLaser',
@@ -319,11 +374,6 @@ di.constant('gameplayFile', {
     //  id: 'primary.burstLaser',
     //  spec: {dmg: 4, cooldown: 2.5, range: 150, projectiles: 7},
     //  level: 2},
-    'shotgun': {
-      desc: 'Burst of shots in an arc.',
-      id:'primary.shotgun',
-      spec: {dmg: 5, cooldown: 3, range: 100, projectiles: 6},
-      level: 0},
     //'shotgun II': {
     //  desc: 'Burst of shots in an arc.',
     //  id:'primary.shotgun',
@@ -365,11 +415,6 @@ di.constant('gameplayFile', {
       id:'primary.sniper',
       spec: {dmg: 12, cooldown: 3, range: 500},
       level: 3},
-    'alien sniper': {
-      desc: 'Long range, low rate of rate.',
-      id:'primary.sniper',
-      spec: {dmg: 10, cooldown: 3, range: 500, style: 'alien'},
-      level: 9},
     'missiles': {
       desc: 'Long range heat seeking missiles.',
       id:'primary.missiles',
@@ -397,6 +442,7 @@ di.constant('gameplayFile', {
       spec: {dmg: 3, cooldown: 1.3, range: 400, style: 'alien'},
       level: 9},
 
+    // Secondary
     'turret': {
       desc: 'Drops turrets that shoot at the enemy.',
       id:'secondary.turret',
@@ -452,10 +498,6 @@ di.constant('gameplayFile', {
     //  id:'secondary.pistol',
     //  spec: {dmg: 5, cooldown: 1, range: 300},
     //  level: 4},
-    'charge': {
-      desc: 'Charge the enemy, taking no damage from collisions.',
-      id:'secondary.charge', spec: {cooldown: 4},
-      level: 0},
     //'charge II': {
     //  desc: 'Charge the enemy while tasking less damage',
     //  id:'secondary.charge', spec: {power: 1},
@@ -473,21 +515,18 @@ di.constant('gameplayFile', {
     //  id:'secondary.melee', spec: {dmgRatio: .75, range: 50},
     //  level: 1},
 
+    // Utility
     'refresh': {
       desc: 'Reduces all cooldowns by 4s.',
       id: 'utility.refresh', spec: {cooldown: 10},
       level: 0},
-    'dash': {
-      desc: 'Ability to dash a short distance.',
-      id: 'utility.ninja', spec: {cooldown: 1.75},
-      level: 0},
     'teleport': {
       desc: 'Ability to teleport behind the enemy',
-      id: 'utility.ninja', spec: {cooldown: 6},
+      id: 'utility.teleport', spec: {cooldown: 6},
       level: 1},
     'stealth': {
       desc: 'Turn invisible, then deal 2x damage.',
-      id: 'utility.ninja', spec: {power: 3},
+      id: 'utility.invisible', spec: {power: 3},
       level: 1},
     'tiny': {
       desc: 'Smaller and faster.',
@@ -519,10 +558,7 @@ di.constant('gameplayFile', {
       spec: {},
       level: 3},
 
-    'knockback': {
-      desc: 'Knocks the enemy away.',
-      id:'ability.knockback', spec: {cooldown: 4},
-      level: 1},
+    // Ability
     'alien knockback': {
       desc: 'Knocks the enemy away.',
       id:'ability.knockback', spec: {cooldown: 8},
@@ -568,6 +604,7 @@ di.constant('gameplayFile', {
     //  id: 'ability.zombie', spec: {cooldown: 4},
     //  level: 9},
 
+    // Unused
     'medic': {
       desc: 'Slowly heal over time',
       id: 'augment.medic', spec: {},
@@ -615,6 +652,7 @@ di.constant('gameplayFile', {
       id: 'augment.archery', spec: {}, req: ['sniper', 'missiles'],
       level: 3},
 
+    // Hulls
     'alien1': {
       id: 'hull.basic',
       spec: {sprite: 'alien1'}},

@@ -41,11 +41,11 @@ Game.prototype.start = function() {
   //this.gm_.mission = this.gm_.event.missions[0];
   //this.gm_.stage = this.gm_.mission.stages[0][0];
   //this.gm_.mission.lives = 1;
-  //this.gm_.stage.state = '';
+  //this.gm_.stage.state = 'won';
   //this.gm_.equipping = 'primary';
-  //this.gm_.event.state = 'unlocked';
+  //this.gm_.event.state = 'won';
 
-  this.scenes_[3].start();
+  this.scenes_[8].start();
 };
 
 Game.prototype.initGameModel_ = function() {

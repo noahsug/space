@@ -7,11 +7,12 @@ Debugger.prototype.init = function() {
   this.window_.DEBUG = false;
   this.window_.addEventListener('keydown', function(e) {
     if (e.which == 32) this.window_.DEBUG = !this.window_.DEBUG;
-    if (!e.ctrlKey) return;
 
     var num = e.which - 48;
-    if (num > 9 || num < 0) return;
-    this.gm_.gameSpeed = .01 + num * num / 16;
+    if (num == 0) num += 10;
+    if (num < 5 || num > 10) return;
+    num -= 5;
+    this.gm_.gameSpeed = .01 + num * num / 8;
   }.bind(this));
 
   window.gm = this.gm_;

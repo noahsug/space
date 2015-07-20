@@ -6,8 +6,8 @@ BattleRewards.prototype.rewardPlayer = function() {
   if (this.gm_.event.state != 'won' && !this.missionService_.beatGame()) {
     return null;
   }
-  //var item = this.inventory_.getRandomUnowned();
   var item = this.itemService_.getByName('teleport');
+  //var item = this.inventory_.getRandomUnowned();
   if (item) this.inventory_.add(item);
   return item;
 };
