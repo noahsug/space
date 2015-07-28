@@ -1,6 +1,6 @@
 var StageSelectScene = di.service('StageSelectScene', [
-  'GameModel as gm', 'Scene', 'LayoutElement', 'ItemElement',
-  'LabelElement', 'Inventory', 'Gameplay', 'SpriteService']);
+  'GameModel as gm', 'Scene', 'LayoutElement', 'StageElement', 'UiElement',
+  'LabelElement', 'Inventory', 'Gameplay', 'MissionService']);
 
 StageSelectScene.prototype.init = function() {
   di.extend(this, this.Scene_, 'stageSelect');
@@ -8,7 +8,6 @@ StageSelectScene.prototype.init = function() {
 
 StageSelectScene.prototype.addEntities_ = function() {
   this.layout_ = this.LayoutElement_.new('vertical')
-    .setChildrenFill(true)
     .setPadding(Padding.MARGIN)
     .addFlex()
 
@@ -18,81 +17,51 @@ StageSelectScene.prototype.addEntities_ = function() {
 
     .add(this.LayoutElement_.new('horizontal')
       .add(this.LabelElement_.new()
-        .setText('retreat', Size.BUTTON)
+        .setText('abort', Size.BUTTON)
         .setBg('primary', Padding.BUTTON_BG)
         .onClick(this.retreat_, this))
-      .addFlex()
-      .add(this.LabelElement_.new()
-        .setText('equip', Size.BUTTON)
-        .setBg('primary', Padding.BUTTON_BG)
-        .onClick(this.openModal_.bind(this, 'equip'))));
-
-  if (_.is(this.gm_.event.state, 'won', 'lost')) {
-    this.openModal_('missionResult');
-  }
+      .addFlex());
 
   this.fadeFromBlack_();
 };
 
 StageSelectScene.prototype.retreat_ = function() {
-  this.gm_.event.state = 'lost';
-  this.goBackTo_('missionSelect');
+  this.missionService_.resetProgress();
+  this.goBackTo_('worldSelect');
 };
 
 StageSelectScene.prototype.addStages_ = function(layout) {
-  for (var row = this.gm_.mission.stages.length - 1; row >= 0; row--) {
-    if (row != this.gm_.mission.stages.length - 1) {
-      layout.addGap(Padding.MARGIN_SM);
-    }
-    var stageRow = this.LayoutElement_.new('horizontal');
-    stageRow.setChildrenBaselineAlign('middle', 'center');
-    for (var col = 0; col < this.gm_.mission.stages[row].length; col++) {
-      if (col) stageRow.addGap(Padding.STAGE);
-      stageRow.add(this.createStageBtn_(row, col));
-    }
+  _.each(this.gm_.mission.stages, function(row) {
+    var stageRow = this.LayoutElement_.new('horizontal')
+      .setLayoutFill(true)
+      .setLayoutAlign('center');
+    _.each(row, function(stage) {
+      stageRow.add(this.createStageBtn_(stage));
+    }, this);
     layout.add(stageRow);
-  }
+  }, this);
 };
 
-StageSelectScene.prototype.createStageBtn_ = function(row, col) {
-  var btn = this.ItemElement_.new();
-  var stage = this.gm_.mission.stages[row][col];
-
+StageSelectScene.prototype.createStageBtn_ = function(stage) {
   if (stage.empty) {
-    btn.setSize(Size.STAGE / 2);
-    return btn;
+    return this.UiElement_.new().setPadding(Size.STAGE, Size.STAGE, 0, 0);
   }
 
-  if (this.spriteService_.getSize(stage.hull.spec.sprite) < 60) {
-    btn.setSize(Size.STAGE);
-  } else {
-    btn.setSize(Size.STAGE_LG);
-  }
-
-  switch(stage.state) {
-  case 'won':
-    if (this.gm_.stage == stage) {
-      btn.animate('alpha', 0, {duration: 1.5});
-    } else {
-      btn.setStyle('hidden');
-    }
-    break;
-  case 'locked': btn.setStyle('locked'); break;
-  case 'unlocked':
+  var btn = this.StageElement_.new().setBaselineAlign('middle', 'center');
+  if (stage.state == 'unlocked') {
     btn.onClick(function() {
       this.gm_.stage = stage;
-      this.openModal_('shipDetails');
+      this.transition_('prebattle');
     }, this);
   }
 
-  btn.setProp('stage', stage);
+  btn.setProgress(StageElement.Progress[stage.prevState]);
+  btn.animate('progress', StageElement.Progress[stage.state],
+              {duration: 1.5});
+  btn.setProp('unlocks', stage.unlocks);
+  btn.setStyle(stage.checkpoint ? 'checkpoint' : '');
+  stage.r = {element: btn.getEntity()};
   return btn;
-};
-
-StageSelectScene.prototype.createPlayerBtn_ = function() {
-  return this.ItemElement_.new()
-    .setSize(Size.STAGE)
-    .setProp('stage', {hull: this.inventory_.getHull()});
 };
 
 StageSelectScene.prototype.onTransition_ = function() {

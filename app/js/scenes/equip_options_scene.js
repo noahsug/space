@@ -27,7 +27,7 @@ EquipOptionsScene.prototype.addEntities_ = function() {
   // Item Description.
   var itemDescRow = this.layout_.addNew(this.LayoutElement_);
   var itemDesc = itemDescRow.addNew(this.EntityElement_, 'itemDesc');
-  itemDesc.innerHeight = Size.ITEM_DESC;
+  //itemDesc.innerHeight = Size.ITEM_DESC_HEIGHT;
   itemDesc.getEntity().update(function() {
     var item = this.selectedBtn_ && this.selectedBtn_.getProp('item');
     itemDesc.setProp('item', item);

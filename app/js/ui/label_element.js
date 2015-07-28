@@ -10,7 +10,7 @@ LabelElement.prototype.setText = function(text, size, opt_spec) {
   var spec = opt_spec || {};
   this.entity_.text = text.toUpperCase();
   this.entity_.lines = [this.entity_.text];
-  this.entity_.size = this.measure_('size', size);
+  if (_.isDef(size)) this.entity_.size = this.measure_('size', size);
   if (spec.align) this.align = spec.align;
   if (spec.baseline) this.baseline = spec.baseline;
   if (spec.style) this.setStyle(spec.style);

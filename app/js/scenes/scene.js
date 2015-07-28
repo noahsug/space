@@ -92,7 +92,7 @@ Scene.prototype.transition_ = function(to, opt_options) {
 
 Scene.prototype.onTransition_ = function() {
   if (!this.layout_) return;
-  this.layout_.addFront(this.UiElement_.new().consumeClicks());
+  this.layout_.setPauseInput(true);
 };
 
 Scene.prototype.fadeIn_ = function(opt_time) {

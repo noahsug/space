@@ -139,6 +139,41 @@ Renderer.prototype.drawContainer_ = function(e) {
   //this.ctx_.strokeRect(e.r.x, e.r.y, e.width, e.height);
 };
 
+Renderer.prototype.drawStage_ = function(e) {
+  var drawFn = this.circle_;
+  if (e.style == 'checkpoint') drawFn = this.square_;
+  drawFn = drawFn.bind(this);
+
+  var radius = 15;
+  if (e.style == 'checkpoint') radius -= 2;  // Keep surface area the same.
+  var ratio = e.progress / 2;  // distribution in [0-1]
+
+  var lineWidth = _.interpolate([1, 2, 1], ratio);
+  drawFn(e.r.x, e.r.y, radius, lineWidth);
+
+  var color = [.6, 1, .3];  // [unlocked, locked, won]
+  var colorRatio = _.interpolate(color, ratio);
+  this.textCtx_.strokeStyle = _.generateGray(colorRatio);
+  this.textCtx_.stroke();
+
+  var fill = [0, 0, 1];  // [unlocked, locked, won]
+  var fillRatio = _.interpolate(fill, ratio);
+  drawFn(e.r.x, e.r.y, radius, 0, fillRatio);
+  this.textCtx_.fillStyle = this.textCtx_.strokeStyle;
+  this.textCtx_.fill();
+
+  // Draw stage connections.
+  _.each(e.unlocks, function(stage) {
+    var to = this.getPos_(stage.r.element);
+    var a = _.angle(e.r, to);
+    this.line_(e.r.x + radius * Math.cos(a),
+               e.r.y + radius * Math.sin(a),
+               to.x - radius * Math.cos(a),
+               to.y - radius * Math.sin(a),
+               1);
+  }, this);
+};
+
 Renderer.prototype.drawItem_ = function(e) {
   // DEBUG: Draw item box.
   //this.textCtx_.fillStyle = 'rgba(0, 255, 0, .5)';
@@ -147,28 +182,7 @@ Renderer.prototype.drawItem_ = function(e) {
   //this.fillRect_(e.r.x, e.r.y, e.size, e.size);
   //this.strokeRect_(e.r.x, e.r.y, e.size, e.size);
 
-  if (e.style == 'hidden') return;
   this.drawItemBorder_(e);
-  if (e.stage) this.drawStageItem_(e);
-  if (e.item) this.drawEquipItem_(e);
-};
-
-Renderer.prototype.drawItemBorder_ = function(e) {
-  // TODO.
-};
-
-Renderer.prototype.drawStageItem_ = function(e) {
-  var hull = e.stage.hull.spec.sprite;
-  var rotation = e.stage.enemy ? Math.PI / 2 : -Math.PI / 2;
-  var alpha = (e.stage.state == 'locked' ? .3 : 1) * e.alpha;
-  this.spriteService_.draw(
-      hull, e.r.x + e.size / 2, e.r.y + e.size / 2,
-      {rotation: rotation, alpha: alpha});
-};
-
-Renderer.prototype.drawEquipItem_ = function(e) {
-  if (!e.item.name) return;
-
   var options = {rotation: -Math.PI / 2, alpha: e.alpha};
 
   // Fade if on cooldown or jammed.
@@ -201,6 +215,16 @@ Renderer.prototype.drawEquipItem_ = function(e) {
                        e.r.y + offset / 2 + (e.size - offset) * (1 - cdRatio),
                        e.size - offset, (e.size - offset) * cdRatio);
   }
+};
+
+Renderer.prototype.drawItemBorder_ = function(e) {
+  // TODO.
+};
+
+Renderer.prototype.drawShipElement_ = function(e) {
+  this.spriteService_.draw(
+      e.hull.spec.sprite, e.r.x + e.size / 2, e.r.y + e.size / 2,
+      {rotation: e.rotation, alpha: e.alpha});
 };
 
 Renderer.prototype.drawLabel_ = function(e) {
@@ -249,8 +273,27 @@ Renderer.prototype.line_ = function(x1, y1, x2, y2, lineWidth) {
   this.textCtx_.stroke();
 };
 
-Renderer.prototype.circle_ = function(x, y, radius, lineWidth, opt_ratio) {
+Renderer.prototype.square_ = function(x, y, radius, opt_lineWidth, opt_ratio) {
   var ratio = opt_ratio === undefined ? 1 : opt_ratio;
+  var lineWidth = opt_lineWidth === undefined ? 1 : opt_lineWidth;
+  x = x * this.screen_.upscale;
+  y = y * this.screen_.upscale;
+  radius = radius * this.screen_.upscale;
+  if (lineWidth) {
+    lineWidth = lineWidth * this.screen_.upscale;
+    this.textCtx_.lineWidth = lineWidth;
+  } else lineWidth = 0;
+  this.textCtx_.beginPath();
+  this.textCtx_.moveTo(x - radius, y - radius);
+  this.textCtx_.lineTo(x + radius, y - radius);
+  this.textCtx_.lineTo(x + radius, y - radius + radius * 2 * ratio);
+  this.textCtx_.lineTo(x - radius, y - radius + radius * 2 * ratio);
+  this.textCtx_.closePath();
+};
+
+Renderer.prototype.circle_ = function(x, y, radius, opt_lineWidth, opt_ratio) {
+  var ratio = opt_ratio === undefined ? 1 : opt_ratio;
+  var lineWidth = opt_lineWidth === undefined ? 1 : opt_lineWidth;
   x = x * this.screen_.upscale;
   y = y * this.screen_.upscale;
   radius = radius * this.screen_.upscale;
@@ -260,7 +303,8 @@ Renderer.prototype.circle_ = function(x, y, radius, lineWidth, opt_ratio) {
   } else lineWidth = 0;
   this.textCtx_.beginPath();
   this.textCtx_.arc(x, y, radius - lineWidth / 2,
-                    0, 2 * Math.PI * ratio);
+                    -Math.PI / 2 - Math.PI * ratio,
+                    -Math.PI / 2 + Math.PI * ratio);
 };
 
 Renderer.prototype.fillRect_ = function(x, y, width, height) {
@@ -308,6 +352,7 @@ Renderer.prototype.getBgColor_ = function(style) {
   switch (style) {
     case 'muted': return Gfx.Color.BG_MUTED;
     case 'muted_dark': return Gfx.Color.BG_MUTED_DARK;
+    case 'pressed': return Gfx.Color.BG_PRESSED;
     case 'primary': return Gfx.Color.BG;
   }
   return '';

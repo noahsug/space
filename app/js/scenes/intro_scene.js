@@ -7,6 +7,7 @@ IntroScene.prototype.init = function() {
 
 IntroScene.prototype.addEntities_ = function() {
   this.layout_ = this.LayoutElement_.new('vertical')
+    .setChildrenFill(true)
     .setChildrenAlign('center')
 
     .addFlex(8)

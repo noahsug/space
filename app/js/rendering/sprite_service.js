@@ -32,7 +32,7 @@ loadImage('SENTRY_GUN', 'sentry_gun_32');
 loadImage('MISSILE_SWARM', 'missile_swarm_32');
 loadImage('SNIPER', 'gunshot_32');
 loadImage('CLONE', 'telepathy_32');
-loadImage('TEMPORAL_HOLE', 'abstract_024');
+loadImage('POOF', 'abstract_024');
 
 function loadImage(name, src) {
   Sprite[name] = new Image();
@@ -109,7 +109,7 @@ SpriteService.prototype.init = function() {
     'charge': 'AFTERBURN',
     'knockback': 'WIND_SLAP',
 
-    'temporal hole': 'TEMPORAL_HOLE',
+    'poof': 'POOF',
 
     'basic laser': 'STRIKING_DIAMONDS_BASIC',
     'burst laser': 'STRIKING_DIAMONDS',

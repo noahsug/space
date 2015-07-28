@@ -27,6 +27,7 @@ UiElement.prototype.canAnimate = function(prop) {
 };
 
 UiElement.prototype.animate = function(prop, value, opt_options) {
+  if (PROD) _.assert(this.canAnimate(prop));
   this.animations_.animate(prop, value, opt_options);
   return this;
 };
@@ -34,6 +35,16 @@ UiElement.prototype.animate = function(prop, value, opt_options) {
 UiElement.prototype.setOffset = function(x, y) {
   this.offset.x = x;
   this.offset.y = y;
+  return this;
+};
+
+UiElement.prototype.setLayoutWidth = function(width) {
+  this.layoutWidth = width;
+  return this;
+};
+
+UiElement.prototype.setLayoutHeight = function(height) {
+  this.layoutHeight = height;
   return this;
 };
 
@@ -141,13 +152,11 @@ UiElement.prototype.calcHeight = function() {
 };
 
 UiElement.prototype.calcFreeWidth = function() {
-  return this.calcMaxWidth() - this.padding.left -
-    this.padding.right;
+  return this.calcMaxWidth() - this.padding.left - this.padding.right;
 };
 
 UiElement.prototype.calcFreeHeight = function() {
-  return this.calcMaxHeight() - this.padding.top -
-      this.padding.bottom;
+  return this.calcMaxHeight() - this.padding.top - this.padding.bottom;
 };
 
 UiElement.prototype.update = function(dt) {
@@ -195,12 +204,12 @@ UiElement.prototype.positionXY_ = function(x, y, opt_options) {
   var width = options.inner ? this.innerWidth : this.width;
   var height = options.inner ? this.innerHeight : this.height;
   switch (this.align) {
-    case 'center': x -= width / 2; break;
-    case 'right': x -= width; break;
+    case 'center': x += width / 2; break;
+    case 'right': x += width; break;
   }
   switch (this.baseline) {
-    case 'middle': y -= height / 2; break;
-    case 'bottom': y -= height; break;
+    case 'middle': y += height / 2; break;
+    case 'bottom': y += height; break;
   }
   return {x: x + this.offset.x, y: y + this.offset.y};
 };
@@ -209,6 +218,11 @@ UiElement.prototype.positionXY_ = function(x, y, opt_options) {
 UiElement.prototype.consumeClicks = function() {
   this.onClickFn_ = _.emptyFn;
   this.onNotClickFn_ = _.emptyFn;
+  return this;
+};
+
+UiElement.prototype.setPauseInput = function(pauseInput) {
+  this.inputPaused = pauseInput;
   return this;
 };
 
@@ -231,6 +245,7 @@ UiElement.prototype.update_ = function() {
 };
 
 UiElement.prototype.handleClickEvents_ = function() {
+  if (this.inputPaused) return;
   var collides = this.collides_({x: this.mouse_.staticX,
                                  y: this.mouse_.staticY});
   if (this.mouse_.clicked) {
@@ -244,10 +259,9 @@ UiElement.prototype.handleClickEvents_ = function() {
 };
 
 UiElement.prototype.collides_ = function(point) {
-  var xy = this.positionXY_(this.x, this.y);
   var bounds = {
-    x: xy.x - this.hitboxMargin_,
-    y: xy.y - this.hitboxMargin_,
+    x: this.x - this.hitboxMargin_,
+    y: this.y - this.hitboxMargin_,
     width: this.calcWidth() + this.hitboxMargin_ * 2,
     height: this.calcHeight() + this.hitboxMargin_ * 2
   };

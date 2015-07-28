@@ -1,14 +1,10 @@
 var StageResultScene = di.service('StageResultScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'BackdropElement', 'ItemService',
-  'LabelElement', 'MissionService', 'BattleRewards', 'ItemElement',
+  'LabelElement', 'MissionService', 'EntityElement',
   'FadeElement']);
 
 StageResultScene.prototype.init = function() {
   di.extend(this, this.Scene_, 'stageResult');
-};
-
-StageResultScene.prototype.onStart_ = function() {
-  this.reward_ = this.battleRewards_.rewardPlayer();
 };
 
 StageResultScene.prototype.addEntities_ = function() {
@@ -16,6 +12,7 @@ StageResultScene.prototype.addEntities_ = function() {
     .add(this.BackdropElement_.new())
     .setPadding(Padding.MODAL_MARGIN)
     .setPadding('bottom', Padding.MODAL_MARGIN - Padding.BUTTON_BG)
+    .setChildrenFill(true)
     .setChildrenBaselineAlign('middle', 'center')
 
   // Title
@@ -24,10 +21,10 @@ StageResultScene.prototype.addEntities_ = function() {
     .setStyle('muted')
     .setPadding('bottom', Padding.MARGIN * 1.5));
 
-  if (this.reward_) {
+  var reward = this.gm_.stage.reward.value;
+  if (reward) {
     // Reward
     this.layout_.add(this.LayoutElement_.new('vertical')
-                .add(this.LayoutElement_.new('vertical')
       .add(this.UiElement_.new().setPadding('left', Size.ITEM_DESC_WIDTH))
       .setBgStyle('muted_dark')
       .setBorderStyle('primary')
@@ -37,27 +34,27 @@ StageResultScene.prototype.addEntities_ = function() {
       .add(this.LabelElement_.new()
         .setLayoutAlign('center')
         .setText('unlocked new ' +
-                 Strings.ItemType[this.reward_.category] + ':', 12)
+                 Strings.ItemType[reward.category] + ':', 12)
         .setStyle('muted'))
 
       // Reward item
-      .add(this.ItemElement_.new()
+      .add(this.EntityElement_.new('item')
         .setPadding('top', Padding.ITEM)
         .setLayoutAlign('center')
-        .setProp('item', this.reward_)
+        .setProp('item', reward)
         .setSize(Size.ITEM))
 
       // Item desc.
       .add(this.LabelElement_.new()
-         .setText(this.reward_.displayName, Size.DESC_SM)
+         .setText(reward.displayName, Size.DESC_SM)
          .setStyle('muted')
          .setBg('primary', Padding.DESC_SM_BG))
       .add(this.LabelElement_.new()
-         .setText(this.itemService_.getDesc(this.reward_), Size.DESC_SM)
+         .setText(this.itemService_.getDesc(reward), Size.DESC_SM)
          .setNumLines(2)
          .setLineWrap(true)
          .setStyle('muted')
-         .setBg('none', Padding.DESC_SM_BG))));
+         .setBg('none', Padding.DESC_SM_BG)));
   }
 
   this.layout_
@@ -74,37 +71,26 @@ StageResultScene.prototype.addEntities_ = function() {
 
 StageResultScene.prototype.getTitleText_ = function() {
   if (this.missionService_.beatGame()) return 'you win';
-  if (this.gm_.event.state == 'won') return 'mission complete';
-  if (this.gm_.event.state == 'lost') return 'mission failed';
+  if (this.gm_.mission.state == 'won') return 'mission complete';
+  if (this.gm_.mission.state == 'lost') return 'mission failed';
   if (this.gm_.stage.state == 'won') return 'victory';
   return 'defeat';
 };
 
 StageResultScene.prototype.getTitleSize_ = function() {
-  if (_.is(this.gm_.event.state, 'won', 'lost')) {
-    return 24;
-  }
+  if (_.oneOf(this.gm_.mission.state, 'won', 'lost')) return 23;
   return 43;
-};
-
-StageResultScene.prototype.getRewindText_ = function() {
-  var lives = this.gm_.mission.lives;
-  return lives + ' rewind' + (lives == 1 ? '' : 's') + ' remaining';
 };
 
 StageResultScene.prototype.getBtnText_ = function() {
   if (this.missionService_.beatGame()) return 'exit';
-  if (_.is(this.gm_.event.state, 'won', 'lost')) {
-    return 'return to earth';
-  }
-  if (this.gm_.stage.state == 'won') return 'continue';
-  return 'rewind';
+  return 'continue';
 };
 
 StageResultScene.prototype.getNextScene_ = function() {
   if (this.missionService_.beatGame()) return 'intro';
-  if (_.is(this.gm_.event.state, 'won', 'lost')) {
-    return 'missionSelect';
+  if (_.oneOf(this.gm_.mission.state, 'won', 'lost')) {
+    return 'worldSelect';
   }
   return 'stageSelect';
 };

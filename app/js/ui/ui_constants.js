@@ -11,11 +11,11 @@ Size = {
   BUTTON_LG: 18,
 
   ITEM: 32,
-  STAGE: 56,
-  STAGE_LG: 120
+  STAGE: 50
 };
 
 Padding = {
+  BUTTON: 7,
   DESC_SM: 1,
   DESC: 2,
   DESC_LG: 8,
@@ -37,7 +37,6 @@ Time = {
   TRANSITION_SLOW: .5
 };
 
-Size.ITEM_DESC = Size.TEXT * 2 + Padding.TEXT;
 Size.ITEM_DESC_WIDTH = Size.ITEM * 4 + Padding.ITEM * 3;
 
 Padding.TEXT_BG_RATIO = .5;

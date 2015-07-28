@@ -13,6 +13,7 @@ Gfx.Color = {
   FG_ACTIVE: '#FDBE31',
   // TODO: Make these all have opacity.
   BG: 'rgba(72, 81, 84, .75)',
+  BG_PRESSED: 'rgba(42, 51, 54, 1)',
   BG_MUTED: 'rgba(31, 33, 34, .75)',
   BG_MUTED_DARK: 'rgba(22, 23, 25, .75)',
   COOLDOWN: 'rgba(0, 0, 0, .75)',
@@ -110,10 +111,10 @@ Gfx.prototype.setDefaults_ = function(attrs) {
 };
 
 Gfx.prototype.getStyleStr_ = function(attrs) {
-  attrs.layer = _.orDef(attrs.layer, 5);
+  attrs.layer = _.ifDef(attrs.layer, 5);
   return _.map(Gfx.AttrNames, function(name) {
     var value = attrs[name];
-    return _.orDef(value, '~');
+    return _.ifDef(value, '~');
   }).join('~');
 };
 

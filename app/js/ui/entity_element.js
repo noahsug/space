@@ -49,6 +49,11 @@ EntityElement.prototype.getProp = function(prop) {
   return this.entity_[prop];
 };
 
+EntityElement.prototype.setSize = function(size) {
+  this.innerWidth = this.innerHeight = this.entity_.size = size;
+  return this;
+};
+
 EntityElement.prototype.getEntity = function() {
   return this.entity_;
 };

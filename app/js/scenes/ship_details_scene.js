@@ -1,6 +1,6 @@
 var ShipDetailsScene = di.service('ShipDetailsScene', [
   'GameModel as gm', 'Scene', 'LayoutElement',
-  'LabelElement', 'ItemElement', 'UiElement', 'ItemService']);
+  'LabelElement', 'EntityElement', 'UiElement', 'ItemService']);
 
 ShipDetailsScene.prototype.init = function() {
   di.extend(this, this.Scene_, 'shipDetails');
@@ -61,7 +61,7 @@ ShipDetailsScene.prototype.addItems_ = function(layout) {
 };
 
 ShipDetailsScene.prototype.createItemBtn_ = function(item) {
-  var btn = this.ItemElement_.new()
+  var btn = this.EntityElement_.new('item')
     .setSize(Size.ITEM)
     .setProp('item', item)
     .onClick(this.selectBtn_, this);
@@ -84,7 +84,6 @@ ShipDetailsScene.prototype.updateItemDesc_ = function() {
 };
 
 ShipDetailsScene.prototype.goToBattle_ = function() {
-  this.closeActiveStates_ = true;
   this.transition_('prebattle', {closeActiveStates: true});
   this.fadeToBlack_();
 };

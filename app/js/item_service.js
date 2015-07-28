@@ -22,11 +22,12 @@ ItemService.prototype.getByTypeAndLevel = function(type, level) {
 };
 
 ItemService.prototype.getEnemyEquipped = function(type) {
-  return _.findWhere(this.gm_.stage.enemy, {category: type});
+  return _.findWhere(this.gm_.stage.ship, {category: type});
 };
 
 ItemService.CD_ONLY = ['tracker', 'pull', 'turret', 'alien spawn',
-                       'alien emp', 'pull', 'alien stun', 'refresh'];
+                       'alien emp', 'pull', 'alien stun', 'refresh',
+                       'knockback'];
 ItemService.DESC_ONLY = ['divide', 'sticky'];
 ItemService.prototype.getDesc = function(item) {
   var descParts = [];

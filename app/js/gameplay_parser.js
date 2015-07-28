@@ -1,17 +1,15 @@
-var GameplayParser = di.service('GameplayParser');
+var GameplayParser = di.factory('GameplayParser');
 
-GameplayParser.prototype.parse = function(file, dest) {
-  dest.items = this.parseItems_(file.items);
-  dest.stages = this.parseStages_(file.stages, dest.items);
-  dest.worlds = this.parseWorlds_(file.worlds, dest.stages);
-  dest.player = this.parseItemList_(file.player, dest.items);
-  dest.inventory = this.parseItemList_(file.inventory, dest.items);
+GameplayParser.prototype.parse = function(data) {
+  this.data_ = data;
+  this.parseItems_(data.items);
+  this.parseWorlds_(data.worlds);
+  this.parseItemList_(data.player);
+  this.parseItemList_(data.inventory);
 };
 
 GameplayParser.prototype.parseItems_ = function(items) {
-  var result = {};
   _.each(items, function(item, name) {
-    item = _.clone(item);
     var types = item.id.split('.');
     if (types.length > 1) {
       item.category = types[0];
@@ -22,67 +20,66 @@ GameplayParser.prototype.parseItems_ = function(items) {
     }
     item.name = name;
     item.displayName = item.displayName || name;
-    result[name] = item;
   });
-  return result;
 };
 
-GameplayParser.prototype.parseStages_ = function(stages, items) {
-  var result = {};
-  _.each(stages, function(stage, name) {
-    stage = _.clone(stage);
-    stage.hull = items[stage.hull];
-    _.each(Game.ITEM_TYPES.concat(['augment']), function(type) {
-      if (!stage[type]) return;
-      stage[type] = stage[type].map(function(itemName) {
-        return items[itemName];
-      });
-    });
-    result[name] = stage;
-  });
-  return result;
-};
-
-GameplayParser.prototype.parseWorlds_ = function(worlds, stages) {
-  return _.map(worlds, function(world, index) {
-    world = _.clone(world);
+GameplayParser.prototype.parseWorlds_ = function(worlds) {
+  _.each(worlds, function(world, index) {
     world.index = index;
-    world.events = this.parseEvents_(world.events, stages);
-    return world;
+    this.parseMissions_(world.missions, worlds);
   }, this);
 };
 
-GameplayParser.prototype.parseEvents_ = function(events, stages) {
-  return _.map(events, function(event, index) {
-    event = _.clone(event);
-    event.index = index;
-    event.missions = this.parseMissions_(event.missions, stages);
-    return event;
+GameplayParser.prototype.parseMissions_ = function(missions, worlds, items) {
+  _.each(missions, function(mission, missionIndex) {
+    mission.index = missionIndex;
+    this.parseStages_(mission.stages, mission);
   }, this);
 };
 
-GameplayParser.prototype.parseMissions_ = function(missions, stages) {
-  return _.map(missions, function(mission, index) {
-    mission = _.clone(mission);
-    mission.unlocks = mission.unlocks || [];
-    mission.stages = this.parseMissionStages_(mission.stages, stages);
-    return mission;
+GameplayParser.prototype.parseStages_ = function(indexes, stages) {
+  stages[0] = {empty: true};
+  _.each2D(indexes, function(index, rowIndex, colIndex, array) {
+    var stage = _.assert(stages[index]);
+    array[colIndex] = stage;
+    if (!stage.empty) {
+      stage.start = index == 1;
+      this.parseUnlocks_(stage.unlocks, stages);
+      this.parseShip_(stage.ship);
+      this.parseReward_(stage.reward);
+    }
   }, this);
 };
 
-GameplayParser.prototype.parseMissionStages_ = function(names, stages) {
-  if (!names) return [];
-  return names.map(function(row, rowIndex) {
-    return row.map(function(stageName, colIndex) {
-      if (stageName == '-') return {empty: true};
-      var stage = _.deepClone(stages[stageName]);
-      stage.row = rowIndex;
-      stage.col = colIndex;
-      return stage;
-    });
-  });
+GameplayParser.prototype.parseUnlocks_ = function(unlocks, stages) {
+  _.each(unlocks || [], function(unlock, index) {
+    unlocks[index] = _.assert(stages[unlock]);
+  }, this);
 };
 
-GameplayParser.prototype.parseItemList_ = function(names, items) {
-  return names.map(function(name) { return items[name]; });
+GameplayParser.prototype.parseReward_ = function(reward) {
+  if (!reward) return;
+  if (reward.type == 'item') {
+    reward.value = this.data_.items[reward.value];
+  }
+  if (reward.type == 'world') {
+    reward.value = this.data_.worlds[reward.value];
+  }
+};
+
+GameplayParser.prototype.parseShip_ = function(ship) {
+  ship.hull = this.data_.items[ship.hull];
+  _.each(Game.ITEM_TYPES, function(type) {
+    if (!ship[type]) return;
+    ship[type] = _.map(ship[type], function(itemName) {
+      return this.data_.items[itemName];
+    }, this);
+  }, this);
+  return ship;
+};
+
+GameplayParser.prototype.parseItemList_ = function(names) {
+  _.each(names, function(name, index) {
+    names[index] = this.data_.items[name];
+  }, this);
 };

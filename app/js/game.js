@@ -1,17 +1,12 @@
 var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene',
-  'EquipScene', 'StageResultScene',
-  'Gameplay', 'MissionService', 'BattleRewards', 'MissionSelectScene',
+  'StageResultScene', 'Gameplay', 'MissionService',
   'StageSelectScene', 'ShipDetailsScene', 'PrebattleScene']);
 
 Game.UPDATE_RATE = .06;
 
 Game.ITEM_TYPES = ['primary', 'secondary', 'ability', 'utility'];
-Game.NUM_ITEMS = 4;
-Game.MAX_ITEM_LEVEL = 5;
-Game.MAX_LEVEL = (Game.MAX_ITEM_LEVEL + 1) * Game.ITEM_TYPES.length - 1;
-// actual enemy level = (enemyLevel / MAX_ENEMY_LEVEL) * MAX_LEVEL
-Game.MAX_ENEMY_LEVEL = 9;
+Game.NUM_ITEMS = Game.ITEM_TYPES.length;
 
 Game.prototype.start = function() {
   this.nextAction_ = 0;
@@ -19,40 +14,34 @@ Game.prototype.start = function() {
   this.scenes_ = [
     // Modal dialogs go first to consume mouse clicks.
     /* 0 */ this.stageResultScene_,
-    /* 1 */ this.equipScene_,
-    /* 2 */ this.shipDetailsScene_,
+    /* 1 */ this.shipDetailsScene_,
 
-    /* 3 */ this.loadingScene_,
-    /* 4 */ this.introScene_,
-    /* 5 */ this.missionSelectScene_,
-    /* 6 */ this.stageSelectScene_,
-    /* 7 */ this.prebattleScene_,
-    /* 8 */ this.battleScene_,
+    /* 2 */ this.loadingScene_,
+    /* 3 */ this.introScene_,
+    /* 4 */ this.stageSelectScene_,
+    /* 5 */ this.prebattleScene_,
+    /* 6 */ this.battleScene_,
   ];
 
-  // Select the tutorial world / mission / stage.
-  this.gm_.world = this.gm_.worlds[0];
-  this.gm_.event = this.gm_.world.events[0];
-  this.gm_.mission = this.gm_.event.missions[0];
-  this.gm_.stage = this.gm_.mission.stages[0][0];
-
   // DEBUG
-  //this.gm_.event = this.gm_.world.events[6];
-  //this.gm_.mission = this.gm_.event.missions[0];
-  //this.gm_.stage = this.gm_.mission.stages[0][0];
-  //this.gm_.mission.lives = 1;
+  this.gm_.stage = this.gm_.stage.unlocks[0];
   //this.gm_.stage.state = 'won';
   //this.gm_.equipping = 'primary';
-  //this.gm_.event.state = 'won';
+  this.missionService_.handleStageResult('won');
 
-  this.scenes_[8].start();
+  this.scenes_[6].start();
 };
 
 Game.prototype.initGameModel_ = function() {
-  this.gm_.inventory = this.gameplay_.inventory;
   this.gm_.player = this.gameplay_.player;
+  this.gm_.inventory = this.gameplay_.inventory.concat(
+      _.clone(this.gm_.player));
   this.gm_.worlds = this.gameplay_.worlds;
-  this.missionService_.start();
+  this.missionService_.initWorlds(this.gm_.worlds);
+
+  this.gm_.world = this.gm_.worlds[0];
+  this.gm_.mission = this.gm_.world.missions[0];
+  this.gm_.stage = this.missionService_.getStartingStage();
 };
 
 Game.prototype.update = function(dt) {

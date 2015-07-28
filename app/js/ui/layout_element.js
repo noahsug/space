@@ -25,6 +25,8 @@ LayoutElement.prototype.setDirection = function(direction) {
     this.oriented_.middle = 'middle';
     this.oriented_.height = 'height';
     this.oriented_.width = 'width';
+    this.oriented_.layoutHeight = 'layoutHeight';
+    this.oriented_.layoutWidth = 'layoutWidth';
     this.oriented_.maxHeight = 'maxHeight';
     this.oriented_.maxWidth = 'maxWidth';
     this.oriented_.innerWidth = 'innerWidth';
@@ -50,6 +52,8 @@ LayoutElement.prototype.setDirection = function(direction) {
     this.oriented_.middle = 'center';
     this.oriented_.height = 'width';
     this.oriented_.width = 'height';
+    this.oriented_.layoutHeight = 'layoutWidth';
+    this.oriented_.layoutWidth = 'layoutHeight';
     this.oriented_.maxHeight = 'maxWidth';
     this.oriented_.maxWidth = 'maxHeight';
     this.oriented_.innerWidth = 'innerHeight';
@@ -86,12 +90,20 @@ LayoutElement.prototype.setAlpha = function(alpha) {
   return this.EntityElement_.setAlpha.call(this, alpha);
 };
 
-// Makes the this.entity_ fill all non-primary space.
+LayoutElement.prototype.setPauseInput = function(pauseInput) {
+  _.each(this.elements_, function(e) {
+    e.setPauseInput(pauseInput);
+  });
+  return this.UiElement_.setPauseInput.call(this, pauseInput);
+};
+
+// This.entity_ fills all available non-primary space.
 LayoutElement.prototype.setBgFill = function(fill) {
   this.bgFill_ = fill;
   return this;
 };
 
+// Children fill free non-primary space.
 LayoutElement.prototype.setChildrenFill = function(fill) {
   this.childrenFill_ = fill;
   return this;
@@ -150,7 +162,7 @@ LayoutElement.prototype.calcInnerWidthHeight_ = function() {
     var e = this.elements_[i];
     e.calcSize_();
     if (e[o.height] > this[o.innerHeight]) this[o.innerHeight] = e[o.height];
-    this[o.innerWidth] += e[o.width];
+    this[o.innerWidth] += _.ifDef(e[o.layoutWidth], e[o.width]);
     if (e.layout.flex) hasFlex = true;
   }
 };
@@ -169,7 +181,7 @@ LayoutElement.prototype.positionChild_ = function(origX, origY) {
   for (var i = 0; i < this.elements_.length; i++) {
     var e = this.elements_[i];
     if (!e.layout.flex) {
-      freeWidth -= e[o.width];
+      freeWidth -= _.ifDef(e[o.layoutWidth], e[o.width]);
       childAlign = e.layout[o.align];
     } else {
       totalFlex += e.layout.flex;
@@ -196,7 +208,7 @@ LayoutElement.prototype.positionChild_ = function(origX, origY) {
     e[o.maxHeight] = (e.layout.fill || this.childrenFill_) ?
         this[o.calcFreeHeight]() : this[o.innerHeight];
     this.positionElement_(e, x + dx, y);
-    dx += e[o.maxWidth];
+    dx += _.ifDef(e[o.layoutWidth], e[o.maxWidth]);
   }
 
   this.positionEntity_();
@@ -213,11 +225,10 @@ LayoutElement.prototype.positionElement_ = function(e, x, y) {
   }
   var dy = 0;
   var baseline = e.layout[o.baseline] || this[o.childrenBaseline_];
-  var freeHeight = this[o.calcFreeHeight]();
   if (baseline == o.middle) {
-    dy = (freeHeight - e[o.height]) / 2;
+    dy = (e[o.maxHeight] - e[o.height]) / 2;
   } else if (baseline == o.bottom) {
-    dy = freeHeight - e[o.height];
+    dy = e[o.maxHeight] - e[o.height];
   }
   this.orientedSetPosition_(e, x + dx, y + dy);
 };
