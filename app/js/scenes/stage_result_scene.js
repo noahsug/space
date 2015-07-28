@@ -1,6 +1,6 @@
 var StageResultScene = di.service('StageResultScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'BackdropElement', 'ItemService',
-  'LabelElement', 'MissionService', 'EntityElement',
+  'LabelElement', 'MissionService', 'EntityElement', 'ItemDescElement',
   'FadeElement']);
 
 StageResultScene.prototype.init = function() {
@@ -21,11 +21,10 @@ StageResultScene.prototype.addEntities_ = function() {
     .setStyle('muted')
     .setPadding('bottom', Padding.MARGIN * 1.5));
 
-  var reward = this.gm_.stage.reward.value;
-  if (reward) {
+  var reward = this.gm_.stage.reward && this.gm_.stage.reward.value;
+  if (this.gm_.mission.state == 'won' && reward) {
     // Reward
     this.layout_.add(this.LayoutElement_.new('vertical')
-      .add(this.UiElement_.new().setPadding('left', Size.ITEM_DESC_WIDTH))
       .setBgStyle('muted_dark')
       .setBorderStyle('primary')
       .setPadding(Padding.MODAL_MARGIN_SM)
@@ -39,22 +38,14 @@ StageResultScene.prototype.addEntities_ = function() {
 
       // Reward item
       .add(this.EntityElement_.new('item')
-        .setPadding('top', Padding.ITEM)
+        .setPadding(Padding.ITEM / 2, 0, Padding.ITEM / 4)
         .setLayoutAlign('center')
         .setProp('item', reward)
         .setSize(Size.ITEM))
 
       // Item desc.
-      .add(this.LabelElement_.new()
-         .setText(reward.displayName, Size.DESC_SM)
-         .setStyle('muted')
-         .setBg('primary', Padding.DESC_SM_BG))
-      .add(this.LabelElement_.new()
-         .setText(this.itemService_.getDesc(reward), Size.DESC_SM)
-         .setNumLines(2)
-         .setLineWrap(true)
-         .setStyle('muted')
-         .setBg('none', Padding.DESC_SM_BG)));
+      .add(this.ItemDescElement_.new()
+         .setItem(reward)));
   }
 
   this.layout_

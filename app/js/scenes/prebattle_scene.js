@@ -8,6 +8,7 @@ PrebattleScene.prototype.init = function() {
 };
 
 PrebattleScene.prototype.onStart_ = function() {
+  this.startBattle_ = false;
   this.tutorial_ = this.gm_.world.index + this.gm_.mission.index == 0 &&
       this.gm_.stage.start;
   if (this.tutorial_) {
@@ -56,6 +57,7 @@ PrebattleScene.prototype.maybeFlyDown_ = function(enemy) {
   enemy
     .setOffset(0, -(this.screen_.height / 2 - 75))
     .animate('y', 0, {delay: this.FLY_TIME, duration: this.FLY_TIME});
+  window.o = enemy.offset;
 };
 
 PrebattleScene.prototype.addUiEntities_ = function() {
@@ -139,6 +141,8 @@ PrebattleScene.prototype.addEnemyItems_ = function(layout) {
 
 PrebattleScene.prototype.addPlayerInventory_ = function(layout) {
   this.playerBtns_ = [];
+  this.selectedPlayerBtn_ = undefined;
+  this.showingPlayerInventory_ = false;
 
   this.playerInventory_ = this.LayoutElement_.new('horizontal')
     .setLayoutAlign('center')

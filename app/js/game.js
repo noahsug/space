@@ -1,7 +1,7 @@
 var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene',
   'StageResultScene', 'Gameplay', 'MissionService',
-  'StageSelectScene', 'ShipDetailsScene', 'PrebattleScene']);
+  'StageSelectScene', 'PrebattleScene']);
 
 Game.UPDATE_RATE = .06;
 
@@ -14,22 +14,21 @@ Game.prototype.start = function() {
   this.scenes_ = [
     // Modal dialogs go first to consume mouse clicks.
     /* 0 */ this.stageResultScene_,
-    /* 1 */ this.shipDetailsScene_,
 
-    /* 2 */ this.loadingScene_,
-    /* 3 */ this.introScene_,
-    /* 4 */ this.stageSelectScene_,
-    /* 5 */ this.prebattleScene_,
-    /* 6 */ this.battleScene_,
+    /* 1 */ this.loadingScene_,
+    /* 2 */ this.introScene_,
+    /* 3 */ this.stageSelectScene_,
+    /* 4 */ this.prebattleScene_,
+    /* 5 */ this.battleScene_,
   ];
 
   // DEBUG
-  this.gm_.stage = this.gm_.stage.unlocks[0];
+  //this.gm_.stage = this.gm_.stage.unlocks[0];
   //this.gm_.stage.state = 'won';
   //this.gm_.equipping = 'primary';
   this.missionService_.handleStageResult('won');
 
-  this.scenes_[6].start();
+  this.scenes_[0].start();
 };
 
 Game.prototype.initGameModel_ = function() {

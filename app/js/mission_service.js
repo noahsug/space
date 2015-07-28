@@ -1,5 +1,5 @@
 var MissionService = di.service('MissionService', [
-  'GameModel as gm', 'ShipFactory', 'Gameplay']);
+  'GameModel as gm', 'ShipFactory', 'Gameplay', 'Inventory']);
 
 MissionService.prototype.initWorlds = function(worlds) {
   _.each(worlds, function(world, worldIndex) {
@@ -28,8 +28,15 @@ MissionService.prototype.resetProgress = function(opt_mission) {
 };
 
 MissionService.prototype.handleStageResult = function(result) {
-  this.gm_.stage.prevState = this.gm_.stage.state;
+  _.each2D(this.gm_.mission.stages, function(stage) {
+    stage.prevState = stage.state;
+  });
   if (result == 'won') {
+    if (this.gm_.stage.reward) {
+      if (this.gm_.stage.reward.type == 'item') {
+        this.inventory_.add(this.gm_.stage.reward.value);
+      }
+    }
     this.gm_.stage.state = 'won';
     if (this.won_()) {
       this.gm_.mission.state = 'won';

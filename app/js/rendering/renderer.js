@@ -151,12 +151,12 @@ Renderer.prototype.drawStage_ = function(e) {
   var lineWidth = _.interpolate([1, 2, 1], ratio);
   drawFn(e.r.x, e.r.y, radius, lineWidth);
 
-  var color = [.6, 1, .3];  // [unlocked, locked, won]
+  var color = [.6, 1, .25];  // [unlocked, locked, won]
   var colorRatio = _.interpolate(color, ratio);
   this.textCtx_.strokeStyle = _.generateGray(colorRatio);
   this.textCtx_.stroke();
 
-  var fill = [0, 0, 1];  // [unlocked, locked, won]
+  var fill = [0, 0, 0];  // [unlocked, locked, won]
   var fillRatio = _.interpolate(fill, ratio);
   drawFn(e.r.x, e.r.y, radius, 0, fillRatio);
   this.textCtx_.fillStyle = this.textCtx_.strokeStyle;

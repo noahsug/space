@@ -91,6 +91,7 @@ AnimationsFactory.prototype.tick_ = function(a, dt) {
     if (a.delay >= 0) return 0;
     dt = -a.delay;
     a.delay = 0;
+    this.setRate_(a);
   }
   var dv = a.value - this.getValue_(a.prop);
   if (Math.abs(dv) <= a.rate * dt) {

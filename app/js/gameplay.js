@@ -130,13 +130,13 @@ Gameplay.prototype.getGameplayFile_ = function() {
     ],
 
     player: [
-      //'shotgun',
-      'charge laser',
+      'shotgun',
+      //'charge laser',
 
-      //'charge',
-      'knockback',
+      'charge',
+      //'knockback',
 
-      'poof',
+      //'poof',
 
       //'basic laser',
       //'burst laser',
@@ -172,8 +172,8 @@ Gameplay.prototype.getGameplayFile_ = function() {
     ],
 
     inventory: [
-      'basic laser',
-      'burst laser',
+      //'basic laser',
+      //'burst laser',
       ////'grenade',
       ////'razors',
       //'sniper',
