@@ -48,13 +48,17 @@ Gameplay.prototype.getGameplayFile_ = function() {
   return {
     worlds: [
       {
-        name: 'titan',
+        name: 'hiveworld',
         missions: [{
+          desc: 'defeat the hive queen',
+          fuel: Infinity,
+          tutorial: true,
+
           /**
            * 00 = empty stage
            * 01 = start
            * checkpoint = losing resets progress back to last checkpoint
-           * non-checkpoint stage must have unlocks.length == 1
+           * only one path can lead to a non-checkpoint stage
            */
           stages: [
             [00, 00, 06, 00, 00],
@@ -65,15 +69,14 @@ Gameplay.prototype.getGameplayFile_ = function() {
             [00, 00, 01, 00, 00],
           ],
           1: {
-            text: 'tutorial',
             unlocks: [2],
             checkpoint: true,
+            tutorial: true,
             reward: {type: 'item', value: 'charge laser'},
             ship: {
               hull: 'hive scout',
               primary: ['alien laser']}},
           2: {
-            text: 'tutorial',
             unlocks: [3],
             checkpoint: true,
             reward: {type: 'item', value: 'knockback'},
@@ -82,14 +85,12 @@ Gameplay.prototype.getGameplayFile_ = function() {
               primary: ['alien laser'],
               secondary: ['knockback']}},
           3: {
-            text: 'tutorial',
             unlocks: [4],
             ship: {
               hull: 'hive ram',
               primary: ['alien shotgun'],
               secondary: ['charge']}},
           4: {
-            text: 'tutorial',
             unlocks: [5],
             checkpoint: true,
             reward: {type: 'item', value: 'poof'},
@@ -98,25 +99,33 @@ Gameplay.prototype.getGameplayFile_ = function() {
               primary: ['alien laser'],
               utility: ['dash']}},
           5: {
-            text: 'tutorial',
             unlocks: [6],
             ship: {
-              hull: 'alien infestor',
+              hull: 'hive infestor',
               primary: ['charge laser'],
               secondary: ['knockback']}},
           6: {
-            text: 'tutorial',
             checkpoint: true,
-            reward: {type: 'world', value: 'titan'},
+            reward: {type: 'world', value: 'oceantus'},
             ship: {
               hull: 'hive queen',
               primary: ['alien gatling'],
               secondary: ['alien spawn'],
               ability: ['shield']}}
         }]
-      },
-      {
-        name: 'neptune',
+      }, {
+        name: 'oceantus',
+        missions: [{
+          stages: [
+            [00, 00, 00, 00, 00],
+            [00, 00, 00, 00, 00],
+            [00, 00, 00, 00, 00],
+            [00, 00, 00, 00, 00],
+            [00, 00, 00, 00, 00],
+          ]
+        }]
+      }, {
+      name: 'trueflame',
         missions: [{
           stages: [
             [00, 00, 00, 00, 00],
@@ -138,6 +147,8 @@ Gameplay.prototype.getGameplayFile_ = function() {
 
       //'poof',
 
+      //'dash',
+
       //'basic laser',
       //'burst laser',
       //'grenade',
@@ -154,7 +165,6 @@ Gameplay.prototype.getGameplayFile_ = function() {
       //'tracker',
       //'turret',
 
-      //'knockback',
       //'shield',
       //'reflect',
       //'tank',

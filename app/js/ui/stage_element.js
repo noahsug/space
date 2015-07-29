@@ -5,10 +5,11 @@ StageElement.prototype.init = function() {
   this.setSize(Size.STAGE);
 };
 
-StageElement.Progress = {'locked': 0, 'unlocked': 1, 'won': 2};
+StageElement.Progress = {lost: 0, locked: 0, unlocked: 1, won: 2};
 
 StageElement.prototype.setProgress = function(progress) {
   this.entity_.progress = progress;
+  return this;
 };
 
 StageElement.prototype.setSize = function(size) {

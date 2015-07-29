@@ -26,6 +26,7 @@ GameplayParser.prototype.parseItems_ = function(items) {
 GameplayParser.prototype.parseWorlds_ = function(worlds) {
   _.each(worlds, function(world, index) {
     world.index = index;
+    world.displayName = world.displayName || world.name;
     this.parseMissions_(world.missions, worlds);
   }, this);
 };
@@ -33,6 +34,7 @@ GameplayParser.prototype.parseWorlds_ = function(worlds) {
 GameplayParser.prototype.parseMissions_ = function(missions, worlds, items) {
   _.each(missions, function(mission, missionIndex) {
     mission.index = missionIndex;
+    mission.maxFuel = mission.fuel;
     this.parseStages_(mission.stages, mission);
   }, this);
 };
@@ -42,6 +44,7 @@ GameplayParser.prototype.parseStages_ = function(indexes, stages) {
   _.each2D(indexes, function(index, rowIndex, colIndex, array) {
     var stage = _.assert(stages[index]);
     array[colIndex] = stage;
+    stage.unlocks = stage.unlocks || [];
     if (!stage.empty) {
       stage.start = index == 1;
       this.parseUnlocks_(stage.unlocks, stages);
@@ -63,7 +66,7 @@ GameplayParser.prototype.parseReward_ = function(reward) {
     reward.value = this.data_.items[reward.value];
   }
   if (reward.type == 'world') {
-    reward.value = this.data_.worlds[reward.value];
+    reward.value = _.findWhere(this.data_.worlds, {name: reward.value});
   }
 };
 

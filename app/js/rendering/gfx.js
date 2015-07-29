@@ -10,12 +10,13 @@ Gfx.Color = {
   // UI Colors
   FG: '#F3F9FD',
   FG_MUTED: '#C3C9CD',
+  FG_DARK: '#A1A6A9',
   FG_ACTIVE: '#FDBE31',
   // TODO: Make these all have opacity.
   BG: 'rgba(72, 81, 84, .75)',
   BG_PRESSED: 'rgba(42, 51, 54, 1)',
   BG_MUTED: 'rgba(31, 33, 34, .75)',
-  BG_MUTED_DARK: 'rgba(22, 23, 25, .75)',
+  BG_DARK: 'rgba(22, 23, 25, .75)',
   COOLDOWN: 'rgba(0, 0, 0, .75)',
 
   // Battle Colors

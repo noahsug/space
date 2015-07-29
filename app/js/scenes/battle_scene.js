@@ -27,8 +27,8 @@ BattleScene.prototype.addEntities_ = function() {
 
     // Health bars
     .add(this.EntityElement_.new('healthBars')
-      .setProp('player', this.player_)
-      .setProp('enemy', this.enemy_))
+      .set('player', this.player_)
+      .set('enemy', this.enemy_))
 
     // Items
     .add(this.LayoutElement_.new('horizontal')
@@ -57,20 +57,20 @@ BattleScene.prototype.createItem_ = function(type, index) {
 
   var btn = this.EntityElement_.new('item')
     .setSize(Size.ITEM)
-    .setProp('item', item)
-    .setProp('cdInfo', this.player_[type])
+    .set('item', item)
+    .set('cdInfo', this.player_[type])
     .modify(this.addInputHandler_.bind(this, index));
   return btn;
 };
 
 BattleScene.prototype.addInputHandler_ = function(index, btn) {
   btn.getEntity().update(function() {
-    var spec = this.player_[btn.getProp('item').category];
+    var spec = this.player_[btn.get('item').category];
     if (spec.use) return;
     spec.use = btn.mouseDown || this.mouse_.keysPressed[index];
   }, this);
   btn.getEntity().resolve(function() {
-    var spec = this.player_[btn.getProp('item').category];
+    var spec = this.player_[btn.get('item').category];
     spec.use = false;
   }, this);
 };

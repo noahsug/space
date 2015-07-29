@@ -37,6 +37,12 @@ LabelElement.prototype.setBg = function(style, padding) {
   return this;
 };
 
+// Warning: only works with .setLineWrap(true)!
+LabelElement.prototype.setTextAlign = function(align) {
+  this.set('align', align);
+  return this;
+};
+
 LabelElement.prototype.calcInnerWidthHeight_ = function() {
   this.prevText_ = this.entity_.text;
   if (this.lineWrap_) this.calcWrappedInnerWidth_();

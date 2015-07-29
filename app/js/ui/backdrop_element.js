@@ -10,6 +10,6 @@ BackdropElement.prototype.init = function() {
 };
 
 BackdropElement.prototype.setBaseAlpha = function(baseAlpha) {
-  this.setProp('baseAlpha', baseAlpha);
+  this.set('baseAlpha', baseAlpha);
   return this;
 };

@@ -11,7 +11,8 @@ Size = {
   BUTTON_LG: 18,
 
   ITEM: 32,
-  STAGE: 50
+  STAGE: 50,
+  WORLD: 100
 };
 
 Padding = {

@@ -56,10 +56,7 @@ Renderer.prototype.handleCamera_ = function(dt) {
 };
 
 Renderer.prototype.drawEntity_ = function(e, dt) {
-  if (!e.r) {
-    e.r = {};
-    this.initFns_[e.type] && this.initFns_[e.type](e);
-  }
+  this.maybeInitEntity_(e);
   var pos = this.getPos_(e);
   e.r.x = pos.x;
   e.r.y = pos.y;
@@ -67,6 +64,13 @@ Renderer.prototype.drawEntity_ = function(e, dt) {
   if (_.isDef(e.alpha)) this.textCtx_.globalAlpha = e.alpha;
   this.drawFns_[e.type](e, this.style_[e.type], dt);
   this.textCtx_.globalAlpha = 1;
+};
+
+Renderer.prototype.maybeInitEntity_ = function(e) {
+  if (!e.r) {
+    e.r = {};
+    this.initFns_[e.type] && this.initFns_[e.type](e);
+  }
 };
 
 Renderer.prototype.getPos_ = function(e) {
@@ -139,17 +143,19 @@ Renderer.prototype.drawContainer_ = function(e) {
   //this.ctx_.strokeRect(e.r.x, e.r.y, e.width, e.height);
 };
 
-Renderer.prototype.drawStage_ = function(e) {
+Renderer.prototype.initStage_ = function(e) {
   var drawFn = this.circle_;
-  if (e.style == 'checkpoint') drawFn = this.square_;
-  drawFn = drawFn.bind(this);
+  if (e.stage.checkpoint) drawFn = this.square_;
+  e.r.draw = drawFn.bind(this);
 
-  var radius = 15;
-  if (e.style == 'checkpoint') radius -= 2;  // Keep surface area the same.
+  e.r.radius = 15;
+  if (e.stage.checkpoint) e.r.radius -= 2;  // Keep surface area the same.
+};
+Renderer.prototype.drawStage_ = function(e) {
   var ratio = e.progress / 2;  // distribution in [0-1]
 
   var lineWidth = _.interpolate([1, 2, 1], ratio);
-  drawFn(e.r.x, e.r.y, radius, lineWidth);
+  e.r.draw(e.r.x, e.r.y, e.r.radius, lineWidth);
 
   var color = [.6, 1, .25];  // [unlocked, locked, won]
   var colorRatio = _.interpolate(color, ratio);
@@ -158,18 +164,20 @@ Renderer.prototype.drawStage_ = function(e) {
 
   var fill = [0, 0, 0];  // [unlocked, locked, won]
   var fillRatio = _.interpolate(fill, ratio);
-  drawFn(e.r.x, e.r.y, radius, 0, fillRatio);
+  e.r.draw(e.r.x, e.r.y, e.r.radius, 0, fillRatio);
   this.textCtx_.fillStyle = this.textCtx_.strokeStyle;
   this.textCtx_.fill();
 
   // Draw stage connections.
-  _.each(e.unlocks, function(stage) {
-    var to = this.getPos_(stage.r.element);
+  _.each(e.stage.unlocks, function(stage) {
+    var e2 = stage.r.entity;
+    this.maybeInitEntity_(e2);
+    var to = this.getPos_(e2);
     var a = _.angle(e.r, to);
-    this.line_(e.r.x + radius * Math.cos(a),
-               e.r.y + radius * Math.sin(a),
-               to.x - radius * Math.cos(a),
-               to.y - radius * Math.sin(a),
+    this.line_(e.r.x + e.r.radius * Math.cos(a),
+               e.r.y + e.r.radius * Math.sin(a),
+               to.x - e2.r.radius * Math.cos(a),
+               to.y - e2.r.radius * Math.sin(a),
                1);
   }, this);
 };
@@ -221,6 +229,22 @@ Renderer.prototype.drawItemBorder_ = function(e) {
   // TODO.
 };
 
+Renderer.prototype.drawWorld_ = function(e) {
+  if (e.world.state == 'locked') {
+    this.textCtx_.fillStyle = 'rgba(0, 0, 0, .5)';
+    this.circle_(e.r.x, e.r.y, e.size / 2);
+    this.textCtx_.fill();
+  } else {
+    if (e.world.name == 'hiveworld') this.textCtx_.shadowColor = '#C056F1';
+    if (e.world.name == 'oceantus') this.textCtx_.shadowColor = '#525fd5';
+    if (e.world.name == 'trueflame') this.textCtx_.shadowColor = '#FD9644';
+    this.textCtx_.shadowBlur = 35;
+  }
+  this.spriteService_.draw(e.world.name, e.r.x, e.r.y,
+                           {alpha: e.alpha, ctx: 'text'});
+  this.textCtx_.shadowBlur = 0;
+};
+
 Renderer.prototype.drawShipElement_ = function(e) {
   this.spriteService_.draw(
       e.hull.spec.sprite, e.r.x + e.size / 2, e.r.y + e.size / 2,
@@ -239,7 +263,7 @@ Renderer.prototype.drawLabel_ = function(e) {
 
   var fgColor = this.getFgColor_(e.style);
   for (var i = 0; i < e.lines.length; i++) {
-    this.textCtx_.textAlign = 'left';
+    this.textCtx_.textAlign = e.align || 'left';
     this.textCtx_.textBaseline = 'top';
     this.drawText_(
         e.lines[i], e.size, e.r.x, e.r.y + i * e.lineHeight, {color: fgColor});
@@ -343,6 +367,7 @@ Renderer.prototype.fillText_ = function(text, x, y) {
 Renderer.prototype.getFgColor_ = function(style) {
   switch (style) {
     case 'muted': return Gfx.Color.FG_MUTED;
+    case 'dark': return Gfx.Color.FG_DARK;
     case 'active': return Gfx.Color.FG_ACTIVE;
   }
   return Gfx.Color.FG;
@@ -351,7 +376,7 @@ Renderer.prototype.getFgColor_ = function(style) {
 Renderer.prototype.getBgColor_ = function(style) {
   switch (style) {
     case 'muted': return Gfx.Color.BG_MUTED;
-    case 'muted_dark': return Gfx.Color.BG_MUTED_DARK;
+    case 'dark': return Gfx.Color.BG_DARK;
     case 'pressed': return Gfx.Color.BG_PRESSED;
     case 'primary': return Gfx.Color.BG;
   }

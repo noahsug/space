@@ -1,6 +1,5 @@
 var Scene = di.factory('Scene', [
-  'UiElement', 'GameModel as gm', 'Mouse', 'textCtx', 'BackdropElement',
-  'FadeElement']);
+  'UiElement', 'GameModel as gm', 'FadeElement']);
 
 Scene.prototype.init = function(name) {
   this.name_ = name;

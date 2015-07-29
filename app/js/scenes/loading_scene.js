@@ -7,13 +7,13 @@ LoadingScene.prototype.init = function() {
 
 LoadingScene.prototype.addEntities_ = function() {
   this.element_ = this.EntityElement_.new('loadingSplash');
-  this.element_.setProp('loading', 0);
+  this.element_.set('loading', 0);
 };
 
 LoadingScene.prototype.update_ = function(dt) {
-  var progress = this.element_.getProp('loading');
+  var progress = this.element_.get('loading');
   progress += dt * 1.5;
-  this.element_.setProp('loading', progress);
+  this.element_.set('loading', progress);
   if (progress >= 1.5) {
     this.transition_('intro', {time: 0});
   }

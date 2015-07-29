@@ -9,9 +9,7 @@ PrebattleScene.prototype.init = function() {
 
 PrebattleScene.prototype.onStart_ = function() {
   this.startBattle_ = false;
-  this.tutorial_ = this.gm_.world.index + this.gm_.mission.index == 0 &&
-      this.gm_.stage.start;
-  if (this.tutorial_) {
+  if (this.gm_.stage.tutorial) {
     // Player + Enemy fly in slowly.
     this.FLY_TIME = 3;
     this.timeToTransition_ = this.FLY_TIME * 2;
@@ -25,7 +23,7 @@ PrebattleScene.prototype.onStart_ = function() {
 
 PrebattleScene.prototype.addEntities_ = function() {
   this.addShipEntities_();
-  if (!this.tutorial_) this.addUiEntities_();
+  if (!this.gm_.stage.tutorial) this.addUiEntities_();
 };
 
 PrebattleScene.prototype.addShipEntities_ = function() {
@@ -36,8 +34,8 @@ PrebattleScene.prototype.addShipEntities_ = function() {
     // Enemy
     .add(this.EntityElement_.new('shipElement')
       .setSize(0)
-      .setProp('rotation', Math.PI / 2)
-      .setProp('hull', _.findWhere(this.gm_.stage.ship, {category: 'hull'}))
+      .set('rotation', Math.PI / 2)
+      .set('hull', _.findWhere(this.gm_.stage.ship, {category: 'hull'}))
       .modify(this.maybeFlyDown_, this))
 
     // Gap
@@ -46,14 +44,14 @@ PrebattleScene.prototype.addShipEntities_ = function() {
     // Player
     .add(this.EntityElement_.new('shipElement')
       .setSize(0)
-      .setProp('rotation', -Math.PI / 2)
-      .setProp('hull', this.inventory_.getHull())
+      .set('rotation', -Math.PI / 2)
+      .set('hull', this.inventory_.getHull())
       .setOffset(0, this.screen_.height / 2 - 75)
       .animate('y', 0, {duration: this.FLY_TIME}));
 };
 
 PrebattleScene.prototype.maybeFlyDown_ = function(enemy) {
-  if (!this.tutorial_) return;
+  if (!this.gm_.stage.tutorial) return;
   enemy
     .setOffset(0, -(this.screen_.height / 2 - 75))
     .animate('y', 0, {delay: this.FLY_TIME, duration: this.FLY_TIME});
@@ -113,7 +111,7 @@ PrebattleScene.prototype.addItemDesc_ = function(name, layout) {
  var itemDesc = this.ItemDescElement_.new('vertical')
    .setLayoutAlign('center')
    .setPadding(Padding.MODAL_MARGIN_SM)
-   .setBgStyle('muted_dark')
+   .setBgStyle('dark')
    .setBorderStyle('primary');
 
  layout.add(itemDesc);
@@ -147,7 +145,7 @@ PrebattleScene.prototype.addPlayerInventory_ = function(layout) {
   this.playerInventory_ = this.LayoutElement_.new('horizontal')
     .setLayoutAlign('center')
     .setPadding(Padding.MODAL_MARGIN_SM)
-    .setBgStyle('muted_dark')
+    .setBgStyle('dark')
     .setBorderStyle('primary')
     .modify(this.addPlayerItemCols_, this)
     .setAlpha(0);
@@ -196,34 +194,34 @@ PrebattleScene.prototype.addPlayerItemInputHandler_ = function(btn) {
     }
     this.updatePlayerBtnStyles_();
     this.playerItemDesc_.setItem(
-        this.selectedPlayerBtn_ && btn.getProp('item'));
+        this.selectedPlayerBtn_ && btn.get('item'));
   }, this);
 };
 
 PrebattleScene.prototype.selectPlayerBtn_ = function(btn) {
   if (this.selectedPlayerBtn_) this.unselectPlayerBtn_();
   this.selectedPlayerBtn_ = btn;
-  btn.setProp('selected', true);
+  btn.set('selected', true);
 };
 
 PrebattleScene.prototype.unselectPlayerBtn_ = function() {
-  this.selectedPlayerBtn_.setProp('selected', false);
+  this.selectedPlayerBtn_.set('selected', false);
   this.selectedPlayerBtn_ = undefined;
 };
 
 PrebattleScene.prototype.equipPlayerBtnItem_ = function(btn) {
-  var type = btn.getProp('item').category;
+  var type = btn.get('item').category;
   var equipped = this.inventory_.getEquipped(type);
   if (equipped) this.inventory_.unequip(equipped);
-  this.inventory_.equip(btn.getProp('item'));
+  this.inventory_.equip(btn.get('item'));
 };
 
 PrebattleScene.prototype.maybeUnequipPlayerBtnItem_ = function(btn) {
-  if (btn.getProp('item') == this.inventory_.getEquipped('primary')) {
+  if (btn.get('item') == this.inventory_.getEquipped('primary')) {
     // Can't unequip primary weapon.
     return;
   }
-  this.inventory_.unequip(btn.getProp('item'));
+  this.inventory_.unequip(btn.get('item'));
 };
 
 PrebattleScene.prototype.addPlayerItemColLabel_ = function(type, layout) {
@@ -238,7 +236,7 @@ PrebattleScene.prototype.addPlayerItemColLabel_ = function(type, layout) {
 
 PrebattleScene.prototype.updatePlayerBtnStyles_ = function() {
   _.each(this.playerBtns_, function(btn) {
-    var item = btn.getProp('item');
+    var item = btn.get('item');
     btn.setStyle(this.inventory_.isEquipped(item) ? 'equipped' : 'unequipped');
   }, this);
 };
@@ -249,7 +247,7 @@ PrebattleScene.prototype.createItemBtn_ = function(item) {
   }
   return this.EntityElement_.new('item')
     .setSize(Size.ITEM)
-    .setProp('item', item);
+    .set('item', item);
 };
 
 PrebattleScene.prototype.fight_ = function(dt) {
@@ -273,7 +271,8 @@ PrebattleScene.prototype.toggleEquip_ = function() {
       'alpha', alpha, {duration: Time.TRANSITION_SNAP});
   this.playerItemDesc_.setItem(null);
   this.playerInventory_.setPauseInput(!this.showingPlayerInventory_);
-  this.equipBtn_.setBgStyle(this.showingPlayerInventory_ ? 'pressed' : 'primary');
+  this.equipBtn_.setBgStyle(
+      this.showingPlayerInventory_ ? 'pressed' : 'primary');
   this.equipBtn_.setStyle(this.showingPlayerInventory_ ? 'muted' : 'primary');
 };
 

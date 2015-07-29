@@ -6,13 +6,14 @@ MissionService.prototype.initWorlds = function(worlds) {
     world.state = worldIndex == 0 ? 'unlocked' : 'locked';
     _.each(world.missions, function(mission, missionIndex) {
       mission.state = worldIndex + missionIndex == 0 ? 'unlocked' : 'locked';
-      this.initStages_(mission);
+      this.initStages_(mission.stages);
+      this.resetProgress(mission);
     }, this);
   }, this);
 };
 
-MissionService.prototype.initStages_ = function(mission) {
-  _.each2D(mission.stages, function(stage) {
+MissionService.prototype.initStages_ = function(stages) {
+  _.each2D(stages, function(stage) {
     if (stage.empty) {
       stage.state = 'won';
     } else {
@@ -24,28 +25,63 @@ MissionService.prototype.initStages_ = function(mission) {
 };
 
 MissionService.prototype.resetProgress = function(opt_mission) {
-  this.initStages_(opt_mission || this.gm_.mission);
+  var mission = opt_mission || this.gm_.mission;
+  mission.state = 'unlocked';
+  mission.fuel = mission.maxFuel;
+
+  _.each2D(mission.stages, function(stage) {
+    if (!stage.empty) {
+      stage.state = stage.start ? 'unlocked' : 'locked';
+    }
+    stage.prevState = stage.state;
+  }, this);
+};
+
+MissionService.prototype.selectWorld = function(world) {
+  this.gm_.world = world;
+  this.gm_.mission = this.getCurrentMission();
+  this.resetProgress();
+};
+
+MissionService.prototype.getCurrentMission = function() {
+  return _.find(this.gm_.world.missions, function(mission) {
+    return _.oneOf(mission.state, 'unlocked', 'lost');
+  });
+};
+
+MissionService.prototype.getPercentComplete = function(world) {
+  var stats = _.countBy(world.missions, _.iteratee('state'));
+  return 100 * (stats.won || 0) / world.missions.length;
 };
 
 MissionService.prototype.handleStageResult = function(result) {
+  this.gm_.mission.fuel--;
   _.each2D(this.gm_.mission.stages, function(stage) {
     stage.prevState = stage.state;
   });
+  this.gm_.stage.state = result;
   if (result == 'won') {
     if (this.gm_.stage.reward) {
       if (this.gm_.stage.reward.type == 'item') {
         this.inventory_.add(this.gm_.stage.reward.value);
+      } else {  // type == 'world'
+        this.gm_.stage.reward.value.state = 'unlocked';
       }
     }
-    this.gm_.stage.state = 'won';
     if (this.won_()) {
       this.gm_.mission.state = 'won';
+      this.unlockNextMission_(this.gm_.mission);
     } else {
       this.unlockNextStages_(this.gm_.stage);
     }
-  } else {
+  } else {  // lost
     this.lockStagesUntilCheckpoint_(this.gm_.stage);
   }
+};
+
+MissionService.prototype.unlockNextMission_ = function(mission) {
+  var nextMission = this.gm_.missions[mission.index + 1];
+  if (nextMission) nextMission.state = 'unlocked';
 };
 
 MissionService.prototype.unlockNextStages_ = function(stage) {
@@ -55,10 +91,23 @@ MissionService.prototype.unlockNextStages_ = function(stage) {
 };
 
 MissionService.prototype.lockStagesUntilCheckpoint_ = function(stage) {
+  if (stage.checkpoint) return;
+  var prevStage;
+  _.each2D(this.gm_.mission.stages, function(s) {
+    if (s.unlocks.indexOf(stage) >= 0) prevStage = s;
+  });
+  if (prevStage.checkpoint) {
+    stage.state = 'unlocked';
+  } else {
+    if (stage.state == 'won') stage.state = 'locked';
+    this.lockStagesUntilCheckpoint_(prevStage);
+  }
 };
 
 MissionService.prototype.beatGame = function() {
-  return this.gm_.mission.state == 'won';
+  return _.every(this.gm_.worlds, function(world) {
+    return this.getPercentComplete(world) == 100;
+  }, this);
 };
 
 MissionService.prototype.won_ = function() {

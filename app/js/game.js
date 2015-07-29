@@ -1,6 +1,6 @@
 var Game = di.service('Game', [
   'GameModel as gm', 'LoadingScene', 'IntroScene', 'BattleScene',
-  'StageResultScene', 'Gameplay', 'MissionService',
+  'StageResultScene', 'Gameplay', 'MissionService', 'WorldSelectScene',
   'StageSelectScene', 'PrebattleScene']);
 
 Game.UPDATE_RATE = .06;
@@ -17,16 +17,17 @@ Game.prototype.start = function() {
 
     /* 1 */ this.loadingScene_,
     /* 2 */ this.introScene_,
-    /* 3 */ this.stageSelectScene_,
-    /* 4 */ this.prebattleScene_,
-    /* 5 */ this.battleScene_,
+    /* 3 */ this.worldSelectScene_,
+    /* 4 */ this.stageSelectScene_,
+    /* 5 */ this.prebattleScene_,
+    /* 6 */ this.battleScene_,
   ];
 
   // DEBUG
-  //this.gm_.stage = this.gm_.stage.unlocks[0];
+  //this.gm_.stage = this.gm_.mission.stages[3][2];
   //this.gm_.stage.state = 'won';
-  //this.gm_.equipping = 'primary';
-  this.missionService_.handleStageResult('won');
+  //this.gm_.mission.fuel = 1;
+  //this.missionService_.handleStageResult('lost');
 
   this.scenes_[0].start();
 };
@@ -37,9 +38,7 @@ Game.prototype.initGameModel_ = function() {
       _.clone(this.gm_.player));
   this.gm_.worlds = this.gameplay_.worlds;
   this.missionService_.initWorlds(this.gm_.worlds);
-
-  this.gm_.world = this.gm_.worlds[0];
-  this.gm_.mission = this.gm_.world.missions[0];
+  this.missionService_.selectWorld(this.gm_.worlds[0]);
   this.gm_.stage = this.missionService_.getStartingStage();
 };
 

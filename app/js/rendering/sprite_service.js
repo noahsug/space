@@ -1,6 +1,11 @@
 var SpriteService = di.service('SpriteService', ['ctx', 'textCtx', 'Screen']);
 
 var Sprite = {};
+// Worlds
+loadImage('ORANGE_WORLD', 'p3shaded_100');
+loadImage('PURPLE_WORLD', 'p4shaded_100');
+loadImage('BLUE_WORLD', 'p10shaded_100');
+
 // Ships
 loadImage('DRAKIR', 'drakir_36');
 loadImage('SPACESTATION', 'spacestation_40');
@@ -98,6 +103,19 @@ SpriteService.prototype.init = function() {
       actualSize: 40
     }
   };
+
+  // Worlds
+  _.each({
+    'hiveworld': 'PURPLE_WORLD',
+    'oceantus': 'BLUE_WORLD',
+    'trueflame': 'ORANGE_WORLD'
+  }, function(sprite, name) {
+    this.sprites_[name] = {
+      image: Sprite[sprite],
+      size: Size.WORLD,
+      actualSize: 100
+    };
+  }, this);
 
   // Items
   _.each({
