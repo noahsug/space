@@ -29,7 +29,7 @@ Game.prototype.start = function() {
   //this.gm_.mission.fuel = 1;
   //this.missionService_.handleStageResult('lost');
 
-  this.scenes_[0].start();
+  this.scenes_[1].start();
 };
 
 Game.prototype.initGameModel_ = function() {
