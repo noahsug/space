@@ -32,36 +32,41 @@ MovementDecorator.prototype.init = function() {
 //};
 
 MovementDecorator.prototype.decorateStraight_ = function(obj, spec) {
-  this.util_.spec(obj, 'movement', spec, {
+  spec = this.util_.spec(obj, 'movement', spec, {
     speed: 0,
     accuracy: 0,
     dangle: 0,
-    seek: 0
+    seek: 0,
+    setAngle: false
   });
 
   var target;
   obj.awake(function() {
-    obj.rotation = this.getLeadAngle_(obj);
-    var a = this.random_.next() * obj.movement.accuracy;
-    obj.rotation += obj.movement.accuracy / 2 - a;
-    obj.rotation += obj.movement.dangle;
+    if (spec.setAngle) {
+      obj.rotation = spec.setAngle;
+    } else {
+      obj.rotation = this.getLeadAngle_(obj);
+    }
+    obj.rotation += spec.dangle;
+    obj.accuracy = spec.accuracy / 2 - this.random_.next() * spec.accuracy;
+    obj.rotation += obj.accuracy;
   }.bind(this));
 
   obj.act(function(dt) {
-    if (!obj.movement.seek) return;
+    if (!spec.seek) return;
     var desiredRotation = _.angle(obj, obj.target);
     var dr = desiredRotation - obj.rotation;
-    if (Math.abs(dr) < obj.movement.seek * dt) {
+    if (Math.abs(dr) < spec.seek * dt) {
       obj.rotation = desiredRotation;
     } else {
-      obj.rotation += obj.movement.seek * dt * Math.sign(dr);
+      obj.rotation += spec.seek * dt * Math.sign(dr);
     }
   });
 
   obj.update(function(dt) {
     if (obj.dead) return;
-    obj.x += Math.cos(obj.rotation) * obj.movement.speed * dt;
-    obj.y += Math.sin(obj.rotation) * obj.movement.speed * dt;
+    obj.x += Math.cos(obj.rotation) * spec.speed * dt;
+    obj.y += Math.sin(obj.rotation) * spec.speed * dt;
   });
 };
 

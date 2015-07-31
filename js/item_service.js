@@ -22,11 +22,12 @@ ItemService.prototype.getByTypeAndLevel = function(type, level) {
 };
 
 ItemService.prototype.getEnemyEquipped = function(type) {
-  return _.findWhere(this.gm_.stage.enemy, {category: type});
+  return _.findWhere(this.gm_.stage.ship, {category: type});
 };
 
-ItemService.CD_ONLY = ['charge', 'tracker', 'pull', 'turret', 'alien spawn',
-                       'alien emp', 'pull', 'alien stun', 'refresh'];
+ItemService.CD_ONLY = ['tracker', 'pull', 'turret', 'alien spawn',
+                       'alien emp', 'pull', 'alien stun', 'refresh',
+                       'knockback'];
 ItemService.DESC_ONLY = ['divide', 'sticky'];
 ItemService.prototype.getDesc = function(item) {
   var descParts = [];
@@ -42,9 +43,6 @@ ItemService.prototype.getDesc = function(item) {
     var dmg = item.spec.dmg.toFixed();
     if (item.spec.projectiles > 1) dmg += 'x' + item.spec.projectiles;
     descParts.push('DMG: ' + dmg);
-
-    var range = (item.spec.range / 10).toFixed();
-    descParts.push('Range: ' + range);
 
     if (item.spec.seek) {
       var seek = (item.spec.seek * 10).toFixed();

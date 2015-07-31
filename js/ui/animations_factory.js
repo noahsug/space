@@ -22,24 +22,32 @@ AnimationsFactory.prototype.animate = function(prop, value, opt_options) {
   var animation = {
     prop: prop,
     value: value,
-    rate: Math.abs(value - this.getValue_(prop)) / o.duration,
+    duration: o.duration,
     delay: o.delay
   };
 
   if (o.delay > 0) {
     this.delayed_.push(animation);
   } else {
-    this.animations_[prop] = animation;
+    this.startAnimation_(animation);
   }
+};
+
+AnimationsFactory.prototype.startAnimation_ = function(a) {
+  this.setRate_(a);
+  if (a.rate) this.animations_[a.prop] = a;
+};
+
+AnimationsFactory.prototype.setRate_ = function(a) {
+  a.rate = Math.abs(a.value - this.getValue_(a.prop)) / a.duration;
 };
 
 AnimationsFactory.prototype.parseProp_ = function(prop) {
   switch(prop) {
-  case 'alpha': return 'entity_.alpha';
   case 'x': return 'offset.x';
   case 'y': return 'offset.y';
   }
-  return prop;
+  return 'entity_.' + prop;
 };
 
 AnimationsFactory.prototype.getValue_ = function(prop) {
@@ -60,7 +68,7 @@ AnimationsFactory.prototype.updateDelayed_ = function(dt) {
   var stillDelayed = [];
   _.each(this.delayed_, function(a) {
     if (this.tick_(a, dt)) {
-      this.animations_[a.prop] = a;
+      this.startAnimation_(a);
     } else {
       stillDelayed.push(a);
     }
@@ -83,9 +91,10 @@ AnimationsFactory.prototype.tick_ = function(a, dt) {
     if (a.delay >= 0) return 0;
     dt = -a.delay;
     a.delay = 0;
+    this.setRate_(a);
   }
   var dv = a.value - this.getValue_(a.prop);
-  if (Math.abs(dv) < a.rate * dt) {
+  if (Math.abs(dv) <= a.rate * dt) {
     delete this.animations_[a.prop];
     return dv;
   }

@@ -56,10 +56,7 @@ Renderer.prototype.handleCamera_ = function(dt) {
 };
 
 Renderer.prototype.drawEntity_ = function(e, dt) {
-  if (!e.r) {
-    e.r = {};
-    this.initFns_[e.type] && this.initFns_[e.type](e);
-  }
+  this.maybeInitEntity_(e);
   var pos = this.getPos_(e);
   e.r.x = pos.x;
   e.r.y = pos.y;
@@ -67,6 +64,13 @@ Renderer.prototype.drawEntity_ = function(e, dt) {
   if (_.isDef(e.alpha)) this.textCtx_.globalAlpha = e.alpha;
   this.drawFns_[e.type](e, this.style_[e.type], dt);
   this.textCtx_.globalAlpha = 1;
+};
+
+Renderer.prototype.maybeInitEntity_ = function(e) {
+  if (!e.r) {
+    e.r = {};
+    this.initFns_[e.type] && this.initFns_[e.type](e);
+  }
 };
 
 Renderer.prototype.getPos_ = function(e) {
@@ -89,6 +93,25 @@ Renderer.prototype.drawLoadingSplash_ = function(e) {
   this.ctx_.fillStyle = '#000000';
   this.ctx_.fillRect(0, 0, this.screen_.width, this.screen_.height);
   this.ctx_.globalAlpha = 1;
+};
+
+Renderer.prototype.drawHealthBars_ = function(e) {
+  this.ctx_.globalAlpha = e.alpha || 0;
+  this.drawHealthBar_(e.player, Gfx.Color.PLAYER_HEALTH, -1);
+  this.drawHealthBar_(e.enemy, Gfx.Color.ENEMY_HEALTH, 1);
+  this.ctx_.globalAlpha = 1;
+};
+
+Renderer.prototype.drawHealthBar_ = function(ship, color, dir) {
+  var width = this.screen_.width / 2;
+  var height = 4;
+  var r1 = Math.max((ship.health + ship.r.damageTaken) / ship.maxHealth, 0);
+  var r2 = Math.max(ship.health / ship.maxHealth, 0);
+  this.ctx_.fillStyle = color;
+  this.ctx_.fillRect(width, 0, width * r1 * dir, height);
+
+  this.ctx_.fillStyle = 'rgba(0, 0, 0, .25)';
+  this.ctx_.fillRect(width, 0, width * r2 * dir, height);
 };
 
 Renderer.prototype.drawBackdrop_ = function(e) {
@@ -120,6 +143,45 @@ Renderer.prototype.drawContainer_ = function(e) {
   //this.ctx_.strokeRect(e.r.x, e.r.y, e.width, e.height);
 };
 
+Renderer.prototype.initStage_ = function(e) {
+  var drawFn = this.circle_;
+  if (e.stage.checkpoint) drawFn = this.square_;
+  e.r.draw = drawFn.bind(this);
+
+  e.r.radius = 15;
+  if (e.stage.checkpoint) e.r.radius -= 2;  // Keep surface area the same.
+};
+Renderer.prototype.drawStage_ = function(e) {
+  var ratio = e.progress / 2;  // distribution in [0-1]
+
+  var lineWidth = _.interpolate([1, 2, 1], ratio);
+  e.r.draw(e.r.x, e.r.y, e.r.radius, lineWidth);
+
+  var color = [.6, 1, .25];  // [unlocked, locked, won]
+  var colorRatio = _.interpolate(color, ratio);
+  this.textCtx_.strokeStyle = _.generateGray(colorRatio);
+  this.textCtx_.stroke();
+
+  var fill = [0, 0, 0];  // [unlocked, locked, won]
+  var fillRatio = _.interpolate(fill, ratio);
+  e.r.draw(e.r.x, e.r.y, e.r.radius, 0, fillRatio);
+  this.textCtx_.fillStyle = this.textCtx_.strokeStyle;
+  this.textCtx_.fill();
+
+  // Draw stage connections.
+  _.each(e.stage.unlocks, function(stage) {
+    var e2 = stage.r.entity;
+    this.maybeInitEntity_(e2);
+    var to = this.getPos_(e2);
+    var a = _.angle(e.r, to);
+    this.line_(e.r.x + e.r.radius * Math.cos(a),
+               e.r.y + e.r.radius * Math.sin(a),
+               to.x - e2.r.radius * Math.cos(a),
+               to.y - e2.r.radius * Math.sin(a),
+               1);
+  }, this);
+};
+
 Renderer.prototype.drawItem_ = function(e) {
   // DEBUG: Draw item box.
   //this.textCtx_.fillStyle = 'rgba(0, 255, 0, .5)';
@@ -128,41 +190,19 @@ Renderer.prototype.drawItem_ = function(e) {
   //this.fillRect_(e.r.x, e.r.y, e.size, e.size);
   //this.strokeRect_(e.r.x, e.r.y, e.size, e.size);
 
-  if (e.style == 'hidden') return;
   this.drawItemBorder_(e);
-  if (e.stage) this.drawStageItem_(e);
-  if (e.item) this.drawEquipItem_(e);
-};
-
-Renderer.prototype.drawItemBorder_ = function(e) {
-  // TODO.
-};
-
-Renderer.prototype.drawStageItem_ = function(e) {
-  var hull = e.stage.hull.spec.sprite;
-  var rotation = e.stage.enemy ? Math.PI / 2 : -Math.PI / 2;
-  var alpha = (e.stage.state == 'locked' ? .3 : 1) * e.alpha;
-  this.spriteService_.draw(
-      hull, e.r.x + e.size / 2, e.r.y + e.size / 2,
-      {rotation: rotation, alpha: alpha});
-};
-
-Renderer.prototype.drawEquipItem_ = function(e) {
-  if (!e.item.name) return;
-
   var options = {rotation: -Math.PI / 2, alpha: e.alpha};
 
-  // Draw cooldown.
+  // Fade if on cooldown or jammed.
+  var cdRatio;
   if (e.cdInfo) {
-    var cdRatio =
+    cdRatio =
         (e.cdInfo.cooldownRemaining - (this.gm_.time - this.gm_.actTime)) /
         e.cdInfo.initCooldown;
     if (cdRatio < 0) cdRatio = 0;
-    this.textCtx_.fillStyle = Gfx.Color.COOLDOWN;
-    this.fillRect_(e.r.x, e.r.y + e.size * (1 - cdRatio),
-                   e.size, e.size * cdRatio);
-    if (cdRatio > 0 || e.cdInfo.jammed) options.alpha *= .75;
+    if (cdRatio > 0 || e.cdInfo.jammed) options.alpha *= .25;
   } else {
+    // Drawing non-battle item.
     options.ctx = 'text';
   }
 
@@ -173,6 +213,42 @@ Renderer.prototype.drawEquipItem_ = function(e) {
 
   this.spriteService_.draw(
       e.item.name, e.r.x + e.size / 2, e.r.y + e.size / 2, options);
+
+  // Draw cooldown.
+  if (e.cdInfo) {
+    this.ctx_.fillStyle = Gfx.Color.COOLDOWN;
+    var offset = this.spriteService_.getSize(e.item.name) -
+          this.spriteService_.getActualSize(e.item.name);
+    this.ctx_.fillRect(e.r.x + offset / 2,
+                       e.r.y + offset / 2 + (e.size - offset) * (1 - cdRatio),
+                       e.size - offset, (e.size - offset) * cdRatio);
+  }
+};
+
+Renderer.prototype.drawItemBorder_ = function(e) {
+  // TODO.
+};
+
+Renderer.prototype.drawWorld_ = function(e) {
+  if (e.world.state == 'locked') {
+    this.textCtx_.fillStyle = 'rgba(0, 0, 0, .5)';
+    this.circle_(e.r.x, e.r.y, e.size / 2);
+    this.textCtx_.fill();
+  } else {
+    if (e.world.name == 'hiveworld') this.textCtx_.shadowColor = '#C056F1';
+    if (e.world.name == 'oceantus') this.textCtx_.shadowColor = '#525fd5';
+    if (e.world.name == 'trueflame') this.textCtx_.shadowColor = '#FD9644';
+    this.textCtx_.shadowBlur = 35;
+  }
+  this.spriteService_.draw(e.world.name, e.r.x, e.r.y,
+                           {alpha: e.alpha, ctx: 'text'});
+  this.textCtx_.shadowBlur = 0;
+};
+
+Renderer.prototype.drawShipElement_ = function(e) {
+  this.spriteService_.draw(
+      e.hull.spec.sprite, e.r.x + e.size / 2, e.r.y + e.size / 2,
+      {rotation: e.rotation, alpha: e.alpha});
 };
 
 Renderer.prototype.drawLabel_ = function(e) {
@@ -187,7 +263,7 @@ Renderer.prototype.drawLabel_ = function(e) {
 
   var fgColor = this.getFgColor_(e.style);
   for (var i = 0; i < e.lines.length; i++) {
-    this.textCtx_.textAlign = 'left';
+    this.textCtx_.textAlign = e.align || 'left';
     this.textCtx_.textBaseline = 'top';
     this.drawText_(
         e.lines[i], e.size, e.r.x, e.r.y + i * e.lineHeight, {color: fgColor});
@@ -221,8 +297,27 @@ Renderer.prototype.line_ = function(x1, y1, x2, y2, lineWidth) {
   this.textCtx_.stroke();
 };
 
-Renderer.prototype.circle_ = function(x, y, radius, lineWidth, opt_ratio) {
+Renderer.prototype.square_ = function(x, y, radius, opt_lineWidth, opt_ratio) {
   var ratio = opt_ratio === undefined ? 1 : opt_ratio;
+  var lineWidth = opt_lineWidth === undefined ? 1 : opt_lineWidth;
+  x = x * this.screen_.upscale;
+  y = y * this.screen_.upscale;
+  radius = radius * this.screen_.upscale;
+  if (lineWidth) {
+    lineWidth = lineWidth * this.screen_.upscale;
+    this.textCtx_.lineWidth = lineWidth;
+  } else lineWidth = 0;
+  this.textCtx_.beginPath();
+  this.textCtx_.moveTo(x - radius, y - radius);
+  this.textCtx_.lineTo(x + radius, y - radius);
+  this.textCtx_.lineTo(x + radius, y - radius + radius * 2 * ratio);
+  this.textCtx_.lineTo(x - radius, y - radius + radius * 2 * ratio);
+  this.textCtx_.closePath();
+};
+
+Renderer.prototype.circle_ = function(x, y, radius, opt_lineWidth, opt_ratio) {
+  var ratio = opt_ratio === undefined ? 1 : opt_ratio;
+  var lineWidth = opt_lineWidth === undefined ? 1 : opt_lineWidth;
   x = x * this.screen_.upscale;
   y = y * this.screen_.upscale;
   radius = radius * this.screen_.upscale;
@@ -232,7 +327,8 @@ Renderer.prototype.circle_ = function(x, y, radius, lineWidth, opt_ratio) {
   } else lineWidth = 0;
   this.textCtx_.beginPath();
   this.textCtx_.arc(x, y, radius - lineWidth / 2,
-                    0, 2 * Math.PI * ratio);
+                    -Math.PI / 2 - Math.PI * ratio,
+                    -Math.PI / 2 + Math.PI * ratio);
 };
 
 Renderer.prototype.fillRect_ = function(x, y, width, height) {
@@ -271,6 +367,7 @@ Renderer.prototype.fillText_ = function(text, x, y) {
 Renderer.prototype.getFgColor_ = function(style) {
   switch (style) {
     case 'muted': return Gfx.Color.FG_MUTED;
+    case 'dark': return Gfx.Color.FG_DARK;
     case 'active': return Gfx.Color.FG_ACTIVE;
   }
   return Gfx.Color.FG;
@@ -279,7 +376,8 @@ Renderer.prototype.getFgColor_ = function(style) {
 Renderer.prototype.getBgColor_ = function(style) {
   switch (style) {
     case 'muted': return Gfx.Color.BG_MUTED;
-    case 'muted_dark': return Gfx.Color.BG_MUTED_DARK;
+    case 'dark': return Gfx.Color.BG_DARK;
+    case 'pressed': return Gfx.Color.BG_PRESSED;
     case 'primary': return Gfx.Color.BG;
   }
   return '';
@@ -306,6 +404,10 @@ Renderer.prototype.addShipStyle_ = function(style) {
   style.disabled = this.gfx_.addStyle({
     shadow: Gfx.Color.BLUE,
     shadowBlur: 5
+  });
+  style.ability = this.gfx_.addStyle({
+    shadow: Gfx.Color.OPAC_ORANGE,
+    shadowBlur: 7
   });
   style.tagged = this.gfx_.addStyle({
     stroke: Gfx.Color.OPAC_RED,
@@ -336,9 +438,9 @@ Renderer.prototype.drawShip_ = function(e, style, dt) {
       e.r.shaking += Math.sqrt(damage) / 20;
     }
   }
-  if (e.r.shaking > 0) {
+  if (e.r.shaking > 0 && !e.frozen) {
     var shake = 2 + e.r.damageTaken / 2;
-    e.r.damageTaken -= 20 * dt;
+    e.r.damageTaken -= 20 * dt / this.gm_.gameSpeed;
     e.r.x += (.3 + .7 * Math.random()) * shake;
     e.r.y += (.3 + .7 * Math.random()) * shake;
     e.r.shaking -= dt / this.gm_.gameSpeed;
@@ -392,6 +494,21 @@ Renderer.prototype.drawShip_ = function(e, style, dt) {
       shipStyle = style.disabled;
     }
 
+    // Draw disabled indicator.
+    if (e.secondary.charging) {
+      shipStyle = style.ability;
+    }
+
+    // Draw charge laser charging animation.
+    if (e.primary.charge) {
+      var r = .2 + .8 * e.primary.charge / e.primary.chargeTime;
+      customStyle = {
+        shadow: 'rgba(255, 255, 50, ' + r + ')',
+        shadowBlur: r * 20
+      };
+      shipStyle = style.ability;
+    }
+
     // Draw health indicator.
     if (e.health <= 10 && damage) {
       e.r.healthIndicator = 30;
@@ -401,10 +518,12 @@ Renderer.prototype.drawShip_ = function(e, style, dt) {
       e.r.healthIndicator--;
     }
 
-    if (e.effect.invisible) {
-      customStyle = {};
-      customStyle.globalAlpha = .4;
+    if (e.effect.exiled) {
+      customStyle = {globalAlpha: 0};
+    } else if (e.effect.invisible) {
+      customStyle = {globalAlpha: .4};
     }
+
   } else {
     // Death animation.
     if (e.dead) {

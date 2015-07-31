@@ -13,7 +13,7 @@ AiMovement.prototype.aiMovement_ = function(obj, spec) {
     accel: g.Speed.SHIP_ACCEL,
     vector: {x: 0, y: 0},
     intelligence: .1,
-    urgeCooldown: 1.5
+    urgeCooldown: 2
   });
 
   this.util_.addCooldown(obj, function() {
@@ -50,9 +50,9 @@ AiMovement.prototype.wander_ = function(obj) {
 AiMovement.prototype.think_ = function(obj) {
   //console.log('----- think ' + obj.style + ' -----');
   obj.movement.desiredDistance = this.getDesiredDistance_(obj) - 15;
+  this.setDesiredVector_(obj);
   this.maybeUseDash_(obj);
   this.maybeUseTeleport_(obj);
-  this.setDesiredVector_(obj);
   //console.log('result:', obj.movement.desiredVector);
 };
 
@@ -136,25 +136,25 @@ AiMovement.prototype.computeBestDistance_ = function(obj) {
 
 AiMovement.prototype.maybeUseDash_ = function(obj) {
   if (!obj.utility.dashReady) return;
-  var dd = obj.c.targetDis - obj.movement.desiredDistance;
-  if (Math.abs(dd) < 35) return;
 
-  var dir = Math.sign(dd);
+  var dd = obj.c.targetDis - obj.movement.desiredDistance;
+  if (!obj.c.dodge && Math.abs(dd) < 35) return;
+
+  var angle = _.angle(obj.movement.desiredVector);
   var pos = {
-    x: obj.x + Math.cos(obj.c.targetAngle) * 35 * dir,
-    y: obj.y + Math.sin(obj.c.targetAngle) * 35 * dir,
-    collideDis: obj.collideDis
+    x: obj.x + Math.cos(angle) * 50,
+    y: obj.y + Math.sin(angle) * 50
   };
-  this.c_.wallDis(pos);
-  if (pos.c.hitWall) return;
-  if (this.random_.next() < .15) obj.utility.useDash();
+  if (this.c_.hitWall(pos, obj.collideDis)) return;
+  if (obj.c.dodge || this.random_.percent(5)) obj.utility.useDash();
 };
 
 AiMovement.prototype.maybeUseTeleport_ = function(obj) {
   if (!obj.utility.teleportReady) return;
   var dd = obj.c.targetDis - obj.movement.desiredDistance;
-  if (dd > 35 && this.random_.next() < .5) obj.utility.useTeleport();
-  if (this.random_.next() < .1) obj.utility.useTeleport();
+  if (obj.c.dodge) obj.utility.useTeleport();
+  if (dd > 35 && this.random_.percent(5)) obj.utility.useTeleport();
+  if (this.random_.percent(2.5)) obj.utility.useTeleport();
 };
 
 AiMovement.prototype.setDesiredVector_ = function(obj) {
@@ -164,7 +164,7 @@ AiMovement.prototype.setDesiredVector_ = function(obj) {
   total += this.addAndGetLength_(v, this.getWallYVector_(obj, 4));
   total += this.addAndGetLength_(v, this.getEnemyDistanceVector_(obj, 6));
   total += this.addAndGetLength_(v, this.getCloneDistanceVector_(obj, 2));
-  total += this.addAndGetLength_(v, this.getDodgeVector_(obj, 2));
+  total += this.addAndGetLength_(v, this.getDodgeVector_(obj, 4));
   total += this.addAndGetLength_(v, this.getFleeVector_(obj, 6));
   if (!obj.effect.invisible) {
     _.vector.add(v, this.getCurrentPerpendicularVector_(obj, 1.5));
@@ -256,14 +256,7 @@ AiMovement.prototype.getDodgeVector_ = function(obj, weight) {
     obj.movement.startDodge = obj.movement.dodging = false;
     return _.vector.EMPTY;
   }
-  if (!obj.movement.startDodge) {
-    obj.movement.startDodge = true;
-    if (obj.utility.dashReady && this.random_.next() < .8) {
-      obj.utility.useDash();
-    } else if (obj.utility.teleportReady && this.random_.next() < .8) {
-      obj.utility.useTeleport();
-    }
-  }
+  if (obj.utility.dashReady) weight *= 3;
   var v = {
     length: -weight,
     angle: _.angle(obj.c.dodge)

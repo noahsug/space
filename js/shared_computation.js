@@ -44,12 +44,12 @@ SharedComputation.prototype.wallDis_ = function(obj) {
   obj.c.hitWall = obj.c.wallDis < 0;
 };
 
-SharedComputation.prototype.hitWall = function(obj, opt_distanceAllowed) {
-  var distanceAllowed = opt_distanceAllowed || 0;
+SharedComputation.prototype.hitWall = function(obj, opt_collideDis) {
+  var collideDis = opt_collideDis || 0;
   var dx = Math.abs(obj.x - this.screen_.x);
   var dy = Math.abs(obj.y - this.screen_.y);
-  return dx > this.screen_.width / 2 + distanceAllowed ||
-      dy > this.screen_.height / 2 + distanceAllowed;
+  return dx > this.screen_.width / 2 - collideDis ||
+      dy > this.screen_.height / 2 - collideDis;
 };
 
 SharedComputation.prototype.distawnceInfo_ = function(obj) {
@@ -61,8 +61,8 @@ SharedComputation.prototype.cooldownInfo_ = function(obj) {
   obj.c.cooldowns = {};
 
   var t = obj.target;
-  var lastFired = Math.max(t.primary.lastFired || -1,
-                           t.secondary.lastFired || -1);
+  var lastFired = Math.max(t.primary.lastFiredDodgableProj || -1,
+                           t.secondary.lastFiredDodgableProj || -1);
   var timeSinceLastFired = this.gm_.time - lastFired;
   var shouldDodge = timeSinceLastFired < .5 && timeSinceLastFired > 0;
   if (shouldDodge) {

@@ -1,6 +1,6 @@
 var BattleScene = di.service('BattleScene', [
   'Scene', 'GameModel as gm', 'ShipFactory', 'EntityDecorator',
-  'MissionService', 'LayoutElement', 'ItemElement',
+  'MissionService', 'LayoutElement', 'EntityElement',
   'Inventory', 'Mouse']);
 
 var SLOWDOWN_TIME = 2;
@@ -21,10 +21,16 @@ BattleScene.prototype.addEntities_ = function() {
   this.player_.awake();
   this.enemy_.awake();
 
-  // Items
   this.layout_ = this.LayoutElement_.new('vertical')
     .setPadding(Padding.MARGIN)
     .setChildrenBaseline('bottom')
+
+    // Health bars
+    .add(this.EntityElement_.new('healthBars')
+      .set('player', this.player_)
+      .set('enemy', this.enemy_))
+
+    // Items
     .add(this.LayoutElement_.new('horizontal')
       .setLayoutFill(true)
       .modify(this.addItems_, this))
@@ -44,28 +50,27 @@ BattleScene.prototype.addItems_ = function(layout) {
 };
 
 BattleScene.prototype.createItem_ = function(type, index) {
-  var btn = this.ItemElement_.new();
-  var item = this.inventory_.getEquipped(type) || {};
-  btn.setSize(Size.ITEM);
-
-  if (item.category) {
-    btn.setProp('item', item);
-    btn.setProp('cdInfo', this.player_[type]);
-    this.addInputHandler_(btn, index);
-  } else {
-    btn.setStyle('hidden');
+  var item = this.inventory_.getEquipped(type);
+  if (!item) {
+    return this.UiElement_.new().setPadding(Size.ITEM, Size.ITEM, 0, 0);
   }
+
+  var btn = this.EntityElement_.new('item')
+    .setSize(Size.ITEM)
+    .set('item', item)
+    .set('cdInfo', this.player_[type])
+    .modify(this.addInputHandler_.bind(this, index));
   return btn;
 };
 
-BattleScene.prototype.addInputHandler_ = function(btn, index) {
+BattleScene.prototype.addInputHandler_ = function(index, btn) {
   btn.getEntity().update(function() {
-    var spec = this.player_[btn.getProp('item').category];
+    var spec = this.player_[btn.get('item').category];
     if (spec.use) return;
     spec.use = btn.mouseDown || this.mouse_.keysPressed[index];
   }, this);
   btn.getEntity().resolve(function() {
-    var spec = this.player_[btn.getProp('item').category];
+    var spec = this.player_[btn.get('item').category];
     spec.use = false;
   }, this);
 };

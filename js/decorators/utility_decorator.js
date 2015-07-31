@@ -149,58 +149,48 @@ UtilityDecorator.prototype.decorateRanger_ = function(obj, spec) {
   this.util_.mod(obj, 'secondary.range', obj.utility.range);
 };
 
-UtilityDecorator.prototype.decorateNinja_ = function(obj, spec) {
-  switch(spec.power) {
-  case 3:
-    this.decorateInvisible_(obj, obj.utility);
-    break;
-  case 2:
-    this.decorateTeleport_(obj, obj.utility);
-    break;
-  case 1:
-    this.decorateDash_(obj, obj.utility);
-  }
-};
-
 UtilityDecorator.prototype.decorateDash_ = function(obj, spec) {
-  this.util_.spec(obj, 'utility', spec, {
+  spec = this.util_.spec(obj, 'utility', spec, {
     cooldown: 1.75,
     duration: .25,
     accel: .05,
-    dashSpeed: 200
+    speed: 300,
+    movementRatio: 1.2
   });
 
-  obj.utility.isJammed = function() { return !obj.effect.canDash; };
+  this.util_.mod(obj, 'movement.speed', spec.movementRatio);
+
+  spec.isJammed = function() { return !obj.effect.canDash; };
 
   if (obj.playerControlled) {
-    this.util_.addWeapon(obj, obj.utility, function() {
+    this.util_.addWeapon(obj, spec, function() {
       dash();
     }.bind(this));
 
   } else {
-    obj.addEffect('dashCooldown', obj.utility.cooldown);
+    obj.addEffect('dashCooldown', spec.cooldown);
     obj.act(function(dt) {
-      obj.utility.dashReady =
-          !obj.effect.dashCooldown && !obj.utility.isJammed();
+      spec.dashReady =
+          !obj.effect.dashCooldown && !spec.isJammed();
     });
 
-    obj.utility.useDash = function() {
+    spec.useDash = function() {
       dash();
-      obj.utility.dashReady = false;
-      obj.effect.dashCooldown = this.util_.randomCooldown(obj.utility.cooldown);
+      spec.dashReady = false;
+      obj.effect.dashCooldown = this.util_.randomCooldown(spec.cooldown);
     }.bind(this);
   }
 
   var dash = function() {
-    obj.addEffect('displaced', obj.utility.duration, stopDash);
-    this.util_.modSet(obj, 'movement.speed', 250);
+    obj.addEffect('displaced', spec.duration, stopDash);
     obj.movement.vector = obj.movement.desiredVector;
-    obj.movement.accel *= obj.utility.accel;
+    this.util_.modSet(obj, 'movement.speed', spec.speed);
+    this.util_.mod(obj, 'movement.accel', spec.accel);
   }.bind(this);
 
   var stopDash = function() {
     obj.movement.vector = {x: 0, y: 0};
-    obj.movement.accel /= obj.utility.accel;
+    this.util_.mod(obj, 'movement.accel', 1/spec.accel);
     this.util_.modSet(obj, 'movement.speed', null);
   }.bind(this);
 };
@@ -219,7 +209,7 @@ UtilityDecorator.prototype.decorateTeleport_ = function(obj, spec) {
       y: obj.target.y + Math.sin(obj.c.targetAngle) *
           (obj.target.radius + obj.radius + 30)
     };
-    return this.c_.hitWall(obj.utility.teleportPos);
+    return this.c_.hitWall(obj.utility.teleportPos, obj.collideDis);
   }.bind(this);
 
   if (obj.playerControlled) {

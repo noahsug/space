@@ -10,12 +10,14 @@ Gfx.Color = {
   // UI Colors
   FG: '#F3F9FD',
   FG_MUTED: '#C3C9CD',
+  FG_DARK: '#A1A6A9',
   FG_ACTIVE: '#FDBE31',
   // TODO: Make these all have opacity.
   BG: 'rgba(72, 81, 84, .75)',
+  BG_PRESSED: 'rgba(42, 51, 54, 1)',
   BG_MUTED: 'rgba(31, 33, 34, .75)',
-  BG_MUTED_DARK: 'rgba(22, 23, 25, .75)',
-  COOLDOWN: 'rgba(0, 0, 0, .35)',
+  BG_DARK: 'rgba(22, 23, 25, .75)',
+  COOLDOWN: 'rgba(0, 0, 0, .75)',
 
   // Battle Colors
   BLACK: '#000000',
@@ -31,11 +33,15 @@ Gfx.Color = {
   MORE_OPAC_BLUE: 'rgba(50, 50, 255, .4)',
   OPAC_YELLOW: 'rgba(255, 255, 50, .4)',
   YELLOW: '#FFFF00',
+  OPAC_ORANGE: 'rgba(255, 150, 25, .9)',
   PINK: '#FFCCEE',
   GRAY: 'rgb(120, 120, 120)',
   OPAC_GRAY: 'rgba(50, 50, 50, .5)',
   LESS_OPAC_GRAY: 'rgba(50, 50, 50, .8)',
   PURPLE: '#b091be',
+
+  PLAYER_HEALTH: 'rgba(255, 0, 0, .5)',
+  ENEMY_HEALTH: 'rgba(150, 0, 200, .5)',
 
   UNSELECTED: '#CCC',
   ACTIVE_LOCKED: '#888844',
@@ -61,7 +67,7 @@ Gfx.AttrMap = {
 Gfx.AttrNames = _.keys(Gfx.AttrMap);
 
 Gfx.AttrDefaults = {
-  shadowColor: 'rgba(0, 0, 0, 0)',
+  shadow: 'rgba(0, 0, 0, 0)',
   shadowBlur: 0,
   globalAlpha: 1
 };
@@ -106,10 +112,10 @@ Gfx.prototype.setDefaults_ = function(attrs) {
 };
 
 Gfx.prototype.getStyleStr_ = function(attrs) {
-  attrs.layer = _.orDef(attrs.layer, 5);
+  attrs.layer = _.ifDef(attrs.layer, 5);
   return _.map(Gfx.AttrNames, function(name) {
     var value = attrs[name];
-    return _.orDef(value, '~');
+    return _.ifDef(value, '~');
   }).join('~');
 };
 
@@ -192,8 +198,8 @@ Gfx.prototype.flush = function() {
     }
     this.ctx_.closePath();
   }
-  this.flushCount_++;
   this.ctx_.restore();
+  this.flushCount_++;
 };
 
 Gfx.prototype.drawShape_ = function(args, isFirst) {
@@ -217,7 +223,7 @@ Gfx.prototype.setCustomStyles_ = function(customStyle, opt_restoreTo) {
     var name = keys[j];
     var value = set ? customStyle[name] :
         opt_restoreTo[name] || Gfx.AttrDefaults[name];
-    this.ctx_[name] = value;
+    this.ctx_[Gfx.AttrMap[name] || name] = value;
   }
 };
 

@@ -1,73 +1,63 @@
 var WorldSelectScene = di.service('WorldSelectScene', [
-  'GameModel as gm', 'Scene', 'LayoutElement', 'RoundBtnElement',
-  'LabelElement', 'World', 'Inventory']);
+  'GameModel as gm', 'Scene', 'LayoutElement', 'LabelElement', 'SpriteService',
+  'EntityElement', 'MissionService']);
 
 WorldSelectScene.prototype.init = function() {
-  _.class.extend(this, this.scene_.create('worldSelect'));
+  di.extend(this, this.Scene_, 'worldSelect');
 };
 
 WorldSelectScene.prototype.addEntities_ = function() {
-  var COLS = 4;  // Number of columns in the world grid.
-  this.layout_ = this.layoutElement_.create({direction: 'vertical'});
+  this.layout_ = this.LayoutElement_.new('vertical')
+    .setChildrenBaselineAlign('middle', 'center')
+    .setChildrenFill(true)
+    .modify(this.addWorlds_, this);
 
-  // World select label.
-  var labelRow = this.layout_.addNew(this.layoutElement_);
-  labelRow.layout.align = 'top';
-  labelRow.childHeight = Size.TEXT + Padding.WORLD * 1.5;
-  var worldLabel = labelRow.addNew(this.labelElement_);
-  worldLabel.setText('select world:',
-                     {size: Size.TEXT, align: 'left', baseline: 'top'});
-  labelRow.addGap(Padding.WORLD * (COLS - 1) + Size.WORLD * COLS);
-
-  // Worlds.
-  for (var i = 0; i < this.gm_.worlds.length; i += COLS) {
-    if (i) this.layout_.addGap(Padding.WORLD);
-    var row = this.layout_.addNew(this.layoutElement_);
-    row.add(this.createWorldBtn_(this.gm_.worlds[i]));
-    row.addGap(Padding.WORLD);
-    row.add(this.createWorldBtn_(this.gm_.worlds[i + 1]));
-    row.addGap(Padding.WORLD);
-    row.add(this.createWorldBtn_(this.gm_.worlds[i + 2]));
-    row.addGap(Padding.WORLD);
-    row.add(this.createWorldBtn_(this.gm_.worlds[i + 3]));
-    row.childHeight = Size.WORLD;
-  }
-
-  this.layout_.addGap(Padding.WORLD * 3);
-
-  // Sandbox + ranked.
-  //var btnRow = this.layout_.addNew(this.layoutElement_);
-  //var sandboxBtn = btnRow.addNew(this.roundBtnElement_);
-  //sandboxBtn.setSize(Size.WORLD);
-  //sandboxBtn.setProp('text', 'sandbox');
-  //sandboxBtn.setStyle('locked');
-  //
-  //btnRow.addGap(Size.WORLD);
-  //
-  //var rankedBtn = btnRow.addNew(this.roundBtnElement_);
-  //rankedBtn.setSize(Size.WORLD);
-  //rankedBtn.setProp('text', 'ranked');
-  //rankedBtn.setStyle('locked');
-  //
-  //btnRow.childHeight = Size.WORLD;
+  this.fadeFromBlack_();
 };
 
-WorldSelectScene.prototype.createWorldBtn_ = function(world) {
-  var btn = this.roundBtnElement_.create();
-  btn.setSize(Size.WORLD);
-  btn.setProp('world', world);
+WorldSelectScene.prototype.addWorlds_ = function(layout) {
+  _.each(this.gm_.worlds, function(world, i) {
+    if (i) layout.addGap(Padding.MARGIN_LG);
+    var row = this.LayoutElement_.new('horizontal');
+    if (world.state == 'unlocked') {
+      row.onClick(function() {
+        this.missionService_.selectWorld(world);
+        this.transition_('stageSelect');
+      }, this);
+    }
+    layout.add(row);
 
-  if (world.state == 'unlocked') {
-    btn.onClick(function() {
-      this.gm_.world = world;
-      this.inventory_.removeAugments();
-      this.gm_.player.push.apply(this.gm_.player, this.gm_.world.augments);
-      this.transition_('main');
-    }.bind(this));
-  }
-  return btn;
+    row.add(this.EntityElement_.new('world')
+      .setSize(Size.WORLD)
+      .setBaselineAlign('middle', 'center')
+      .set('world', world));
+
+    row.addGap(18);
+
+    var label = this.LayoutElement_.new('vertical')
+      .setChildrenBaseline('middle')
+      .setChildrenFill(true);
+    row.add(label);
+
+    if (world.state == 'locked') {
+      label.add(this.LabelElement_.new()
+        .setText('locked', Size.DESC_LG * 1.5)
+        .setStyle('dark'));
+    } else {
+      var percentComplete = this.missionService_.getPercentComplete(world);
+      label
+        .add(this.LabelElement_.new()
+          .setStyle('muted')
+          .setText(world.displayName, Size.DESC_LG * 1.5))
+        .addGap(Size.DESC_LG)
+        .add(this.LabelElement_.new()
+          .setStyle('muted')
+          .setText('progress: ' + percentComplete + '%', Size.DESC_LG));
+    }
+  }, this);
 };
 
-WorldSelectScene.prototype.update_ = function(dt, state) {
-  this.layout_.update();
+WorldSelectScene.prototype.onTransition_ = function() {
+  this.Scene_.onTransition_.call(this);
+  this.fadeToBlack_();
 };

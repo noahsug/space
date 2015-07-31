@@ -6,7 +6,7 @@ ShipFactory.prototype.init = function() {
   this.d_ = this.ed_.getDecorators();
 };
 
-ShipFactory.prototype.createEnemyDna = function(stage) {
+ShipFactory.prototype.createEnemyDna = function(shipData) {
   // DEBUG: Force enemy to have specific items.
   //return [
   //  'basic laser',
@@ -28,12 +28,12 @@ ShipFactory.prototype.createEnemyDna = function(stage) {
   //].map(this.itemService_.getByName.bind(this.itemService_));
 
   return _.newList(Game.ITEM_TYPES, function(type) {
-    return (stage[type] && _.sample(stage[type])) || undefined;
-  }).concat([stage.hull]);
+    return (shipData[type] && _.sample(shipData[type])) || undefined;
+  }).concat([shipData.hull]);
 };
 
-ShipFactory.prototype.createEnemy = function() {
-  return this.createShip(this.gm_.stage.enemy, 'bad');
+ShipFactory.prototype.createEnemy = function(dna) {
+  return this.createShip(this.gm_.stage.ship, 'bad');
 };
 
 ShipFactory.prototype.createPlayer = function() {
@@ -41,7 +41,7 @@ ShipFactory.prototype.createPlayer = function() {
 };
 
 ShipFactory.prototype.createShip = function(dna, style) {
-  if (!PROD) _.assert(dna);
+  _.assert(dna);
   var ship = this.Entity_.new('ship');
   ship.dna = dna;  // For future cloning.
   if (style == 'good') ship.playerControlled = true;

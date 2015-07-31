@@ -40,13 +40,18 @@ EntityElement.prototype.setBorderStyle = function(borderStyle) {
   return this;
 };
 
-EntityElement.prototype.setProp = function(prop, value) {
+EntityElement.prototype.set = function(prop, value) {
   this.entity_[prop] = value;
   return this;
 };
 
-EntityElement.prototype.getProp = function(prop) {
+EntityElement.prototype.get = function(prop) {
   return this.entity_[prop];
+};
+
+EntityElement.prototype.setSize = function(size) {
+  this.innerWidth = this.innerHeight = this.entity_.size = size;
+  return this;
 };
 
 EntityElement.prototype.getEntity = function() {

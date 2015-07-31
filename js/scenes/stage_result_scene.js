@@ -1,14 +1,9 @@
 var StageResultScene = di.service('StageResultScene', [
   'GameModel as gm', 'Scene', 'LayoutElement', 'BackdropElement', 'ItemService',
-  'LabelElement', 'MissionService', 'BattleRewards', 'ItemElement',
-  'FadeElement']);
+  'LabelElement', 'MissionService', 'EntityElement', 'ItemDescElement']);
 
 StageResultScene.prototype.init = function() {
   di.extend(this, this.Scene_, 'stageResult');
-};
-
-StageResultScene.prototype.onStart_ = function() {
-  this.reward_ = this.battleRewards_.rewardPlayer();
 };
 
 StageResultScene.prototype.addEntities_ = function() {
@@ -16,47 +11,38 @@ StageResultScene.prototype.addEntities_ = function() {
     .add(this.BackdropElement_.new())
     .setPadding(Padding.MODAL_MARGIN)
     .setPadding('bottom', Padding.MODAL_MARGIN - Padding.BUTTON_BG)
+    .setChildrenFill(true)
     .setChildrenBaselineAlign('middle', 'center')
 
   // Title
   .add(this.LabelElement_.new()
     .setText(this.getTitleText_(), this.getTitleSize_())
+    .setLineWrap(true)
+    .setTextAlign('center')
     .setStyle('muted')
-    .setPadding('bottom', Padding.MARGIN * 1.5));
+    .setPadding('bottom', Padding.MARGIN * 2));
 
-  if (this.reward_) {
+  var reward = this.gm_.stage.reward && this.gm_.stage.reward.value;
+  if (!this.missionService_.beatGame() &&
+      this.gm_.mission.state != 'lost' &&
+      this.gm_.stage.state != 'lost' &&
+      reward) {
     // Reward
     this.layout_.add(this.LayoutElement_.new('vertical')
-      .add(this.UiElement_.new().setPadding('left', Size.ITEM_DESC_WIDTH))
-      .setBgStyle('muted_dark')
-      .setBorderStyle('primary')
-      .setPadding(Padding.MODAL_MARGIN_SM)
+
       // Unlock text
       .add(this.LabelElement_.new()
         .setLayoutAlign('center')
-        .setText('unlocked new ' +
-                 Strings.ItemType[this.reward_.category] + ':', 12)
+        .setText(this.getRewardUnlockText_(), 12)
         .setStyle('muted'))
 
-      // Reward item
-      .add(this.ItemElement_.new()
-        .setPadding('top', Padding.ITEM)
-        .setLayoutAlign('center')
-        .setProp('item', this.reward_)
-        .setSize(Size.ITEM))
+      .modify(this.addRewardElement_, this));
+  }
 
-      // Item desc.
-      .add(this.LabelElement_.new()
-         .setText(this.reward_.displayName, Size.DESC_SM)
-         .setStyle('muted')
-         .setBg('primary', Padding.DESC_SM_BG))
-      .add(this.LabelElement_.new()
-         .setLayoutFill(true)
-         .setText(this.itemService_.getDesc(this.reward_), Size.DESC_SM)
-         .setNumLines(2)
-         .setLineWrap(true)
-         .setStyle('muted')
-         .setBg('none', Padding.DESC_SM_BG)));
+  if (this.gm_.mission.fuel == 0) {
+    this.layout_.add(this.LabelElement_.new()
+      .setStyle('muted')
+      .setText('no fuel remaining...', 12));
   }
 
   this.layout_
@@ -72,38 +58,77 @@ StageResultScene.prototype.addEntities_ = function() {
 };
 
 StageResultScene.prototype.getTitleText_ = function() {
-  if (this.missionService_.beatGame()) return 'you win';
-  if (this.gm_.event.state == 'won') return 'mission complete';
-  if (this.gm_.event.state == 'lost') return 'mission failed';
+  if (this.missionService_.beatGame()) {
+    return 'congratulations! the galaxy has been saved';
+  }
+  if (this.gm_.mission.state == 'won') return 'mission complete';
+  if (this.gm_.mission.state == 'lost') return 'mission failed';
   if (this.gm_.stage.state == 'won') return 'victory';
   return 'defeat';
 };
 
 StageResultScene.prototype.getTitleSize_ = function() {
-  if (_.is(this.gm_.event.state, 'won', 'lost')) {
-    return 24;
-  }
+  if (this.missionService_.beatGame()) return 23;
+  if (_.oneOf(this.gm_.mission.state, 'won', 'lost')) return 23;
   return 43;
 };
 
-StageResultScene.prototype.getRewindText_ = function() {
-  var lives = this.gm_.mission.lives;
-  return lives + ' rewind' + (lives == 1 ? '' : 's') + ' remaining';
+StageResultScene.prototype.getRewardUnlockText_ = function() {
+  var reward = this.gm_.stage.reward.value;
+  if (this.gm_.stage.reward.type == 'item') {
+    return 'unlocked new ' + Strings.ItemType[reward.category] + ':';
+  }
+  return 'discovered new world:';
+};
+
+StageResultScene.prototype.addRewardElement_ = function(layout) {
+  if (this.gm_.stage.reward.type == 'item') {
+    this.addItemRewardElement_(layout);
+  } else {  // world
+    this.addWorldRewardElement_(layout);
+  }
+};
+
+StageResultScene.prototype.addItemRewardElement_ = function(layout) {
+  var reward = this.gm_.stage.reward.value;
+  layout
+    // Reward item
+    .add(this.EntityElement_.new('item')
+      .setPadding(Padding.ITEM / 2, 0, Padding.ITEM / 4)
+      .setLayoutAlign('center')
+      .set('item', reward)
+      .setSize(Size.ITEM))
+
+    // Item desc.
+    .add(this.ItemDescElement_.new()
+       .setItem(reward));
+};
+
+StageResultScene.prototype.addWorldRewardElement_ = function(layout) {
+  var reward = this.gm_.stage.reward.value;
+  layout
+    // World
+    .add(this.EntityElement_.new('world')
+      .setPadding('top', Padding.ITEM / 2)
+      .setLayoutAlign('center')
+      .setBaselineAlign('middle', 'center')
+      .set('world', reward)
+      .setSize(Size.WORLD));
 };
 
 StageResultScene.prototype.getBtnText_ = function() {
   if (this.missionService_.beatGame()) return 'exit';
-  if (_.is(this.gm_.event.state, 'won', 'lost')) {
-    return 'return to earth';
-  }
-  if (this.gm_.stage.state == 'won') return 'continue';
-  return 'rewind';
+  if (this.gm_.stage.tutorial && this.gm_.stage.state == 'lost') return 'retry';
+  return 'continue';
 };
 
 StageResultScene.prototype.getNextScene_ = function() {
   if (this.missionService_.beatGame()) return 'intro';
-  if (_.is(this.gm_.event.state, 'won', 'lost')) {
-    return 'missionSelect';
+  if (this.gm_.stage.tutorial && this.gm_.stage.state == 'lost') {
+    return 'prebattle';
+  }
+  if (_.oneOf(this.gm_.mission.state, 'won', 'lost')) {
+    return 'worldSelect';
   }
   return 'stageSelect';
 };

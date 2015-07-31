@@ -30,7 +30,7 @@ DecoratorUtil.prototype.spec = function(obj, name, overrides, defaults) {
 DecoratorUtil.prototype.addBasicWeapon_ = function(
     obj, spec, fire, opt_onCollision) {
   this.addWeapon(obj, spec, function() {
-    return this.fireBasicProj_(obj, spec, fire, opt_onCollision);
+    this.fireBasicProj_(obj, spec, fire, opt_onCollision);
   }.bind(this));
 };
 
@@ -45,6 +45,7 @@ DecoratorUtil.prototype.fireBasicProj_ = function(
     opt_onCollision && opt_onCollision(target, projectile);
     projectile.dead = true;
   });
+  return projectile;
 };
 
 DecoratorUtil.prototype.addWeapon = function(obj, spec, fire) {
@@ -82,7 +83,7 @@ DecoratorUtil.prototype.addAbility = function(obj, spec, ability) {
     spec.jammed = obj.jammed(spec.name);
     if (spec.jammed || (obj.playerControlled && !spec.use)) return 0;
     spec.use = false;
-    spec.lastFired = this.gm_.time;
+    if (spec.firesDodgableProj) spec.lastFiredDodgableProj = this.gm_.time;
     return this.randomCooldown(ability(obj, spec));
   }.bind(this), spec);
 };
@@ -173,12 +174,23 @@ DecoratorUtil.prototype.addCooldown = function(obj, action, opt_spec) {
   obj.act(function(dt) {
     if (spec.cooldownRemaining > 0) spec.cooldownRemaining -= dt;
     if (spec.cooldownRemaining <= 0) {
-      spec.cooldownRemaining += action() || 0;
+      spec.cooldownRemaining += action(dt) || 0;
       if (spec.cooldownRemaining > 0) {
         spec.initCooldown = spec.cooldownRemaining;
       }
     }
   });
+};
+
+DecoratorUtil.prototype.getNearbyClones = function(obj, dis) {
+  var clones = [];
+  for (var i = 0; i < obj.target.clones.length; i++) {
+    var clone = obj.target.clones[i];
+    if (!clone.dead && _.distance(obj, clone) < dis) {
+      clones.push(clone);
+    }
+  }
+  return clones;
 };
 
 DecoratorUtil.prototype.modSet = function(obj, prop, value) {

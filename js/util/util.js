@@ -1,6 +1,6 @@
 _.emptyFn = function() {};
 
-_.is = function(value, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+_.oneOf = function(value, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
   return value == arg1 ||
     value == arg2 ||
     value == arg3 ||
@@ -131,7 +131,7 @@ _.randomSplit = function(size, opt_total) {
 };
 
 _.intRandomSplit = function(size, opt_total, opt_max) {
-  var total = _.orDef(opt_total, 1);
+  var total = _.ifDef(opt_total, 1);
   if (opt_max) {
     if (opt_max * size <= total) return _.generate(_.return(opt_max), size);
     var split = _.generate(_.return(0), size);
@@ -184,10 +184,11 @@ _.splitText = function(text) {
 };
 
 _.assert = function(truth, msg) {
-  if (PROD) return;
+  if (PROD) return truth;
   if (!truth) {
-    throw 'Assert failed: ' + msg;
+    throw 'Assert failed: ' + (msg || '');
   }
+  return truth;
 };
 
 _.fail = function(msg) {
@@ -296,6 +297,15 @@ _.pickFunctions = function(obj, opt_options) {
   return fnMap;
 };
 
+// Iterate through a 2d array, e.g. [[1, 2, 3], [4, 5, 6]].
+_.each2D = function(rows, fn, opt_context) {
+  _.each(rows, function(row, rowIndex) {
+    _.each(row, function(item, colIndex) {
+      fn.call(opt_context, item, rowIndex, colIndex, row);
+    });
+  });
+};
+
 _.key = function(obj) {
   return _.keys(obj)[0];
 };
@@ -329,11 +339,15 @@ _.findIndexWhere = function(list, attrs) {
   });
 };
 
+// r = 0 is black, r = 1 is white.
 _.generateColor = function(r) {
+  if (r == 1) r -= .001;  // so 1 white, not black.
   return '#' + (r.toString(16) + '000000').slice(2, 8);
 };
 
+// r = 0 is black, r = 1 is white, moves in grayscale.
 _.generateGray = function(r) {
+  if (r == 1) r -= .001;  // so 1 is white, not black.
   var repeating = (r.toString(16) + '00').slice(2, 4);
   return '#' + _.repeat(repeating, 3);
 };
@@ -416,13 +430,25 @@ _.options = function(overrides, defaults) {
   return _.defaults(_.clone(overrides) || {}, defaults);
 };
 
-_.orDef = function(value, valueWhenUndefined) {
+_.ifDef = function(value, valueWhenUndefined) {
   return _.isDef(value) ? value : valueWhenUndefined;
 };
 
 _.pad = function(num, padding) {
   var numAsStr = '' + num;
   return _.repeat('0', padding - numAsStr.length) + numAsStr;
+};
+
+// interpolate([0, 1, 10], 0) = 0
+// interpolate([0, 1, 10], .25) = 0.5
+// interpolate([0, 1, 10], .5) = 1
+// interpolate([0, 1, 10], .75) = 5.5
+// interpolate([0, 1, 10], 1) = 10
+_.interpolate = function(values, r) {
+  r = r * (values.length - 1);
+  var floor = Math.floor(r);
+  var ceil = Math.ceil(r);
+  return values[floor] + (values[ceil] - values[floor]) * (r - floor);
 };
 
 // step(25, 0, 25, 75, 100) = 0;
@@ -511,7 +537,7 @@ _.deepClone = function(o) {
 _.vector = {};
 
 _.vector.length = function(v) {
-  return _.orDef(v.length, _.distance(v));
+  return _.ifDef(v.length, _.distance(v));
 };
 
 _.vector.cartesian = function(v) {

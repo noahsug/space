@@ -5,5 +5,5 @@ FadeElement.ALPHA = 1;
 
 FadeElement.prototype.init = function(from, to) {
   di.extend(this, this.EntityElement_, 'backdrop');
-  this.setProp('baseAlpha', FadeElement.ALPHA);
+  this.set('baseAlpha', FadeElement.ALPHA);
 };

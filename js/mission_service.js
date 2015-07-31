@@ -1,96 +1,130 @@
 var MissionService = di.service('MissionService', [
-  'GameModel as gm', 'ShipFactory', 'Gameplay']);
+  'GameModel as gm', 'ShipFactory', 'Gameplay', 'Inventory']);
 
-MissionService.prototype.start = function() {
-  _.each(this.gm_.worlds, function(world) {
-    _.each(world.events, function(event) {
-      event.state = 'locked';
-      _.each(event.missions, function(mission) {
-        mission.maxLives = mission.maxLives || g.Lives.DEFAULT;
-        this.initStages_(mission);
-        this.resetProgress_(mission);
-      }, this);
+MissionService.prototype.initWorlds = function(worlds) {
+  _.each(worlds, function(world, worldIndex) {
+    world.state = worldIndex == 0 ? 'unlocked' : 'locked';
+    _.each(world.missions, function(mission, missionIndex) {
+      mission.state = worldIndex + missionIndex == 0 ? 'unlocked' : 'locked';
+      this.initStages_(mission.stages);
+      this.resetProgress(mission);
     }, this);
   }, this);
 };
 
-MissionService.prototype.initStages_ = function(mission) {
-  _.each(mission.stages, function(row) {
-    _.each(row, function(stage) {
-      if (stage.empty) stage.state = 'won';
-      else stage.enemy = this.shipFactory_.createEnemyDna(stage);
-    }, this);
-  }, this);
-};
-
-MissionService.prototype.resetProgress_ = function(mission) {
-  _.each(mission.stages, function(row) {
-    _.each(row, this.resetStage_.bind(this));
-  }, this);
-  mission.lives = mission.maxLives;
-};
-
-MissionService.prototype.resetStage_ = function(stage) {
-  if (stage.empty) return;
-  stage.state = stage.row == 0 ? 'unlocked' : 'locked';
-};
-
-MissionService.prototype.handleStageResult = function(result) {
-  if (result == 'lost') {
-    this.gm_.mission.lives--;
-    if (this.gm_.mission.lives < 0) this.gm_.event.state = 'lost';
-  } else {
-    this.gm_.stage.state = 'won';
-    if (this.won_()) {
-      this.gm_.event.state = 'won';
+MissionService.prototype.initStages_ = function(stages) {
+  _.each2D(stages, function(stage) {
+    if (stage.empty) {
+      stage.state = 'won';
     } else {
-      this.unlockAdjacent_(this.gm_.stage);
+      stage.ship = this.shipFactory_.createEnemyDna(stage.ship);
+      stage.state = stage.start ? 'unlocked' : 'locked';
     }
-  }
-};
-
-MissionService.prototype.handleMissionResult = function() {
-  if (this.gm_.event.state == 'lost') {
-    this.gm_.event.state = 'unlocked';
-    this.resetProgress_(this.gm_.mission);
-  } else if (this.gm_.event.state == 'won') {
-    _.forEach(this.gm_.mission.unlocks, function(i) {
-      if (this.gm_.world.events[i].state == 'locked') {
-        this.gm_.world.events[i].state = 'unlocked';
-      }
-    }, this);
-  }
-};
-
-MissionService.prototype.unlockAdjacent_ = function(stage) {
-  this.neighbors_(stage).forEach(function(neighbor) {
-    neighbor.state = 'unlocked';
+    stage.prevState = stage.state;
   }, this);
 };
 
-MissionService.prototype.beatGame = function() {
-  return this.gm_.event.index == this.gm_.world.events.length - 1 &&
-      this.gm_.event.state == 'won';
+MissionService.prototype.resetProgress = function(opt_mission) {
+  var mission = opt_mission || this.gm_.mission;
+  mission.state = 'unlocked';
+  mission.fuel = mission.maxFuel;
+
+  _.each2D(mission.stages, function(stage) {
+    if (!stage.empty) {
+      stage.state = stage.start ? 'unlocked' : 'locked';
+    }
+    stage.prevState = stage.state;
+  }, this);
 };
 
-MissionService.prototype.won_ = function() {
-  if (this.gm_.stage.row < this.gm_.mission.stages.length - 1) return false;
-  return _.last(this.gm_.mission.stages).every(function(stage) {
-    return stage.state == 'won';
+MissionService.prototype.selectWorld = function(world) {
+  this.gm_.world = world;
+  this.gm_.mission = this.getCurrentMission();
+  this.resetProgress();
+};
+
+MissionService.prototype.getCurrentMission = function() {
+  return _.find(this.gm_.world.missions, function(mission) {
+    return _.oneOf(mission.state, 'unlocked', 'lost');
   });
 };
 
-MissionService.prototype.isValid_ = function(row, col) {
-  return _.between(row, 0, this.gm_.mission.rows - 1) &&
-      _.between(col, 0, this.gm_.mission.cols - 1);
+MissionService.prototype.getPercentComplete = function(world) {
+  var stats = _.countBy(world.missions, _.iteratee('state'));
+  return 100 * (stats.won || 0) / world.missions.length;
 };
 
-// Returns next row of ships of current row is defeated.
-MissionService.prototype.neighbors_ = function(stage) {
-  if (stage.row == this.gm_.mission.stages.length - 1) return [];
-  var row = this.gm_.mission.stages[stage.row];
-  if (row.every(function(stage) { return stage.state != 'unlocked'; })) {
-    return this.gm_.mission.stages[stage.row + 1];
+MissionService.prototype.handleStageResult = function(result) {
+  this.gm_.mission.fuel--;
+  _.each2D(this.gm_.mission.stages, function(stage) {
+    stage.prevState = stage.state;
+  });
+  this.gm_.stage.state = result;
+  if (result == 'won') {
+    if (this.gm_.stage.reward) {
+      if (this.gm_.stage.reward.type == 'item') {
+        this.inventory_.add(this.gm_.stage.reward.value);
+      } else {  // type == 'world'
+        this.gm_.stage.reward.value.state = 'unlocked';
+      }
+    }
+    if (this.won_()) {
+      this.gm_.mission.state = 'won';
+      this.unlockNextMission_(this.gm_.mission);
+    } else {
+      this.unlockNextStages_(this.gm_.stage);
+    }
+  } else {  // lost
+    this.lockStagesUntilCheckpoint_(this.gm_.stage);
   }
-  return [];
+};
+
+MissionService.prototype.unlockNextMission_ = function(mission) {
+  var nextMission = this.gm_.missions[mission.index + 1];
+  if (nextMission) nextMission.state = 'unlocked';
+};
+
+MissionService.prototype.unlockNextStages_ = function(stage) {
+  _.each(this.gm_.stage.unlocks, function(stage) {
+    if (stage.state == 'locked') stage.state = 'unlocked';
+  }, this);
+};
+
+MissionService.prototype.lockStagesUntilCheckpoint_ = function(stage) {
+  if (stage.checkpoint) return;
+  var prevStage;
+  _.each2D(this.gm_.mission.stages, function(s) {
+    if (s.unlocks.indexOf(stage) >= 0) prevStage = s;
+  });
+  if (prevStage.checkpoint) {
+    stage.state = 'unlocked';
+  } else {
+    if (stage.state == 'won') stage.state = 'locked';
+    this.lockStagesUntilCheckpoint_(prevStage);
+  }
+};
+
+MissionService.prototype.beatGame = function() {
+  return _.every(this.gm_.worlds, function(world) {
+    return this.getPercentComplete(world) == 100;
+  }, this);
+};
+
+MissionService.prototype.won_ = function() {
+  var won = true;
+  _.each2D(this.gm_.mission.stages, function(stage) {
+    won &= stage.state == 'won';
+  });
+  return won;
+};
+
+MissionService.prototype.getStartingStage = function() {
+  var start;
+  _.each2D(this.gm_.mission.stages, function(stage) {
+    if (stage.start) {
+      start = stage;
+      return;
+    }
+  });
+  return _.assert(start);
 };
