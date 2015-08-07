@@ -195,10 +195,11 @@ Renderer.prototype.drawItem_ = function(e) {
 
   // Fade if on cooldown or jammed.
   var cdRatio;
+  var cooldownRemaining;
   if (e.cdInfo) {
-    cdRatio =
-        (e.cdInfo.cooldownRemaining - (this.gm_.time - this.gm_.actTime)) /
-        e.cdInfo.initCooldown;
+    cooldownRemaining = Math.max(0,
+        e.cdInfo.cooldownRemaining - (this.gm_.time - this.gm_.actTime));
+    cdRatio = cooldownRemaining / e.cdInfo.initCooldown;
     if (cdRatio < 0) cdRatio = 0;
     if (cdRatio > 0 || e.cdInfo.jammed) options.alpha *= .25;
   } else {
@@ -211,14 +212,17 @@ Renderer.prototype.drawItem_ = function(e) {
     options.alpha *= .5;
   }
 
+  options.scale = e.scale || 1;
+
   this.spriteService_.draw(
       e.item.name, e.r.x + e.size / 2, e.r.y + e.size / 2, options);
 
   // Draw cooldown.
-  if (e.cdInfo) {
+  if (e.cdInfo && cooldownRemaining > 0) {
     this.ctx_.fillStyle = Gfx.Color.COOLDOWN;
+
     var offset = this.spriteService_.getSize(e.item.name) -
-          this.spriteService_.getActualSize(e.item.name);
+        this.spriteService_.getActualSize(e.item.name) * options.scale;
     this.ctx_.fillRect(e.r.x + offset / 2,
                        e.r.y + offset / 2 + (e.size - offset) * (1 - cdRatio),
                        e.size - offset, (e.size - offset) * cdRatio);

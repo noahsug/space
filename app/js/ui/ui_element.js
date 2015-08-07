@@ -22,6 +22,11 @@ UiElement.prototype.init = function() {
   this.animations_ = this.AnimationsFactory_.new(this);
 };
 
+UiElement.prototype.setHitboxMargin = function(margin) {
+  this.hitboxMargin_ = margin;
+  return this;
+};
+
 UiElement.prototype.canAnimate = function(prop) {
   return this.animations_.canAnimate(prop);
 };

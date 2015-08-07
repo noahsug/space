@@ -6,15 +6,18 @@ ItemDescElement.prototype.init = function() {
 
   this.title_ = this.LabelElement_.new()
     .setStyle('muted')
-    .setText('', Size.DESC);
+    .setLayoutAlign('center')
+    .setText('', Size.DESC_LG);
   this.body_ = this.LabelElement_.new()
+    .setTextAlign('center')
+    .setLayoutAlign('center')
     .setLineWrap(true)
     .setStyle('muted')
     .setText('', Size.DESC_SM);
 
   this.add(this.UiElement_.new().setPadding('left', Size.ITEM_DESC_WIDTH));
   this.add(this.title_);
-  this.addGap(Padding.DESC * 2);
+  this.addGap(Padding.DESC_LG);
   this.add(this.body_);
 
   this.setAlpha(0);

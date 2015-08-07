@@ -56,9 +56,11 @@ BattleScene.prototype.createItem_ = function(type, index) {
   }
 
   var btn = this.EntityElement_.new('item')
-    .setSize(Size.ITEM)
+    .setSize(Size.ITEM * 1.5)
     .set('item', item)
     .set('cdInfo', this.player_[type])
+    .setHitboxMargin(13)
+    .set('scale', 1.5)
     .modify(this.addInputHandler_.bind(this, index));
   return btn;
 };

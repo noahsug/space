@@ -25,7 +25,7 @@ StageResultScene.prototype.addEntities_ = function() {
   var reward = this.gm_.stage.reward && this.gm_.stage.reward.value;
   if (!this.missionService_.beatGame() &&
       this.gm_.mission.state != 'lost' &&
-      this.gm_.stage.state != 'lost' &&
+      this.gm_.stage.state == 'won' &&
       reward) {
     // Reward
     this.layout_.add(this.LayoutElement_.new('vertical')
@@ -94,7 +94,7 @@ StageResultScene.prototype.addItemRewardElement_ = function(layout) {
   layout
     // Reward item
     .add(this.EntityElement_.new('item')
-      .setPadding(Padding.ITEM / 2, 0, Padding.ITEM / 4)
+      .setPadding(Padding.ITEM / 2, 0, Padding.ITEM / 2)
       .setLayoutAlign('center')
       .set('item', reward)
       .setSize(Size.ITEM))
@@ -118,13 +118,13 @@ StageResultScene.prototype.addWorldRewardElement_ = function(layout) {
 
 StageResultScene.prototype.getBtnText_ = function() {
   if (this.missionService_.beatGame()) return 'exit';
-  if (this.gm_.stage.tutorial && this.gm_.stage.state == 'lost') return 'retry';
+  if (this.gm_.stage.tutorial && this.gm_.stage.state != 'won') return 'retry';
   return 'continue';
 };
 
 StageResultScene.prototype.getNextScene_ = function() {
   if (this.missionService_.beatGame()) return 'intro';
-  if (this.gm_.stage.tutorial && this.gm_.stage.state == 'lost') {
+  if (this.gm_.stage.tutorial && this.gm_.stage.state != 'won') {
     return 'prebattle';
   }
   if (_.oneOf(this.gm_.mission.state, 'won', 'lost')) {

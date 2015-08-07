@@ -129,6 +129,7 @@ PrebattleScene.prototype.addEnemyItems_ = function(layout) {
     if (i) layout.addFlex();
     var item = this.itemService_.getEnemyEquipped(type);
     layout.add(this.createItemBtn_(item)
+      .setHitboxMargin(13)
       .onClick(function(btn) {
         this.selectedEnemyBtn_ = this.selectedEnemyBtn_ == btn ?
             undefined : btn;

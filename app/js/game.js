@@ -24,12 +24,12 @@ Game.prototype.start = function() {
   ];
 
   // DEBUG
-  //this.gm_.stage = this.gm_.mission.stages[3][2];
+  this.gm_.stage = this.gm_.mission.stages[4][2];
   //this.gm_.stage.state = 'won';
   //this.gm_.mission.fuel = 1;
   //this.missionService_.handleStageResult('lost');
 
-  this.scenes_[1].start();
+  this.scenes_[6].start();
 };
 
 Game.prototype.initGameModel_ = function() {

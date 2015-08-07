@@ -91,15 +91,15 @@ MissionService.prototype.unlockNextStages_ = function(stage) {
 };
 
 MissionService.prototype.lockStagesUntilCheckpoint_ = function(stage) {
-  if (stage.checkpoint) return;
   var prevStage;
   _.each2D(this.gm_.mission.stages, function(s) {
     if (s.unlocks.indexOf(stage) >= 0) prevStage = s;
   });
+  if (!prevStage) return;
   if (prevStage.checkpoint) {
     stage.state = 'unlocked';
   } else {
-    if (stage.state == 'won') stage.state = 'locked';
+    stage.state = 'locked';
     this.lockStagesUntilCheckpoint_(prevStage);
   }
 };

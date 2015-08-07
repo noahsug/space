@@ -1,5 +1,5 @@
 Size = {
-  DESC_SM: 7,
+  DESC_SM: 9,
   DESC: 9,
   DESC_LG: 11,
   HEADING_SM: 15,
