@@ -201,8 +201,8 @@ SpriteService.prototype.draw = function(name, x, y, opt_options) {
   var ctx = this.ctx_;
   if (options.ctx == 'text') {
     ctx = this.textCtx_;
-    x = Math.round(x * this.screen_.upscale);
-    y = Math.round(y * this.screen_.upscale);
+    x *= this.screen_.upscale;
+    y *= this.screen_.upscale;
     options.scale = (options.scale || 1) * this.screen_.upscale;
   }
 

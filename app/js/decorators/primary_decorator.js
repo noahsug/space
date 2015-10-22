@@ -31,7 +31,7 @@ PrimaryDecorator.prototype.decorateBasicLaser_ = function(obj, spec) {
 PrimaryDecorator.prototype.decorateShotgun_ = function(obj, spec) {
   spec = this.util_.spec(obj, 'primary', spec, {
     length: 8 + 16,
-    spread: _.radians(35),
+    spread: _.radians(33),
     speed: g.Speed.VERY_FAST,
     style: 'weak',
     maxTargetAngle: g.MaxTargetAngle.DEFAULT

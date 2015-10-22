@@ -218,14 +218,9 @@ Renderer.prototype.drawItem_ = function(e) {
       e.item.name, e.r.x + e.size / 2, e.r.y + e.size / 2, options);
 
   // Draw cooldown.
-  if (e.cdInfo && cooldownRemaining > 0) {
+  if (true || e.cdInfo && cooldownRemaining > 0) {
     this.ctx_.fillStyle = Gfx.Color.COOLDOWN;
-
-    var offset = this.spriteService_.getSize(e.item.name) -
-        this.spriteService_.getActualSize(e.item.name) * options.scale;
-    this.ctx_.fillRect(e.r.x + offset / 2,
-                       e.r.y + offset / 2 + (e.size - offset) * (1 - cdRatio),
-                       e.size - offset, (e.size - offset) * cdRatio);
+    this.ctx_.fillRect(e.r.x, e.r.y, e.size, e.size * cdRatio);
   }
 };
 
@@ -392,7 +387,8 @@ Renderer.prototype.getBgColor_ = function(style) {
 var DEATH_ANIMATION_DURATION = .3;
 Renderer.prototype.initShip_ = function(e) {
   e.r.damageTaken = 0;
-  e.r.shaking = 0;
+  e.r.shake = 0;
+  e.r.shakeDuration = 0;
   e.r.healthIndicator = 0;
   e.r.deathAnimation = DEATH_ANIMATION_DURATION;
   e.r.radius = e.radius;
@@ -433,25 +429,34 @@ Renderer.prototype.addShipStyle_ = function(style) {
   });
 };
 Renderer.prototype.drawShip_ = function(e, style, dt) {
-  // Shake afer taking damage.
-  if (e.r.lastDamageTaken != this.gm_.tick) {
-    e.r.lastDamageTaken = this.gm_.tick;
+  // Display highlighted healthbar + shake afer taking damage.
+  if (e.r.lastDamageTakenTick != this.gm_.tick) {
+    e.r.lastDamageTakenTick = this.gm_.tick;
     var damage = e.prevHealth - e.health;
     e.r.damageTaken += damage;
     if (damage > 0) {
-      e.r.shaking += Math.sqrt(damage) / 20;
+      // TODO: Dont add together square roots, it makes multiple small dmg > 1
+      // large dmg.
+      e.r.showDamageTaken = 1;
+      e.r.shakeDuration += Math.sqrt(damage) / 15;
+      e.r.shake += Math.sqrt(damage * 5);
+      console.log(e.r.shake, e.r.shakeDuration, damage);
     }
   }
-  if (e.r.shaking > 0 && !e.frozen) {
-    var shake = 2 + e.r.damageTaken / 2;
+
+  if (e.r.showDamageTaken > 0) {
+    e.r.showDamageTaken -= dt;
+  } else if (e.r.damageTaken > 0) {
     e.r.damageTaken -= 20 * dt / this.gm_.gameSpeed;
+    if (e.r.damageTaken < 0) e.r.damageTaken = 0;
+  }
+
+  if (e.r.shakeDuration > 0 && !e.frozen) {
+    var shake = 2 + e.r.shake / 2;
     e.r.x += (.3 + .7 * Math.random()) * shake;
     e.r.y += (.3 + .7 * Math.random()) * shake;
-    e.r.shaking -= dt / this.gm_.gameSpeed;
-    if (e.r.shaking <= 0) {
-      e.r.shaking = 0;
-      e.r.damageTaken = 0;
-    }
+    e.r.shakeDuration -= dt / this.gm_.gameSpeed;
+    if (e.r.shakeDuration < 0) e.r.shakeDuration = e.r.shake = 0;
   }
 
   var customStyle;

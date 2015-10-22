@@ -82,8 +82,9 @@ Gameplay.prototype.getGameplayFile_ = function() {
             reward: {type: 'item', value: 'knockback'},
             ship: {
               hull: 'hive dart',
-              primary: ['alien laser'],
-              secondary: ['knockback']}},
+              primary: ['alien laser']
+            }},
+              //secondary: ['knockback']}},
           3: {
             unlocks: [4],
             ship: {
